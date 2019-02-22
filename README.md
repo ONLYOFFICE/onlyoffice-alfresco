@@ -53,32 +53,29 @@ Installation process is described [here](https://maven.apache.org/install.html)
 
 6. Add the **onlyoffice.url** property to `alfresco-global.properties`:
 
-  Probably located here `/usr/local/tomcat/shared/classes/alfresco-global.properties`
-
+ Probably located here `/usr/local/tomcat/shared/classes/alfresco-global.properties`
     ```
     onlyoffice.url=http://documentserver/
     ```
 
 
+ You may also want to change these (make sure that Document Server will be able to POST to Alfresco)
+ ```
+alfresco.host=<hostname>
+alfresco.port=443
+alfresco.protocol=https
 
-  You may also want to change these (make sure that Document Server will be able to POST to Alfresco)
-
-    ```
-    alfresco.host=<hostname>
-    alfresco.port=443
-    alfresco.protocol=https
-
-    share.host=<hostname>
-    share.port=443
-    share.protocol=https
-    ```
+share.host=<hostname>
+share.port=443
+share.protocol=https
+```
 
 7. Restart Alfresco:
 
-    ```bash
-    sudo ./alfresco.sh stop
-    sudo ./alfresco.sh start
-    ```
+```bash
+sudo ./alfresco.sh stop
+sudo ./alfresco.sh start
+```
 
 The module can be checked in administrator tools at `share/page/console/admin-console/module-package` in Alfresco.
 
@@ -88,9 +85,9 @@ Other way to build ONLYOFFICE Alfresco module package is using docker-compose fi
 
 Use this command from project directory:
 
-    ```bash
-    docker-compose up
-    ```
+```bash
+docker-compose up
+```
 
 ## How it works
 
