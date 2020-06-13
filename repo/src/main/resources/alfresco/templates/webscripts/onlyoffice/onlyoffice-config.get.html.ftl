@@ -16,7 +16,7 @@
       <div class="control text">
          <label class="label" for="onlyurl">${msg("onlyoffice-config.doc-url")}</label>
          <span class="value">
-            <input id="onlyurl" name="url" size="35" placeholder="http://docserver/" title="${msg('onlyoffice-config.doc-url-tooltip')}" pattern="http(s)?://.*" value="${docurl}" />
+            <input id="onlyurl" name="url" size="35" placeholder="http://docserver/" title="${msg('onlyoffice-config.doc-url-tooltip')}" pattern="(http(s)?://.*)|(/.*)" value="${docurl}" />
          </span>
       </div>
       <div class="control text">
@@ -36,7 +36,7 @@
          <div class="control text section">
             <label class="label" for="alfurl">${msg("onlyoffice-config.alf-url")}</label>
             <span class="value">
-               <input class="value" id="alfurl" name="alfurl" size="35" placeholder="http://alfresco/" title="${msg('onlyoffice-config.alf-url-tooltip')}" pattern="(http(s)?://.*)|(/.*)" value="${alfurl}" />
+               <input class="value" id="alfurl" name="alfurl" size="35" placeholder="http://alfresco/" title="${msg('onlyoffice-config.alf-url-tooltip')}" pattern="http(s)?://.*" value="${alfurl}" />
             </span>
          </div>
          <div class="control field">
