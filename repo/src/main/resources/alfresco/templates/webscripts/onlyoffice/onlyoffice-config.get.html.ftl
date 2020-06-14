@@ -16,7 +16,7 @@
       <div class="control text">
          <label class="label" for="onlyurl">${msg("onlyoffice-config.doc-url")}</label>
          <span class="value">
-            <input id="onlyurl" name="url" size="35" placeholder="http://docserver/" title="${msg('onlyoffice-config.doc-url-tooltip')}" pattern="http(s)?://.*" value="${docurl}" />
+            <input id="onlyurl" name="url" size="35" placeholder="http://docserver/" title="${msg('onlyoffice-config.doc-url-tooltip')}" pattern="(http(s)?://.*)|(/.*)" value="${docurl}" />
          </span>
       </div>
       <div class="control text">
