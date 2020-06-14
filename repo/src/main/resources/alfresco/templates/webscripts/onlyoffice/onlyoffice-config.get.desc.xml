@@ -2,7 +2,10 @@
    <shortname>ONLYOFFICE Configuration</shortname>
    <description>Admin Console ONLYOFFICE Configuration page</description>
    <url>/onlyoffice/onlyoffice-config</url>
+   <url>/onlyoffice/onlyoffice-config?format=html</url>
+   <url>/onlyoffice/onlyoffice-config?format=json</url>
    <family>AdminConsole</family>
+   <format default="html"/>
    <authentication>admin</authentication>
    <lifecycle>internal</lifecycle>
 </webscript>
