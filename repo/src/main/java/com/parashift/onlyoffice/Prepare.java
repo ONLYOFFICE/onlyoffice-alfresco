@@ -187,6 +187,7 @@ public class Prepare extends AbstractWebScript {
                 editorConfigObject.put("lang", mesService.getLocale().toLanguageTag());
                 if (isReadOnly || preview || !canWrite) {
                     editorConfigObject.put("mode", "view");
+                    editorConfigObject.put("callbackUrl", callbackUrl);
                     permObject.put("edit", false);
                 } else {
                     editorConfigObject.put("mode", "edit");
