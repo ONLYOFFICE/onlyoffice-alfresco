@@ -29,9 +29,6 @@
         <create-content>
             <content id="document-onlyoffice-create-docx" type="javascript" label="actions.document.onlyoffice-create-docx">
                 <param name="function">onOnlyofficeCreateDocx</param>
-                <permissions>
-                    <permission allow="true">Write</permission>
-                </permissions>
             </content>
         </create-content>
     </config>
@@ -40,9 +37,6 @@
         <create-content>
             <content id="document-onlyoffice-create-xlsx" type="javascript" label="actions.document.onlyoffice-create-xlsx">
                 <param name="function">onOnlyofficeCreateXlsx</param>
-                <permissions>
-                    <permission allow="true">Write</permission>
-                </permissions>
             </content>
         </create-content>
     </config>
@@ -51,9 +45,6 @@
         <create-content>
             <content id="document-onlyoffice-create-pptx" type="javascript" label="actions.document.onlyoffice-create-pptx">
                 <param name="function">onOnlyofficeCreatePptx</param>
-                <permissions>
-                    <permission allow="true">Write</permission>
-                </permissions>
             </content>
         </create-content>
     </config>
