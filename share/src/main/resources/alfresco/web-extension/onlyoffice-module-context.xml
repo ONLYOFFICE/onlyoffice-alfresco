@@ -53,6 +53,7 @@
      <bean id="evaluator.doclib.action.displayRead" parent="evaluator.doclib.action.chainedMatchOne">
         <property name="evaluators">
            <list>
+              <ref bean="evaluator.doclib.action.allowOnlyofficeEdit" />
               <ref bean="evaluator.doclib.action.onlyofficeConvertMimetype"/>
               <ref bean="evaluator.doclib.action.onlyofficeViewMimetype"/>
               <ref bean="evaluator.doclib.action.readAvailable"/>
