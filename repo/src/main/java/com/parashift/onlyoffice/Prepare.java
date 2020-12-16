@@ -226,7 +226,7 @@ public class Prepare extends AbstractWebScript {
                 if (preview) {
                     JSONObject embeddedObject = new JSONObject();
                     embeddedObject.put("saveUrl", contentUrl);
-                    editorConfigObject.put("embedded", embeddedObject)
+                    editorConfigObject.put("embedded", embeddedObject);
                 }
                 customizationObject.put("forcesave", configManager.getAsBoolean("forcesave"));
 
