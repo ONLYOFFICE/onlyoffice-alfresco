@@ -190,7 +190,7 @@ public class Prepare extends AbstractWebScript {
                     personInfo = personService.getPerson(person);
                 }
 
-                configJson.put("type", preview ? "embedded" : "desktop");
+                configJson.put("type", "desktop");
                 configJson.put("width", "100%");
                 configJson.put("height", "100%");
                 configJson.put("documentType", getDocType(docExt));
