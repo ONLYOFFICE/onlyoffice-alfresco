@@ -14,7 +14,7 @@ Alfresco.WebPreview.prototype.Plugins.onlyoffice.prototype = {
     display: function() {
         var el = document.getElementById(this.wp.id);
         new DocsAPI.DocEditor(this.wp.id + "-body", this.attributes.config);
-        el.style.width = "65vw";
+        el.style.width = "100%";
         el.style.height = "75vh";
     }
 };
