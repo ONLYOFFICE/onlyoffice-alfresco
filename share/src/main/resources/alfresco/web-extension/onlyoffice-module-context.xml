@@ -88,6 +88,12 @@
                 <value>application/rtf</value>
                 <value>application/x-rtf</value>
                 <value>text/richtext</value>
+                <value>application/vnd.ms-excel</value>
+                <value>application/vnd.ms-powerpoint</value>
+                <value>application/msword</value>
+                <value>application/vnd.openxmlformats-officedocument.wordprocessingml.document</value>
+                <value>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</value>
+                <value>application/vnd.openxmlformats-officedocument.presentationml.presentation</value>
             </list>
         </property>
     </bean>
