@@ -157,6 +157,7 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("onlyofficeUrl", util.getEditorUrl());
                 responseJson.put("mime", mimetypeService.getMimetype(docExt));
                 responseJson.put("demo", configManager.demoActive());
+                responseJson.put("favicon", util.getFaviconByDocExt(docExt));
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

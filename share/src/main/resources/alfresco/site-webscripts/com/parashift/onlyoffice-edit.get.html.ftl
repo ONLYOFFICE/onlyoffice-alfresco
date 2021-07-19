@@ -34,6 +34,8 @@
 
     var docEditor = new DocsAPI.DocEditor("placeholder", config);
 
+    document.head.innerHTML='<link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${favicon}" type="image/vnd.microsoft.icon" />';
+    document.head.innerHTML+='<link rel="icon" href="${url.context}/res/components/images/filetypes/${favicon}" type="image/vnd.microsoft.icon" />';
     </script>
 </body>
 </html>

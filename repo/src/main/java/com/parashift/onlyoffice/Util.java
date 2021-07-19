@@ -249,4 +249,12 @@ public class Util {
         }
         return url;
     }
+
+    public String getFaviconByDocExt(String docExt) {
+        String docType=getDocType(docExt);
+        if(docType.equals("text")) return "document-onlyoffice-create-docx-file-16.png";
+        if(docType.equals("spreadsheet")) return "document-onlyoffice-create-xslx-file-16.png";
+        if(docType.equals("presentation")) return "document-onlyoffice-create-pptx-file-16.png";
+        return null;
+    }
 }
