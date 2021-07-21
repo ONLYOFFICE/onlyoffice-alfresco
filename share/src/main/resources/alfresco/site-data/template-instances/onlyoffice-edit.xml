@@ -1,16 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <template-instance>
    <template-type>com/parashift/onlyoffice-edit</template-type>
-   <components>
-
-      <!-- My Sites -->
-      <component>
-         <region-id>onlyoffice-edit</region-id>
-         <url>/components/onlyoffice-edit</url>
-      </component>
-
-
-
-   </components>
 </template-instance>
 
