@@ -96,7 +96,6 @@ public class PrepareQuickShare extends AbstractWebScript {
                             responseJson.put("config", configJson);
                             responseJson.put("onlyofficeUrl", util.getEditorUrl());
                             responseJson.put("mime", mimetypeService.getMimetype(docExt));
-                            responseJson.put("favicon", util.getFaviconByDocExt(docExt));
 
                             logger.debug("Sending JSON prepare object");
                             logger.debug(responseJson.toString(3));
