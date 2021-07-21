@@ -12,4 +12,4 @@ model.onlyofficeUrl = pObj.onlyofficeUrl;
 model.docTitle = pObj.config.document.title;
 model.config = JSON.stringify(pObj.config);
 model.demo = pObj.demo;
-model.favicon=pObj.favicon;
+model.documentType=pObj.documentType;

@@ -12,6 +12,8 @@
 
     <!--Change the address on installed ONLYOFFICE™ Online Editors-->
     <script id="scriptApi" type="text/javascript" src="${onlyofficeUrl}OfficeWeb/apps/api/documents/api.js"></script>
+    <link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${documentType}.png" />
+    <link rel="icon" href="${url.context}/res/components/images/filetypes/${documentType}.png" />
 </head>
 
 <body>
@@ -19,23 +21,19 @@
         <div id="placeholder"></div>
     </div>
     <script>
+        var onAppReady = function (event) {
+            if (${demo?c}) {
+                 docEditor.showMessage("${msg("alfresco.document.onlyoffice.action.edit.msg.demo")}");
+            }
+        };
 
-    var onAppReady = function (event) {
-        if (${demo?c}) {
-             docEditor.showMessage("${msg("alfresco.document.onlyoffice.action.edit.msg.demo")}");
-        }
-    };
+        var config = ${config};
 
-    var config = ${config};
+        config.events = {
+            "onAppReady": onAppReady
+        };
 
-    config.events = {
-        "onAppReady": onAppReady
-    };
-
-    var docEditor = new DocsAPI.DocEditor("placeholder", config);
-
-    document.head.innerHTML='<link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${favicon}" type="image/vnd.microsoft.icon" />';
-    document.head.innerHTML+='<link rel="icon" href="${url.context}/res/components/images/filetypes/${favicon}" type="image/vnd.microsoft.icon" />';
+        var docEditor = new DocsAPI.DocEditor("placeholder", config);
     </script>
 </body>
 </html>
