@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<component>
+    <scope>global</scope>
+    <region-id>onlyoffice-edit</region-id>
+    <source-id>global</source-id>
+    <url>/components/onlyoffice-edit</url>
+</component>

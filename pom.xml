@@ -156,6 +156,7 @@
                             <nonFilteredFileExtension>docx</nonFilteredFileExtension>
                             <nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
                             <nonFilteredFileExtension>pptx</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>ico</nonFilteredFileExtension>
                         </nonFilteredFileExtensions>
                     </configuration>
                 </plugin>

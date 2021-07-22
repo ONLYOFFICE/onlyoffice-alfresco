@@ -1,1 +1,1 @@
-<@region id="onlyoffice-edit" scope="template" />
+<@region id="onlyoffice-edit" scope="global" chromeless="true"/>
