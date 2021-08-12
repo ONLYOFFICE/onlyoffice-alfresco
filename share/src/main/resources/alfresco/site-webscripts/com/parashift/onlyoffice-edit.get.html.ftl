@@ -44,7 +44,6 @@
         var onRequestCompareFile = function() {
             document.getElementById("black-overlay").style.display = "block";
             var managerFrame = document.getElementById("managerFrame");
-            managerFrame.location.reload();
             managerFrame.style.display = "block";
             managerFrame.contentWindow.document.getElementsByClassName("header-bar")[0].style.display = "none";
             managerFrame.contentWindow.document.getElementsByClassName("sticky-footer")[0].style.display = "none";
@@ -62,16 +61,18 @@
                     targetType = event.target.title.substring(event.target.title.lastIndexOf(".") + 1);
                 }
                 if (targetHref != null && targetType != null && targetType == config.document.fileType) {
+                    console.log("${alfresco}s/parashift/onlyoffice/download?" + targetHref.split("?")[1]);
                     docEditor.setRevisedFile({
                         "fileType": targetType,
-                        "url": "${aflresco}s/parashift/onlyoffice/download?" + targetHref.split("?")[1]
+                        "url": "${alfresco}s/parashift/onlyoffice/download?" + targetHref.split("?")[1] + "&alf_ticket=${ticket}"
                     });
                     document.getElementById("black-overlay").style.display = "none";
-                    managerFrame.removeEventListener("click", listener);
+                    managerFrame.contentWindow.document.removeEventListener("click", listener);
                     managerFrame.style.display = "none";
+                    managerFrame.src = "${share}page/context/mine/myfiles";
                 }
             };
-            managerFrame.document.addEventListener("click", listener);
+            managerFrame.contentWindow.document.addEventListener("click", listener);
         };
 
         config.events = {

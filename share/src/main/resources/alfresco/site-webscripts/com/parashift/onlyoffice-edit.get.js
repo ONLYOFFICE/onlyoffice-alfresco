@@ -14,4 +14,5 @@ model.config = JSON.stringify(pObj.config);
 model.demo = pObj.demo;
 model.documentType=pObj.documentType;
 model.share = pObj.share;
-model.aflresco = pObj.aflresco;
+model.alfresco = pObj.alfresco;
+model.ticket = pObj.ticket;
