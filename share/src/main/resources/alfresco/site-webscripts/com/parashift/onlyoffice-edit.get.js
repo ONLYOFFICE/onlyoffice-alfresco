@@ -13,3 +13,5 @@ model.docTitle = pObj.config.document.title;
 model.config = JSON.stringify(pObj.config);
 model.demo = pObj.demo;
 model.documentType=pObj.documentType;
+model.share = pObj.share;
+model.aflresco = pObj.aflresco;

@@ -158,6 +158,8 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("mime", mimetypeService.getMimetype(docExt));
                 responseJson.put("demo", configManager.demoActive());
                 responseJson.put("documentType", documentType);
+                responseJson.put("share", util.getShareUrl());
+                responseJson.put("alfresco", util.getAlfrescoUrl());
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));
