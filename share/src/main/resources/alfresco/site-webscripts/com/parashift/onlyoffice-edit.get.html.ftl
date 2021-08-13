@@ -61,7 +61,6 @@
                     targetType = event.target.title.substring(event.target.title.lastIndexOf(".") + 1);
                 }
                 if (targetHref != null && targetType != null && targetType == config.document.fileType) {
-                    console.log("${alfresco}s/parashift/onlyoffice/download?" + targetHref.split("?")[1]);
                     docEditor.setRevisedFile({
                         "fileType": targetType,
                         "url": "${alfresco}s/parashift/onlyoffice/download?" + targetHref.split("?")[1] + "&alf_ticket=${ticket}"
