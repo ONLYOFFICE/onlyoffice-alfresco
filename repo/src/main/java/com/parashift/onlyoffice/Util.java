@@ -180,11 +180,11 @@ public class Util {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     }
 
-    private String getShareUrl(){
+    public String getShareUrl(){
         return UrlUtil.getShareUrl(sysAdminParams) + "/";
     }
 
-    private String getAlfrescoUrl() {
+    public String getAlfrescoUrl() {
         String alfUrl = (String) configManager.getOrDefault("alfurl", "");
         if (alfUrl.isEmpty()) {
             return UrlUtil.getAlfrescoUrl(sysAdminParams) + "/";
