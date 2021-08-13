@@ -28,3 +28,22 @@ div {
     margin: 0;
     padding: 0;
 }
+
+#black-overlay{
+    display: none;
+    background-color: black;
+    height: 100%;
+    left: 0;
+    opacity: 0.25;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 8;
+}
+
+#managerFrame {
+    display: none;
+    position: relative;
+    margin: -730px auto;
+    z-index: 10;
+}
