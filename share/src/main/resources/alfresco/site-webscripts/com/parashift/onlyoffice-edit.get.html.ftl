@@ -36,7 +36,9 @@
         };
         document.getElementById("black-overlay").addEventListener("click", function (event) {
             event.target.style.display = "none";
-            document.getElementById("managerFrame").style.display = "none";
+            if (document.getElementById("managerFrame").style.display == "block") {
+                document.getElementById("managerFrame").style.display = "none";
+            }
         });
 
         var config = ${config};
