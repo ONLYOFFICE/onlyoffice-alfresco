@@ -3,6 +3,8 @@ package com.parashift.onlyoffice;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -11,6 +13,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.UrlUtil;
+import org.json.simple.JSONArray;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,6 +52,9 @@ public class Util {
 
     @Autowired
     ConfigManager configManager;
+
+    @Autowired
+    FileFolderService fileFolderService;
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
@@ -180,7 +186,7 @@ public class Util {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     }
 
-    private String getShareUrl(){
+    public String getShareUrl(){
         return UrlUtil.getShareUrl(sysAdminParams) + "/";
     }
 
@@ -248,5 +254,21 @@ public class Util {
             url = url.replace(publicDocEditorUrl, innerDocEditorUrl);
         }
         return url;
+    }
+
+    public String getSaveAsUrl() {
+        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas";
+    }
+
+    public String getCurrentPath(NodeRef nodeRef) {
+        try {
+            List<String> path = fileFolderService.getNameOnlyPath(nodeService.getRootNode(nodeRef.getStoreRef()), nodeRef);
+            path.remove(path.size() - 1);
+            path.remove(0);
+            return JSONArray.toJSONString(path);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
