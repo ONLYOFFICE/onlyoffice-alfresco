@@ -7,7 +7,8 @@ package com.parashift.onlyoffice;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
@@ -36,12 +37,6 @@ public class SaveAs extends AbstractWebScript {
     NodeService nodeService;
 
     @Autowired
-    SearchService searchService;
-
-    @Autowired
-    NamespaceService namespaceService;
-
-    @Autowired
     Util util;
 
     @Autowired
@@ -49,6 +44,9 @@ public class SaveAs extends AbstractWebScript {
 
     @Autowired
     MimetypeService mimetypeService;
+
+    @Autowired
+    PermissionService permissionService;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -62,24 +60,28 @@ public class SaveAs extends AbstractWebScript {
             String ext = json.get("ext").toString();
             NodeRef saveFolderNode = new NodeRef(saveNode);
             String newName = util.getCorrectName(saveFolderNode, title, ext);
-            Map<QName, Serializable> props = new HashMap<>(1);
-            props.put(ContentModel.PROP_NAME, newName);
-            NodeRef nodeRef = this.nodeService.createNode(saveFolderNode, ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
-                    .getChildRef();
+            if (permissionService.hasPermission(saveFolderNode, PermissionService.CREATE_CHILDREN) == AccessStatus.ALLOWED) {
+                Map<QName, Serializable> props = new HashMap<>(1);
+                props.put(ContentModel.PROP_NAME, newName);
+                NodeRef nodeRef = this.nodeService.createNode(saveFolderNode, ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
+                        .getChildRef();
 
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype(mimetypeService.getMimetype(ext));
-            URL urlContent = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) urlContent.openConnection();
-            InputStream in = connection.getInputStream();
-            writer.putContent(in);
-            util.ensureVersioningEnabled(nodeRef);
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetypeService.getMimetype(ext));
+                URL urlContent = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection) urlContent.openConnection();
+                InputStream in = connection.getInputStream();
+                writer.putContent(in);
+                util.ensureVersioningEnabled(nodeRef);
 
-            responseJson.put("nodeRef", nodeRef.toString());
-            response.setContentType("application/json; charset=utf-8");
-            response.setContentEncoding("UTF-8");
-            response.getWriter().write(responseJson.toString(3));
+                responseJson.put("nodeRef", nodeRef.toString());
+                response.setContentType("application/json; charset=utf-8");
+                response.setContentEncoding("UTF-8");
+                response.getWriter().write(responseJson.toString(3));
+            } else {
+                throw new SecurityException("User don't have the permissions to create child node");
+            }
         } catch (JSONException e) {
             throw new WebScriptException("Unable to serialize JSON: " + e.getMessage());
         } catch (ParseException e) {

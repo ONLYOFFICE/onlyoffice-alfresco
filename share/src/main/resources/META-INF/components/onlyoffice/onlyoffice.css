@@ -124,7 +124,7 @@ div {
     padding: 10px 10px 0 10px;
     z-index: 11;
     position: fixed !important;
-    display: block;
+    display: none;
     color: white;
     background-color: #808080;
     border-radius: 0 0 10px 10px;

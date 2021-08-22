@@ -16,3 +16,4 @@ model.documentType=pObj.documentType;
 model.share = pObj.share;
 model.saveas = pObj.saveas;
 model.currentPath = pObj.currentPath;
+model.ticket = pObj.ticket;

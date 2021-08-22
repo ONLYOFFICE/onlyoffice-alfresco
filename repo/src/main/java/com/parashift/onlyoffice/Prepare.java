@@ -7,6 +7,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -65,6 +66,9 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     UtilDocConfig utilDocConfig;
+
+    @Autowired
+    AuthenticationService authenticationService;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -161,6 +165,7 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("share", util.getShareUrl());
                 responseJson.put("saveas", util.getSaveAsUrl());
                 responseJson.put("currentPath", util.getCurrentPath(nodeRef));
+                responseJson.put("ticket", "?alf_ticket=" + authenticationService.getCurrentTicket());
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

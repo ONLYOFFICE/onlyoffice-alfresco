@@ -57,6 +57,13 @@
                  docEditor.showMessage("${msg("alfresco.document.onlyoffice.action.edit.msg.demo")}");
             }
         };
+
+        var getCookie = function (name) {
+            var value = document.cookie;
+            var parts = value.split(name);
+            if (parts.length === 2) return parts.pop().split(';').shift().substring(1);
+        };
+
         document.getElementById("black-overlay").onclick = function (event) {
             event.target.style.display = "none";
             if (document.getElementById("saveDialog").style.display == "block") {
@@ -120,9 +127,11 @@
                         url: url,
                         saveNode: saveNode
                     };
-                    fetch("${saveas}",  {
+                    fetch("${saveas}${ticket}",  {
                         method: "POST",
-                        headers: {'Content-Type': 'application/json'},
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Alfresco-CSRFToken': decodeURIComponent(getCookie('Alfresco-CSRFToken'))},
                         body: JSON.stringify(data)
                     })
                         .then((response) => response.json())
