@@ -2,5 +2,5 @@
     <shortname>ONLYOFFICE Save copy as... URL</shortname>
     <description>Save copy as... from editor</description>
     <url>/parashift/onlyoffice/saveas</url>
-    <authentication>none</authentication>
+    <authentication>user</authentication>
 </webscript>

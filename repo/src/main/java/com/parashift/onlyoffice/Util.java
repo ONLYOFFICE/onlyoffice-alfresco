@@ -512,7 +512,7 @@ public class Util {
     }
 
     public String getSaveAsUrl() {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas";
+        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas&alf_ticket=" + authenticationService.getCurrentTicket();
     }
 
     public String getCurrentPath(NodeRef nodeRef) {

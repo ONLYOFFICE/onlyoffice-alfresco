@@ -20,3 +20,4 @@ model.historyUrl = pObj.historyUrl;
 model.ticket = pObj.ticket;
 model.saveas = pObj.saveas;
 model.currentPath = pObj.currentPath;
+model.ticket = pObj.ticket;
