@@ -1,19 +1,23 @@
 package com.parashift.onlyoffice;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +30,15 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Base64;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -76,6 +84,9 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     TransactionService transactionService;
+
+    @Autowired
+    VersionService versionService;
 
     @Autowired
     Util util;
@@ -189,7 +200,7 @@ public class CallBack extends AbstractWebScript {
         public ProccessRequestCallback(JSONObject json, NodeRef node) {
             callBackJSon = json;
             nodeRef = node;
-            forcesave = configManager.getAsBoolean("forcesave", "fasle");
+            forcesave = configManager.getAsBoolean("forcesave", "false");
         }
 
         @Override
@@ -218,6 +229,7 @@ public class CallBack extends AbstractWebScript {
 
                     AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                     cociService.checkin(wc, null, null);
+                    saveHistoryToChildNode(nodeRef, callBackJSon,false);
                     break;
                 case 3:
                     logger.error("ONLYOFFICE has reported that saving the document has failed");
@@ -247,6 +259,7 @@ public class CallBack extends AbstractWebScript {
 
                     AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                     cociService.checkin(wc, null, null, true);
+                    saveHistoryToChildNode(nodeRef, callBackJSon, true);
 
                     AuthenticationUtil.clearCurrentSecurityContext();
                     TenantContextHolder.setTenantDomain(AuthenticationUtil.getUserTenant(lockOwner).getSecond());
@@ -258,6 +271,65 @@ public class CallBack extends AbstractWebScript {
                     break;
             }
             return null;
+        }
+    }
+
+    private void saveHistoryToChildNode(NodeRef nodeRef, JSONObject changes, Boolean forceSave) {
+        Map<QName, Serializable> props = new HashMap<>();
+        NodeRef jsonNode = null;
+        NodeRef zipNode = null;
+        for(ChildAssociationRef assoc : nodeService.getChildAssocs(nodeRef)) {
+            if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("changes.json")) {
+                jsonNode = assoc.getChildRef();
+            } else if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("diff.zip")) {
+                zipNode = assoc.getChildRef();
+            }
+        }
+        if (jsonNode == null && zipNode == null) {
+            props.put(ContentModel.PROP_NAME, "diff.zip");
+            NodeRef historyNodeRefZip = this.nodeService.createNode(nodeRef, RenditionModel.ASSOC_RENDITION,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "diff.zip"),
+                    ContentModel.TYPE_CONTENT, props).getChildRef();
+
+            props.clear();
+            props.put(ContentModel.PROP_NAME, "changes.json");
+            NodeRef historyNodeRefJson = this.nodeService.createNode(nodeRef, RenditionModel.ASSOC_RENDITION,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "changes.json"),
+                    ContentModel.TYPE_CONTENT, props).getChildRef();
+            writeContent(historyNodeRefZip, historyNodeRefJson, changes, forceSave, nodeRef);
+
+            util.ensureVersioningEnabled(historyNodeRefZip);
+            util.ensureVersioningEnabled(historyNodeRefJson);
+        } else {
+            writeContent(zipNode, jsonNode, changes, forceSave, nodeRef);
+        }
+    }
+    private void writeContent(NodeRef zipNode, NodeRef jsonNode, JSONObject changes, Boolean forceSave, NodeRef nodeRef) {
+        try {
+            if (!forceSave) {
+                Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                if (!versionService.getCurrentVersion(nodeRef).getVersionLabel().equals("1.0")) {
+                    Version nodeRefVersion = versionService.createVersion(nodeRef, versionProperties);
+                    versionProperties.put(ContentModel.PROP_INITIAL_VERSION.getLocalName(), false);
+                    Version zipNodeVersion = versionService.createVersion(zipNode, versionProperties);
+                    Version jsonNodeVersion = versionService.createVersion(jsonNode, versionProperties);
+                    zipNodeVersion.getVersionProperties().put(VersionModel.PROP_CREATED_DATE, nodeRefVersion.getVersionProperty(VersionModel.PROP_CREATED_DATE));
+                    jsonNodeVersion.getVersionProperties().put(VersionModel.PROP_CREATED_DATE, nodeRefVersion.getVersionProperty(VersionModel.PROP_CREATED_DATE));
+                } else {
+                    versionService.createVersion(nodeRef, versionProperties);
+                }
+            }
+            ContentWriter writer = this.contentService.getWriter(zipNode, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype("application/zip");
+            URL url = new URL(changes.getString("changesurl"));
+            InputStream in = url.openStream();
+            writer.putContent(in);
+            writer = this.contentService.getWriter(jsonNode, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype("application/json");
+            writer.putContent(changes.getJSONObject("history").toString());
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
         }
     }
 

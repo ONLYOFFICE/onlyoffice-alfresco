@@ -1,7 +1,9 @@
 package com.parashift.onlyoffice;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -9,6 +11,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -50,6 +53,9 @@ public class UtilDocConfig {
     @Autowired
     Util util;
 
+    @Autowired
+    FavouritesService favouritesService;
+
     public JSONObject getConfigJson (NodeRef nodeRef, String sharedId, String username, String documentType,
             String docTitle, String docExt, Boolean preview, Boolean isReadOnly) throws Exception {
         JSONObject configJson = new JSONObject();
@@ -66,6 +72,10 @@ public class UtilDocConfig {
         documentObject.put("fileType", docExt);
         documentObject.put("key", util.getKey(nodeRef));
 
+        JSONObject info = new JSONObject();
+        info.put("favorite", favouritesService.isFavourite(username, nodeRef));
+        documentObject.put("info", info);
+
         JSONObject permObject = new JSONObject();
         documentObject.put("permissions", permObject);
         JSONObject editorConfigObject = new JSONObject();
@@ -79,6 +89,7 @@ public class UtilDocConfig {
         editorConfigObject.put("createUrl", util.getCreateNewUrl(nodeRef, mimeType));
         boolean canWrite = util.isEditable(mimeType) && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED;
 
+        editorConfigObject.put("templates", util.getTemplates(nodeRef, docExt, mimeType));
         if (isReadOnly || preview || !canWrite) {
             editorConfigObject.put("mode", "view");
             permObject.put("edit", false);
@@ -108,6 +119,9 @@ public class UtilDocConfig {
         JSONObject customizationObject = new JSONObject();
         editorConfigObject.put("customization", customizationObject);
         customizationObject.put("forcesave", configManager.getAsBoolean("forcesave", "false"));
+        JSONObject goBack = new JSONObject();
+        goBack.put("url", util.getBackUrl(nodeRef));
+        customizationObject.put("goback",goBack);
 
         JSONObject userObject = new JSONObject();
         editorConfigObject.put("user", userObject);
