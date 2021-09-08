@@ -1,18 +1,15 @@
 package com.parashift.onlyoffice;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -70,6 +67,9 @@ public class Prepare extends AbstractWebScript {
     @Autowired
     AuthenticationService authenticationService;
 
+    @Autowired
+    VersionService versionService;
+
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
         mesService.registerResourceBundle("alfresco/messages/prepare");
@@ -106,8 +106,15 @@ public class Prepare extends AbstractWebScript {
                         if (pathLocale == null) pathLocale = Util.PathLocale.get("en");
                     }
 
-                    InputStream in = getClass().getResourceAsStream("/newdocs/" + pathLocale + "/new." + ext);
-
+                    InputStream in;
+                    NodeRef parentNodeRef = null;
+                    if(request.getParameter("parentNodeRef") != null){
+                        parentNodeRef = new NodeRef(request.getParameter("parentNodeRef"));
+                        in = contentService.getReader(parentNodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
+                    }
+                    else {
+                        in = getClass().getResourceAsStream("/newdocs/" + pathLocale + "/new." + ext);
+                    }
                     writer.putContent(in);
 
                     util.ensureVersioningEnabled(nodeRef);
@@ -162,9 +169,11 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("mime", mimetypeService.getMimetype(docExt));
                 responseJson.put("demo", configManager.demoActive());
                 responseJson.put("documentType", documentType);
-                responseJson.put("share", util.getShareUrl());
+                responseJson.put("historyUrl", util.getHistoryUrl(nodeRef));
                 responseJson.put("alfresco", util.getAlfrescoUrl());
-                responseJson.put("ticket", authenticationService.getCurrentTicket());
+                responseJson.put("share", util.getShareUrl());
+                responseJson.put("favorite", util.getFavouriteUrl(nodeRef));
+                responseJson.put("ticket",  authenticationService.getCurrentTicket());
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

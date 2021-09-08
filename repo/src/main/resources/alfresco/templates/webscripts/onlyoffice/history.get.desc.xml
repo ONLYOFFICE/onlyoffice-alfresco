@@ -1,0 +1,6 @@
+<webscript>
+    <shortname>ONLYOFFICE HISTORY URL</shortname>
+    <description>Get history and history version for editor</description>
+    <url>/parashift/onlyoffice/history</url>
+    <authentication>user</authentication>
+</webscript>

@@ -3,9 +3,13 @@
 #
 ## Added
 - add mail merge in document editor
+- add history of file changes, highlighting changes between versions 
+- changing favorite flag of the file from document editor
+- add goBack url for document editor
 - creating new file from document editor
 - change favicon in editor by document type
 - detecting mobile browser
+- creating new file from document editor by document template
 
 # 5.0.0
 ## Added
