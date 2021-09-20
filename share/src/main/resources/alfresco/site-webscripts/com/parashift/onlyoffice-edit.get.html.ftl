@@ -14,43 +14,23 @@
     <script id="scriptApi" type="text/javascript" src="${onlyofficeUrl}OfficeWeb/apps/api/documents/api.js"></script>
     <link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${documentType}.ico" type="image/vnd.microsoft.icon" />
     <link rel="icon" href="${url.context}/res/components/images/filetypes/${documentType}.ico" type="image/vnd.microsoft.icon" />
+
+    <script type="text/javascript" src="${url.context}/res/js/yui-common.js"></script>
+    <script type="text/javascript" src="${url.context}/noauth/messages.js?locale=${locale}"></script>
+    <script type="text/javascript" src="${url.context}/res/js/alfresco.js"></script>
+    <#if theme = 'default'>
+        <link rel="stylesheet" type="text/css" href="${url.context}/res/yui/assets/skins/default/skin.css" />
+    <#else>
+        <link rel="stylesheet" type="text/css" href="${url.context}/res/themes/${theme}/yui/assets/skin.css" />
+    </#if>
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/css/yui-layout.css" />
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/themes/${theme}/presentation.css" />
+
 </head>
 
-<body>
-    <div>
-        <div id="placeholder"></div>
-        <form id="saveDialog">
-            <div id="messageModal">
-                <p></p>
-            </div>
-            <h3>${msg("onlyoffice-editor.save-as.title")}</h3>
-            <div>
-                <label for="filenameInput">${msg("onlyoffice-editor.save-as.file-name")}</label>
-                <input id="filenameInput" name="filenameInput" type="text" required pattern="^\S+$"/>
-                <br>
-                <input id="newWindowCheckbox" name="newWindow" type="checkbox"/>
-                <label for="newWindowCheckbox">${msg("onlyoffice-editor.open-in-new-window-checkbox")}</label>
-            </div>
-            <div id="treeFolder">
-                <iframe id="saveAsFrame"
-                        frameborder="0"
-                        width="100%"
-                        height="100%"
-                        allow="display-capture"
-                        scrolling="no"
-                        src="${share}page/context/mine/myfiles">
-                </iframe>
-            </div>
-            <div>
-                <p id="currentPath"></p>
-            </div>
-            <div id="buttonDiv">
-                <button id="saveButton">${msg("onlyoffice-editor.save-as.save-btn")}</button>
-                <button id="cancelButton">${msg("onlyoffice-editor.save-as.cancel-btn")}</button>
-            </div>
-        </form>
-        <div id="black-overlay"></div>
-    </div>
+<body id="Share" class="yui-skin-${theme} alfresco-share claro">
+    <div id="placeholder"></div>
     <script>
         var linkWithoutNewParameter = null;
         var onAppReady = function (event) {
@@ -62,96 +42,128 @@
             window.history.pushState({}, {}, linkWithoutNewParameter);
         };
 
-        var getCookie = function (name) {
-            var value = document.cookie;
-            var parts = value.split(name);
-            if (parts.length === 2) return parts.pop().split(';').shift().substring(1);
-        };
-
-        document.getElementById("black-overlay").onclick = function (event) {
-            event.target.style.display = "none";
-            if (document.getElementById("saveDialog").style.display == "block") {
-                document.getElementById("saveDialog").style.display = "none";
-            }
-        };
-
         var onRequestSaveAs = function (event) {
-            var frame = document.getElementById("saveAsFrame");
-            document.getElementById("black-overlay").style.display = "block";
-            var dialog = document.getElementById("saveDialog");
-            dialog.onsubmit = function (event) {
-                event.preventDefault();
-            };
-            dialog.style.display = "block";
-            var ext = event.data.title.substring(event.data.title.lastIndexOf(".") + 1);
+            var title = event.data.title.substring(0, event.data.title.lastIndexOf("."));
+            var ext = event.data.title.split(".").pop();
             var url = event.data.url;
-            var title = "";
-            var currentPath = "";
-            for (var folder of ${currentPath}) {
-                    currentPath += " > " + folder;
-            }
-            var mainFolder = frame.contentWindow.document.getElementById("template_x002e_tree_x002e_myfiles_x0023_default-h2").innerText;
-            var currentPathElem = document.getElementById("currentPath");
-            currentPathElem.innerText = "${msg("onlyoffice-editor.save-as.current-location")} " + mainFolder + currentPath;
-            document.getElementById("filenameInput").value = event.data.title.substring(0, event.data.title.lastIndexOf(" "));
-            frame.contentWindow.document.getElementsByClassName("yui-resize-handle yui-resize-handle-r")[0].style.display = "none";
-            frame.contentWindow.document.getElementById("template_x002e_tree_x002e_myfiles_x0023_default-h2").style.display = "none";
-            var sharePath = frame.contentWindow.document.getElementById("template_x002e_documentlist_v2_x002e_myfiles_x0023_default-breadcrumb");
-            Object.assign(frame.contentWindow.document.getElementById("template_x002e_tree_x002e_myfiles").style, {
-                position: "fixed",
-                top: "0",
-                left: "0",
-                height: "100%",
-                width: "100%",
-                overflow: "overlay",
-                backgroundColor: "white",
-                zIndex: "10"
-            });
-            var hideFunction = function () {
-                dialog.style.display = "none";
-                document.getElementById("black-overlay").style.display = "none";
-            };
-            var showMessage = function (message) {
-                var modal = document.getElementById("messageModal");
-                modal.children[0].innerText = message;
-                modal.style.display = "block";
-                setTimeout(function () {
-                    modal.style.display = "none";
-                    hideFunction();
-                }, 2000);
-            };
-            var postData = function () {
-                title = document.getElementById("filenameInput").value;
-                if (document.getElementById("filenameInput").validity.valid) {
-                    var saveNode = sharePath.children.length != 1 ? sharePath.children[sharePath.children.length - 1].children[1].children[0].href.split("nodeRef=")[1]
-                        :  sharePath.children[sharePath.children.length - 1].children[0].children[0].href.split("nodeRef=")[1];
-                    var data = {
-                        title: title,
-                        ext: ext,
-                        url: url,
-                        saveNode: saveNode
-                    };
-                    fetch("${saveas}",  {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Alfresco-CSRFToken': decodeURIComponent(getCookie('Alfresco-CSRFToken'))},
-                        body: JSON.stringify(data)
-                    })
-                        .then((response) => response.json())
-                        .then((data) => {
-                            showMessage("${msg("onlyoffice-editor.save-as.success")}");
-                            if (document.getElementById("newWindowCheckbox").checked) {
-                                window.open("${share}page/context/mine/onlyoffice-edit?nodeRef=" + data.nodeRef);
+
+            var body = [];
+            body.push(
+                "<div id='fileName'>",
+                "<label for='fileNameInput'>${msg('label.name')}:</label>",
+                "<input id='fileNameInput' name='fileNameInput' type='text'  value='" + title + "'>",
+                "</div>",
+                "<div id='treeFolder'>",
+                "<img src='${url.context}/res/components/images/lightbox/loading.gif' id='loadingImg'>",
+                "<iframe id='saveAsFrame' frameborder='0' width='100%' height='100%' allow='display-capture' scrolling='no' src='${share}page/context/mine/myfiles' style='display: none;'></iframe>",
+                "</div>",
+                "<div>",
+                "<p id='labelForCurrentPath'>${msg('onlyoffice-editor.save-as.current-location')}</p>",
+                "<p id='currentPath'></p>",
+                "</div>"
+            );
+
+            var prompt = new YAHOO.widget.SimpleDialog("prompt", {
+                close:true,
+                constraintoviewport: true,
+                draggable: false,
+                effect: null,
+                modal: true,
+                visible: false,
+                zIndex: this.zIndex++,
+                buttons: [
+                    {
+                        text: "${msg('button.save')}",
+                        handler: function onAction_success() {
+                            var saveAsFrame = document.getElementById("saveAsFrame").contentWindow.document;
+                            var folderElement = saveAsFrame.getElementsByClassName("crumb documentDroppable documentDroppableHighlights");
+                            var folderSpan = folderElement[folderElement.length - 1].getElementsByTagName("span");
+                            var saveNode = folderSpan[0].getElementsByTagName("a")[0].href.split("nodeRef=")[1];
+                            title = document.getElementById("fileNameInput").value;
+
+                            if (!title) {
+                                document.getElementById("fileNameInput").classList.add("invalid");
+                                return;
                             }
-                        })
-                        .catch((error) => {
-                            showMessage("${msg("onlyoffice-editor.save-as.error")}");
-                        });
-                }
-            };
-            document.getElementById("cancelButton").onclick = hideFunction;
-            document.getElementById("saveButton").onclick = postData;
+
+                            var requestData = {
+                                title: title,
+                                ext: ext,
+                                url: url,
+                                saveNode: saveNode
+                            };
+
+                            var waitDialog = Alfresco.util.PopupManager.displayMessage({
+                                text : "",
+                                spanClass : "wait",
+                                displayTime : 0
+                            });
+
+                            this.destroy();
+
+                            Alfresco.util.Ajax.jsonPost({
+                                url: "${saveAsUri}",
+                                responseContentType: "application/json",
+                                dataObj: requestData,
+                                successMessage: "${msg('onlyoffice-editor.save-as.success')}",
+                                successCallback: {
+                                    fn: function (response) {
+                                        waitDialog.destroy();
+                                    },
+                                    scope: this
+                                },
+                                failureCallback: {
+                                    fn: function exampleFailure(response) {
+                                        var errorMessage = "${msg('onlyoffice-editor.save-as.error')}";
+                                        waitDialog.destroy();
+                                        Alfresco.util.PopupManager.displayMessage({
+                                            text: errorMessage
+                                        });
+                                    },
+                                    scope: this
+                                }
+                            });
+                        }
+                    },
+                    {
+                        text : "${msg('button.cancel')}",
+                        handler : function onAction_cancel() {
+                            this.destroy();
+                        },
+                        isDefault : true
+                    }
+                ]
+            });
+
+            prompt.setHeader("${msg('onlyoffice-editor.save-as.title')}");
+            prompt.setBody(body.join(""));
+            prompt.render(document.body);
+            prompt.center();
+            prompt.show();
+
+            var saveAsFrame = document.getElementById("saveAsFrame");
+
+            saveAsFrame.addEventListener("load", function() {
+                var mainFolder = saveAsFrame.contentWindow.document.getElementById("ygtvlabelel1").innerText;
+                var currentPathElem = document.getElementById("currentPath");
+                currentPathElem.innerText = mainFolder + "${currentPath}";
+
+                saveAsFrame.contentWindow.document.getElementsByClassName("yui-resize-handle")[0].style.display = "none";
+                saveAsFrame.contentWindow.document.getElementById("template_x002e_tree_x002e_myfiles_x0023_default-h2").style.display = "none";
+                Object.assign(saveAsFrame.contentWindow.document.getElementById("template_x002e_tree_x002e_myfiles").style, {
+                    position: "fixed",
+                    top: "0",
+                    left: "0",
+                    height: "100%",
+                    width: "100%",
+                    overflow: "overlay",
+                    backgroundColor: "white",
+                    zIndex: "10"
+                });
+
+                document.getElementById("loadingImg").remove();
+                saveAsFrame.style.display = "block";
+            });
         };
 
         var getCookie = function (name) {
@@ -209,7 +221,8 @@
                 }
             }
         };
-        var config = ${config};
+
+        var config = ${editorConfig};
 
         config.events = {
             "onAppReady": onAppReady,

@@ -512,18 +512,20 @@ public class Util {
     }
 
     public String getSaveAsUrl() {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas&alf_ticket=" + authenticationService.getCurrentTicket();
+        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas?alf_ticket=" + authenticationService.getCurrentTicket();
     }
 
-    public String getCurrentPath(NodeRef nodeRef) {
-        try {
-            List<String> path = fileFolderService.getNameOnlyPath(nodeService.getRootNode(nodeRef.getStoreRef()), nodeRef);
-            path.remove(path.size() - 1);
-            path.remove(0);
-            return org.json.simple.JSONArray.toJSONString(path);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public String getPathToFile(NodeRef nodeRef) throws FileNotFoundException {
+        String pathToFile = "";
+        List<String> nameOnlyPath = fileFolderService.getNameOnlyPath(nodeService.getRootNode(nodeRef.getStoreRef()), nodeRef);
+
+        nameOnlyPath = nameOnlyPath.subList(1, nameOnlyPath.size() - 1);
+
+        for (String name : nameOnlyPath) {
+            pathToFile = " > " + name;
+
         }
-        return null;
+
+        return pathToFile;
     }
 }

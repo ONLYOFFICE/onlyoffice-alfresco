@@ -170,8 +170,8 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("demo", configManager.demoActive());
                 responseJson.put("documentType", documentType);
                 responseJson.put("share", util.getShareUrl());
-                responseJson.put("saveas", util.getSaveAsUrl());
-                responseJson.put("currentPath", util.getCurrentPath(nodeRef));
+                responseJson.put("saveAsUri", util.getSaveAsUrl());
+                responseJson.put("currentPath", util.getPathToFile(nodeRef));
                 responseJson.put("historyUrl", util.getHistoryUrl(nodeRef));
                 responseJson.put("share", util.getShareUrl());
                 responseJson.put("favorite", util.getFavouriteUrl(nodeRef));
