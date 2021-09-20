@@ -55,7 +55,7 @@
                 "</div>",
                 "<div id='treeFolder'>",
                 "<img src='${url.context}/res/components/images/lightbox/loading.gif' id='loadingImg'>",
-                "<iframe id='saveAsFrame' frameborder='0' width='100%' height='100%' allow='display-capture' scrolling='no' src='${share}page/context/mine/myfiles' style='display: none;'></iframe>",
+                "<iframe id='saveAsFrame' frameborder='0' width='100%' height='100%' allow='display-capture' scrolling='no' src='${url.context}/page/context/mine/myfiles' style='display: none;'></iframe>",
                 "</div>",
                 "<div>",
                 "<p id='labelForCurrentPath'>${msg('onlyoffice-editor.save-as.current-location')}</p>",
@@ -105,16 +105,23 @@
                                 url: "${saveAsUri}",
                                 responseContentType: "application/json",
                                 dataObj: requestData,
-                                successMessage: "${msg('onlyoffice-editor.save-as.success')}",
+                                successMessage: "${msg('onlyoffice-editor.save-as.message.success')}",
                                 successCallback: {
-                                    fn: function (response) {
+                                    fn: function () {
                                         waitDialog.destroy();
                                     },
                                     scope: this
                                 },
                                 failureCallback: {
                                     fn: function exampleFailure(response) {
-                                        var errorMessage = "${msg('onlyoffice-editor.save-as.error')}";
+                                        var errorMessage = "";
+
+                                        if (response.serverResponse.status == 403) {
+                                            errorMessage = "${msg('onlyoffice-editor.save-as.message.forbidden')}";
+                                        } else {
+                                            errorMessage = "${msg('onlyoffice-editor.save-as.message.error-unknown')}";
+                                        }
+
                                         waitDialog.destroy();
                                         Alfresco.util.PopupManager.displayMessage({
                                             text: errorMessage

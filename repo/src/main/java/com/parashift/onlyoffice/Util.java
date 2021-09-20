@@ -464,7 +464,7 @@ public class Util {
     }
 
     public String getCorrectName(NodeRef nodeFolder, String title, String ext) {
-        String name = title + "." + ext;
+        String name = (title + "." + ext).replaceAll("[*?:\"<>/|\\\\]","_");
         NodeRef node = nodeService.getChildByName(nodeFolder, ContentModel.ASSOC_CONTAINS, name);
 
         Integer i = 0;
@@ -512,7 +512,7 @@ public class Util {
     }
 
     public String getSaveAsUrl() {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/saveas?alf_ticket=" + authenticationService.getCurrentTicket();
+        return getAlfrescoUrl() + "s/parashift/onlyoffice/save-as?alf_ticket=" + authenticationService.getCurrentTicket();
     }
 
     public String getPathToFile(NodeRef nodeRef) throws FileNotFoundException {
