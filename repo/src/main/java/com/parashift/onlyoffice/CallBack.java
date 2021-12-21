@@ -11,6 +11,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.JSONArray;
@@ -79,6 +80,9 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    OwnableService ownableService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -195,7 +199,6 @@ public class CallBack extends AbstractWebScript {
         @Override
         public Object execute() throws Throwable {
             NodeRef wc = cociService.getWorkingCopy(nodeRef);
-            String lockOwner = (String)nodeService.getProperty(wc, ContentModel.PROP_WORKING_COPY_OWNER);
 
             //Status codes from here: https://api.onlyoffice.com/editors/editor
             switch(callBackJSon.getInt("status")) {
@@ -215,7 +218,6 @@ public class CallBack extends AbstractWebScript {
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
                     nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
-                    AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                     cociService.checkin(wc, null, null);
                     break;
                 case 3:
@@ -243,12 +245,7 @@ public class CallBack extends AbstractWebScript {
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
                     nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
-                    AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
                     cociService.checkin(wc, null, null, true);
-
-                    AuthenticationUtil.clearCurrentSecurityContext();
-                    TenantContextHolder.setTenantDomain(AuthenticationUtil.getUserTenant(lockOwner).getSecond());
-                    AuthenticationUtil.setRunAsUser(lockOwner);
 
                     nodeService.setProperty(wc, Util.EditingHashAspect, hash);
                     nodeService.setProperty(wc, Util.EditingKeyAspect, key);
@@ -259,8 +256,21 @@ public class CallBack extends AbstractWebScript {
         }
     }
 
-    private void updateNode(NodeRef nodeRef, String url) throws Exception {
+    private void updateNode(final NodeRef nodeRef, String url) throws Exception {
         logger.debug("Retrieving URL:" + url);
+
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
+            public Void doWork() {
+                NodeRef sourcesNodeRef = cociService.getCheckedOut(nodeRef);
+                nodeService.setProperty(sourcesNodeRef, ContentModel.PROP_LOCK_OWNER, currentUser);
+                ownableService.setOwner(nodeRef, currentUser);
+                nodeService.setProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER, currentUser);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         String mimeType = contentData.getMimetype();
 
