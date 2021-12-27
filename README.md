@@ -12,6 +12,8 @@ Supported formats:
 
 * For viewing and editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
 * For converting to Office Open XML: ODT, ODP, ODS, DOC, XLS, PPT.
+* For editing via conversion to OOXML: CSV, ODP, ODS, ODT, RTF, TXT.
+* For viewing only: PDF.
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
 
