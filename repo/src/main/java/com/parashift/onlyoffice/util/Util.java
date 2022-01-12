@@ -335,11 +335,16 @@ public class Util {
 
     private String getContentUrlJWTCheck(NodeRef nodeRef) {
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("token",getContentUrl(nodeRef));
-            return getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&zipToken=" + jwtManager.createToken(jsonObject)+ "&alf_ticket=" + authenticationService.getCurrentTicket();
-        } catch (Exception e) {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "User don't have the permissions to create child node");
+        if (jwtManager.jwtEnabled()) {
+            try {
+                jsonObject.put("token", getContentUrl(nodeRef));
+                return getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&zipToken=" + jwtManager.createToken(jsonObject) + "&alf_ticket=" + authenticationService.getCurrentTicket();
+            } catch (Exception e) {
+                throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "User don't have the permissions to create child node");
+            }
+        }
+        else {
+            return getContentUrl(nodeRef);
         }
     }
 
