@@ -45,11 +45,17 @@ public class Download extends AbstractWebScript {
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
         if (request.getParameter("nodeRef") != null) {
-            String zipParam = request.getParameter("wjc");
-            if (jwtManager.jwtEnabled() && zipParam == null) {
-                String jwth = jwtManager.getJwtHeader();
-                String header = request.getHeader(jwth);
-                String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+            String zipParam = request.getParameter("zipToken");
+            if (jwtManager.jwtEnabled()) {
+                String token;
+                if (zipParam == null){
+                    String jwth = jwtManager.getJwtHeader();
+                    String header = request.getHeader(jwth);
+                    token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+                }
+                else {
+                    token = zipParam;
+                }
 
                 if (token == null || token == "") {
                     throw new SecurityException("Expected JWT");

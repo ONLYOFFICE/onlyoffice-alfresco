@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.stereotype.Service;
 
@@ -261,7 +262,7 @@ public class Util {
                             previous.put("key", previousKey);
                             previous.put("url", previousUrl);
                             historyDataObj.put("previous", previous);
-                            historyDataObj.put("changesUrl", jsonZipIndex == 0 ? getContentUrlWithoutJWTCheck(zipNodeRef) : getContentUrlWithoutJWTCheck(zipVersions.get(jsonZipIndex).getFrozenStateNodeRef()));
+                            historyDataObj.put("changesUrl", jsonZipIndex == 0 ? getContentUrlJWTCheck(zipNodeRef) : getContentUrlJWTCheck(zipVersions.get(jsonZipIndex).getFrozenStateNodeRef()));
                         }
                         historyData.put(historyDataObj);
                     }
@@ -332,8 +333,14 @@ public class Util {
         return "parashift/onlyoffice/history?nodeRef=" + nodeRef.toString();
     }
 
-    private String getContentUrlWithoutJWTCheck(NodeRef nodeRef) {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&wjc=true&alf_ticket=" + authenticationService.getCurrentTicket();
+    private String getContentUrlJWTCheck(NodeRef nodeRef) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("token",getContentUrl(nodeRef));
+            return getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&zipToken=" + jwtManager.createToken(jsonObject)+ "&alf_ticket=" + authenticationService.getCurrentTicket();
+        } catch (Exception e) {
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "User don't have the permissions to create child node");
+        }
     }
 
     public String getContentUrl(NodeRef nodeRef) {
