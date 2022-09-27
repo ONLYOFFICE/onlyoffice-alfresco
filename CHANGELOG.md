@@ -1,5 +1,9 @@
 # Change Log
 
+## 
+## Fixed
+- history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
+
 ## 6.0.0
 ## Added
 - creating new file from document editor
