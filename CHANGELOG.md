@@ -1,5 +1,9 @@
 # Change Log
 
+## 
+## Fixed
+- history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
+
 ## 6.0.1
 ## Fixed
 - issue with preview documents [#162](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/162)
