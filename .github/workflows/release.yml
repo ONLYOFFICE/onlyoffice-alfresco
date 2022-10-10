@@ -38,8 +38,8 @@ jobs:
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.info.outputs.version }}
-          tag_name: ${{ steps.info.outputs.version }}
+          release_name: v${{ steps.info.outputs.version }}
+          tag_name: v${{ steps.info.outputs.version }}
           body_path: ./RELEASE.md
         env:
           GITHUB_TOKEN: ${{ github.token }}

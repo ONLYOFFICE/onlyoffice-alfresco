@@ -4,6 +4,7 @@ import com.parashift.onlyoffice.constants.Format;
 import com.parashift.onlyoffice.constants.Formats;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.imap.ImapService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.search.SearchService;
@@ -79,6 +80,9 @@ public class Util {
 
     @Autowired
     SiteService siteService;
+
+    @Autowired
+    ImapService imapService;
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
@@ -348,47 +352,14 @@ public class Util {
         return configManager.demoActive() ? configManager.getDemo("url") : (String) configManager.getOrDefault("url", "http://127.0.0.1/");
     }
 
-    public String getBackUrl(NodeRef nodeRef, String username){
-        String nodeCreator = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CREATOR).toString();
-        String site = siteService.getSiteShortName(nodeRef);
-        String path = "";
-        boolean storedInShared = false;
-        boolean storedInUserHomes = false;
-        while(this.nodeService.getPrimaryParent(nodeRef).getParentRef() != null){
-            String nodeName = this.nodeService.getProperty(this.nodeService.getPrimaryParent(nodeRef).getParentRef(), ContentModel.PROP_NAME).toString();
-            if (nodeName.equals("Shared") &&
-                    this.nodeService.getProperty(this.nodeService.getPrimaryParent(nodeRef).getParentRef(), ContentModel.PROP_CREATOR).toString().equals("System")) storedInShared = true;
-            if(nodeName.equals(HOME_DIRECTORY)) {
-                break;
-            }
-            if (nodeName.equals("User Homes") &&
-                    this.nodeService.getProperty(this.nodeService.getPrimaryParent(nodeRef).getParentRef(),
-                            ContentModel.PROP_CREATOR).toString().equals("System")) storedInUserHomes = true;
-            path = ("/" + nodeName) + path;
-            nodeRef = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
-        }
-        if (storedInUserHomes) path = path.replace("/User Homes/" + username, "");
-        path = "|" + path + "|";
+    public String getBackUrl(NodeRef nodeRef){
+        String url = imapService.getContentFolderUrl(nodeRef);
 
-        String url = getShareUrl();
-        if (site != null && !site.equals("")) {
-            path = path.replace("/Sites/" + site + "/documentLibrary", "");
-            url += "page/site/" + site + "/documentlibrary";
-        } else if (username.equals(nodeCreator)) {
-            url += "page/context/mine/myfiles";
-        }
-        if (storedInShared){
-            path = path.replace("/Shared", "");
-            url = getShareUrl() + "page/context/shared/sharedfiles";
+        if (url.contains("?filter=path|")) {
+            List<String> urlParts = Arrays.asList(url.split("\\|"));
+            url = urlParts.get(0) + URLEncoder.encodeUriComponent("|" + urlParts.get(1));
         }
 
-        if (!path.equals("||")) {
-            try {
-                url += "#filter=path" + java.net.URLEncoder.encode(path, String.valueOf(StandardCharsets.UTF_8));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
         return url;
     }
 

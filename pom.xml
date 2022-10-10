@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.onlyoffice.alfresco</groupId>
     <artifactId>onlyoffice-integration</artifactId>
-    <version>6.0.0</version>
+    <version>6.0.1</version>
     <name>ONLYOFFICE Alfresco Integration</name>
     <description>This Module integrates Alfresco Share with ONLYOFFICE</description>
     <packaging>pom</packaging>

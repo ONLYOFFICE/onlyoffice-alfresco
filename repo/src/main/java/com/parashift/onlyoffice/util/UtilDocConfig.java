@@ -78,7 +78,9 @@ public class UtilDocConfig {
         documentObject.put("key", util.getKey(nodeRef));
 
         JSONObject info = new JSONObject();
-        info.put("favorite", favouritesService.isFavourite(username, nodeRef));
+        if (username != null) {
+            info.put("favorite", favouritesService.isFavourite(username, nodeRef));
+        }
         documentObject.put("info", info);
 
         JSONObject permObject = new JSONObject();
@@ -125,9 +127,12 @@ public class UtilDocConfig {
         JSONObject customizationObject = new JSONObject();
         editorConfigObject.put("customization", customizationObject);
         customizationObject.put("forcesave", configManager.getAsBoolean("forcesave", "false"));
-        JSONObject goBack = new JSONObject();
-        goBack.put("url", util.getBackUrl(nodeRef, username));
-        customizationObject.put("goback",goBack);
+
+        if (!preview) {
+            JSONObject goBack = new JSONObject();
+            goBack.put("url", util.getBackUrl(nodeRef));
+            customizationObject.put("goback", goBack);
+        }
         customizationObject.put("chat", configManager.getAsBoolean("chat", "true"));
         customizationObject.put("help", configManager.getAsBoolean("help", "true"));
         customizationObject.put("compactHeader", configManager.getAsBoolean("compactHeader", "false"));

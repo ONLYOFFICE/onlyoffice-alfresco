@@ -96,7 +96,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                             JSONObject configJson = utilDocConfig.getConfigJson(nodeRef, sharedId, null, documentType,
                                     docTitle, docExt, true, true);
 
-                            responseJson.put("config", configJson);
+                            responseJson.put("editorConfig", configJson);
                             responseJson.put("onlyofficeUrl", util.getEditorUrl());
                             responseJson.put("mime", mimetypeService.getMimetype(docExt));
 
