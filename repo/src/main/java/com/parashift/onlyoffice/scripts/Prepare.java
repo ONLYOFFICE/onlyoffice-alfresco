@@ -133,9 +133,8 @@ public class Prepare extends AbstractWebScript {
                     return;
                 }
 
-                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String docExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(nodeRef);
+                String docExt = util.getExtension(nodeRef);
                 String documentType = util.getDocType(docExt);
                 if (docExt.equals("docxf") || docExt.equals("oform")) {
                     documentType = Type.WORD.name().toLowerCase();

@@ -107,9 +107,7 @@ public class EditorApi extends AbstractWebScript {
                 NodeRef node = new NodeRef(nodes.getString(i));
 
                 if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                    Map<QName, Serializable> properties = nodeService.getProperties(node);
-                    String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                    String fileType = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                    String fileType = util.getExtension(node);
 
                     if (requestData.has("command")) {
                         data.put("c", requestData.get("command"));
@@ -155,9 +153,8 @@ public class EditorApi extends AbstractWebScript {
             JSONObject data = new JSONObject();
 
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                Map<QName, Serializable> properties = nodeService.getProperties(node);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String fileType = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(node);
+                String fileType = util.getExtension(node);
                 if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
                 }

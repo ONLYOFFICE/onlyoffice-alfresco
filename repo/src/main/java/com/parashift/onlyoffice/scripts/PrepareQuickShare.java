@@ -77,9 +77,8 @@ public class PrepareQuickShare extends AbstractWebScript {
                         try {
                             JSONObject responseJson = new JSONObject();
 
-                            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                            String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                            String docExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                            String docTitle = util.getTitle(nodeRef);
+                            String docExt = util.getExtension(nodeRef);
                             String documentType = util.getDocType(docExt);
 
                             if (documentType == null) {

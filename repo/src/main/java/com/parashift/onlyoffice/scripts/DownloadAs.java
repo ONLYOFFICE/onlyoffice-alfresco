@@ -95,9 +95,8 @@ public class DownloadAs extends AbstractWebScript {
                     throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                 }
 
-                Map<QName, Serializable> properties = nodeService.getProperties(node);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(node);
+                String currentExt = util.getExtension(node);
 
                 if (currentExt.equals(outputType)) {
                     contentURL = getDownloadAPIUrl(node, docTitle);
@@ -131,9 +130,8 @@ public class DownloadAs extends AbstractWebScript {
                             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
-                        Map<QName, Serializable> properties = nodeService.getProperties(node);
-                        String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                        String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                        String docTitle = util.getTitle(node);
+                        String currentExt = util.getExtension(node);
 
                         if (currentExt.equals(outputType)) {
                             ContentReader reader = contentService.getReader(node, ContentModel.PROP_CONTENT);
