@@ -1,6 +1,7 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConfigManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import com.parashift.onlyoffice.util.UtilDocConfig;
 import com.parashift.onlyoffice.constants.Type;
@@ -59,6 +60,9 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
 
     @Autowired
     UtilDocConfig utilDocConfig;
@@ -162,13 +166,13 @@ public class Prepare extends AbstractWebScript {
                 JSONObject configJson = utilDocConfig.getConfigJson(nodeRef, null, username, documentType, docTitle,
                         docExt, preview, isReadOnly);
                 responseJson.put("editorConfig", configJson);
-                responseJson.put("onlyofficeUrl", util.getEditorUrl());
+                responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
                 responseJson.put("mime", mimetypeService.getMimetype(docExt));
                 responseJson.put("folderNode", util.getParentNodeRef(nodeRef));
                 responseJson.put("demo", configManager.demoActive());
-                responseJson.put("historyInfoUrl", util.getHistoryInfoUrl(nodeRef));
-                responseJson.put("historyDataUrl", util.getHistoryDataUrl(nodeRef));
-                responseJson.put("favorite", util.getFavoriteUrl(nodeRef));
+                responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
+                responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
+                responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

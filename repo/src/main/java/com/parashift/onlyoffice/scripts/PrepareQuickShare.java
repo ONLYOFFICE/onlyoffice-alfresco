@@ -1,6 +1,7 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConfigManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import com.parashift.onlyoffice.util.UtilDocConfig;
 import org.alfresco.model.ContentModel;
@@ -47,6 +48,9 @@ public class PrepareQuickShare extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
 
     @Autowired
     UtilDocConfig utilDocConfig;
@@ -97,7 +101,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                                     docTitle, docExt, true, true);
 
                             responseJson.put("editorConfig", configJson);
-                            responseJson.put("onlyofficeUrl", util.getEditorUrl());
+                            responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
                             responseJson.put("mime", mimetypeService.getMimetype(docExt));
 
                             logger.debug("Sending JSON prepare object");

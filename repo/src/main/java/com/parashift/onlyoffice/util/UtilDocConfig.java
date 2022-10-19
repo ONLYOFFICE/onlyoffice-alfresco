@@ -59,6 +59,9 @@ public class UtilDocConfig {
     Util util;
 
     @Autowired
+    UrlManager urlManager;
+
+    @Autowired
     FavouritesService favouritesService;
 
     public JSONObject getConfigJson (NodeRef nodeRef, String sharedId, String username, String documentType,
@@ -73,7 +76,7 @@ public class UtilDocConfig {
         JSONObject documentObject = new JSONObject();
         configJson.put("document", documentObject);
         documentObject.put("title", docTitle);
-        documentObject.put("url", util.getContentUrl(nodeRef));
+        documentObject.put("url", urlManager.getContentUrl(nodeRef));
         documentObject.put("fileType", docExt);
         documentObject.put("key", util.getKey(nodeRef));
 
@@ -93,7 +96,7 @@ public class UtilDocConfig {
 
 
         String mimeType = mimetypeService.getMimetype(docExt);
-        editorConfigObject.put("createUrl", util.getCreateNewUrl(nodeRef, docExt));
+        editorConfigObject.put("createUrl", urlManager.getCreateNewUrl(nodeRef, docExt));
         boolean canWrite = util.isEditable(docExt) && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED;
 
         editorConfigObject.put("templates", util.getTemplates(nodeRef, docExt));
@@ -110,16 +113,16 @@ public class UtilDocConfig {
 
             editorConfigObject.put("mode", "edit");
             permObject.put("edit", true);
-            editorConfigObject.put("callbackUrl", util.getCallbackUrl(nodeRef));
+            editorConfigObject.put("callbackUrl", urlManager.getCallbackUrl(nodeRef));
         }
 
         if (preview) {
             JSONObject embeddedObject = new JSONObject();
             editorConfigObject.put("embedded", embeddedObject);
             if (sharedId != null) {
-                embeddedObject.put("saveUrl", util.getEmbeddedSaveUrl(sharedId, docTitle));
+                embeddedObject.put("saveUrl", urlManager.getEmbeddedSaveUrl(sharedId, docTitle));
             } else {
-                embeddedObject.put("saveUrl", util.getEmbeddedSaveUrl(nodeRef, docTitle));
+                embeddedObject.put("saveUrl", urlManager.getEmbeddedSaveUrl(nodeRef, docTitle));
             }
 
         }
@@ -130,7 +133,7 @@ public class UtilDocConfig {
 
         if (!preview) {
             JSONObject goBack = new JSONObject();
-            goBack.put("url", util.getBackUrl(nodeRef));
+            goBack.put("url", urlManager.getBackUrl(nodeRef));
             customizationObject.put("goback", goBack);
         }
         customizationObject.put("chat", configManager.getAsBoolean("chat", "true"));

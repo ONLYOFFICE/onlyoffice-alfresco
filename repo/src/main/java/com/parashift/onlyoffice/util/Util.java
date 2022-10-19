@@ -49,19 +49,10 @@ public class Util {
     CheckOutCheckInService cociService;
 
     @Autowired
-    AuthenticationService authenticationService;
-
-    @Autowired
     VersionService versionService;
 
     @Autowired
-    SysAdminParams sysAdminParams;
-
-    @Autowired
     NodeService nodeService;
-
-    @Autowired
-    PersonService personService;
 
     @Autowired
     ConfigManager configManager;
@@ -73,16 +64,7 @@ public class Util {
     NamespaceService namespaceService;
 
     @Autowired
-    ContentService contentService;
-
-    @Autowired
-    JwtManager jwtManager;
-
-    @Autowired
-    SiteService siteService;
-
-    @Autowired
-    ImapService imapService;
+    UrlManager urlManager;
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
@@ -136,13 +118,7 @@ public class Util {
         return key;
     }
 
-    public String getHash(NodeRef nodeRef) {
-        String hash = null;
-        if (cociService.isCheckedOut(nodeRef)) {
-            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), EditingHashAspect);
-        }
-        return hash;
-    }
+
 
     public void ensureVersioningEnabled(NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();
@@ -157,102 +133,7 @@ public class Util {
         return dateParsed.toString().replace("T", " ").substring(0, dateParsed.toString().length());
     }
 
-    public String getCreateNewUrl(NodeRef nodeRef, String docExt){
-        String folderNodeRef = this.nodeService.getPrimaryParent(nodeRef).getParentRef().toString();
-        String docType = getDocType(docExt);
-        String docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        switch (docType) {
-            case "cell": {
-                docMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                break;
-            }
-            case "slide": {
-                docMime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-                break;
-            }
-        }
-        return getShareUrl() + "page/onlyoffice-edit?parentNodeRef=" + folderNodeRef + "&new=" + docMime;
-    }
 
-    public String getFavoriteUrl(NodeRef nodeRef){
-        return "parashift/onlyoffice/editor-api/favorite?nodeRef=" + nodeRef.toString();
-    }
-
-    public String getHistoryInfoUrl(NodeRef nodeRef) {
-        return "parashift/onlyoffice/history/info?nodeRef=" + nodeRef.toString();
-    }
-
-    public String getHistoryDataUrl(NodeRef nodeRef) {
-        return "parashift/onlyoffice/history/data?nodeRef=" + nodeRef.toString();
-    }
-
-    public String getHistoryDiffUrl(NodeRef nodeRef) {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/download/diff?nodeRef=" + nodeRef.toString() + "&alf_ticket=" + authenticationService.getCurrentTicket();
-    }
-
-    public String getContentUrl(NodeRef nodeRef) {
-        return  getAlfrescoUrl() + "s/parashift/onlyoffice/download/file?nodeRef=" + nodeRef.toString() + "&alf_ticket=" + authenticationService.getCurrentTicket();
-    }
-
-    public String getCallbackUrl(NodeRef nodeRef) {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/callback?nodeRef=" + nodeRef.toString() + "&cb_key=" + getHash(nodeRef);
-    }
-
-    public String getTestConversionUrl() {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/convertertest?alf_ticket=" + authenticationService.getCurrentTicket();
-    }
-
-    public String getEditorUrl() {
-        return configManager.demoActive() ? configManager.getDemo("url") : (String) configManager.getOrDefault("url", "http://127.0.0.1/");
-    }
-
-    public String getBackUrl(NodeRef nodeRef){
-        String url = imapService.getContentFolderUrl(nodeRef);
-
-        if (url.contains("?filter=path|")) {
-            List<String> urlParts = Arrays.asList(url.split("\\|"));
-            url = urlParts.get(0) + URLEncoder.encodeUriComponent("|" + urlParts.get(1));
-        }
-
-        return url;
-    }
-
-    public String getEditorInnerUrl() {
-        String url = (String) configManager.getOrDefault("innerurl", "");
-        if (url.isEmpty() || configManager.demoActive()) {
-            return getEditorUrl();
-        } else {
-            return url;
-        }
-    }
-
-    public String getEmbeddedSaveUrl(String sharedId, String docTitle) {
-        StringBuilder embeddedSaveUrl = new StringBuilder(8);
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco-noauth/api/internal/shared/node/");
-        embeddedSaveUrl.append(sharedId);
-        embeddedSaveUrl.append("/content/");
-        embeddedSaveUrl.append(URLEncoder.encodeUriComponent(docTitle));
-        embeddedSaveUrl.append("?c=force");
-        embeddedSaveUrl.append("&noCache=" + new Date().getTime());
-        embeddedSaveUrl.append("&a=true");
-
-        return embeddedSaveUrl.toString();
-    }
-
-    public String getEmbeddedSaveUrl(NodeRef nodeRef, String docTitle) {
-        StringBuilder embeddedSaveUrl = new StringBuilder(7);
-        StoreRef storeRef = nodeRef.getStoreRef();
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco/slingshot/node/content");
-        embeddedSaveUrl.append("/" + storeRef.getProtocol());
-        embeddedSaveUrl.append("/" + storeRef.getIdentifier());
-        embeddedSaveUrl.append("/" + nodeRef.getId());
-        embeddedSaveUrl.append("/" + URLEncoder.encodeUriComponent(docTitle));
-        embeddedSaveUrl.append("?a=true");
-
-        return embeddedSaveUrl.toString();
-    }
 
     public String generateHash() {
         SecureRandom secureRandom = new SecureRandom();
@@ -281,9 +162,9 @@ public class Util {
             String templateType = getDocType(templateExt);
             if ((docType.equals(templateType) && templateExtList.contains(templateExt)) || (docType.equals("form") && templateExt.equals("docx"))) {
                 JSONObject template = new JSONObject();
-                String image = getShareUrl() + "res/components/images/filetypes/" + (docType.equals("form") ? "word" : docType) + ".svg";
+                String image = urlManager.getShareUrl() + "res/components/images/filetypes/" + (docType.equals("form") ? "word" : docType) + ".svg";
                 String title = nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).toString();
-                String url = getCreateNewUrl(nodeRef, docExt) + "&templateNodeRef=" + assoc.getChildRef();
+                String url = urlManager.getCreateNewUrl(nodeRef, docType) + "&templateNodeRef=" + assoc.getChildRef();
                 try {
                     template.put("image", image);
                     template.put("title", title);
@@ -295,19 +176,6 @@ public class Util {
             }
         }
         return templates;
-    }
-
-    public String getShareUrl(){
-        return UrlUtil.getShareUrl(sysAdminParams) + "/";
-    }
-
-    private String getAlfrescoUrl() {
-        String alfUrl = (String) configManager.getOrDefault("alfurl", "");
-        if (alfUrl.isEmpty()) {
-            return UrlUtil.getAlfrescoUrl(sysAdminParams) + "/";
-        } else {
-            return alfUrl + "alfresco/";
-        }
     }
 
     public String getFileName(String url)
@@ -366,15 +234,6 @@ public class Util {
         }
 
         return defaultEditFormat || customizableEditableFormats.contains(ext);
-    }
-
-    public String replaceDocEditorURLToInternal(String url) {
-        String innerDocEditorUrl = getEditorInnerUrl();
-        String publicDocEditorUrl = getEditorUrl();
-        if (!publicDocEditorUrl.equals(innerDocEditorUrl) && !configManager.demoActive()) {
-            url = url.replace(publicDocEditorUrl, innerDocEditorUrl);
-        }
-        return url;
     }
 
     public NodeRef getParentNodeRef (NodeRef node) {
