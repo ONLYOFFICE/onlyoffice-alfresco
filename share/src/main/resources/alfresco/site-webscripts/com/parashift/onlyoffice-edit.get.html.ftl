@@ -162,13 +162,13 @@
 
         var onRequestHistory = function () {
             Alfresco.util.Ajax.jsonGet({
-                url:  Alfresco.constants.PROXY_URI + "${historyUrl!}",
+                url:  Alfresco.constants.PROXY_URI + "${historyInfoUrl!}",
                 successCallback: {
                     fn: function (response) {
-                        var hist = response.json;
+                        var historyInfo = response.json;
                         docEditor.refreshHistory({
-                            currentVersion: hist[0].version,
-                            history: hist.reverse()
+                            currentVersion: historyInfo.currentVersion,
+                            history: historyInfo.history
                         });
                     },
                     scope: this
@@ -180,11 +180,13 @@
             var version = event.data;
 
             Alfresco.util.Ajax.jsonGet({
-                url:  Alfresco.constants.PROXY_URI + "${historyUrl!}" + "&version=" + version,
+                url:  Alfresco.constants.PROXY_URI + "${historyDataUrl!}" + "&version=" + version,
                 successCallback: {
                     fn: function (response) {
-                        var hist = response.json;
-                        docEditor.setHistoryData(response.json);
+                        var historyData = response.json;
+                        if (historyData) {
+                            docEditor.setHistoryData(historyData);
+                        }
                     },
                     scope: this
                 }

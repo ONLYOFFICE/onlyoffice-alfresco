@@ -1,6 +1,6 @@
 <webscript>
     <shortname>ONLYOFFICE Download URL</shortname>
     <description>Download file for editor</description>
-    <url>/parashift/onlyoffice/download</url>
+    <url>/parashift/onlyoffice/download/{type}</url>
     <authentication>user</authentication>
 </webscript>

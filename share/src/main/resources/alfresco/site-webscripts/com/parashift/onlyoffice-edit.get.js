@@ -18,7 +18,9 @@ if (url.args.sample) query +="&sample=" + url.args.sample;
     model.folderNode = pObj.folderNode;
     model.demo = pObj.demo;
     model.favorite = pObj.favorite;
-    model.historyUrl = pObj.historyUrl;
+    model.historyInfoUrl = pObj.historyInfoUrl;
+    model.historyDataUrl = pObj.historyDataUrl;
+
 } else {
     var query = "parentNodeRef=" + url.args.parentNodeRef;
     query += "&new=" + url.args.new;
