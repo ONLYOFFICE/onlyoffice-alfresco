@@ -1,6 +1,11 @@
 # Change Log
 
 ## 
+
+## Added
+- moving from a Simple Module (JAR) to AMP (Alfresco Module Package)
+- using auth0/java-jwt library
+
 ## Fixed
 - history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
 
