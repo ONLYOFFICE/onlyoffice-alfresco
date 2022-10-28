@@ -55,7 +55,9 @@ public class Download extends AbstractWebScript {
                     throw new SecurityException("Expected JWT");
                 }
 
-                if (!jwtManager.verify(token)) {
+                try {
+                    String payload = jwtManager.verify(token);
+                } catch (Exception e) {
                     throw new SecurityException("JWT verification failed");
                 }
             }

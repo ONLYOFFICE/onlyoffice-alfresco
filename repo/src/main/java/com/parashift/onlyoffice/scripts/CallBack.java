@@ -109,6 +109,7 @@ public class CallBack extends AbstractWebScript {
 
             if (jwtManager.jwtEnabled()) {
                 String token = callBackJSon.optString("token");
+                String payload = null;
                 Boolean inBody = true;
 
                 if (token == null || token == "") {
@@ -122,11 +123,13 @@ public class CallBack extends AbstractWebScript {
                     throw new SecurityException("Expected JWT");
                 }
 
-                if (!jwtManager.verify(token)) {
+                try {
+                    payload = jwtManager.verify(token);
+                } catch (Exception e) {
                     throw new SecurityException("JWT verification failed");
                 }
 
-                JSONObject bodyFromToken = new JSONObject(new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]), "UTF-8"));
+                JSONObject bodyFromToken = new JSONObject(payload);
 
                 if (inBody) {
                     callBackJSon = bodyFromToken;
