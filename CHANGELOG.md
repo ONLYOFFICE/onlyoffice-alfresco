@@ -7,6 +7,7 @@
 - using auth0/java-jwt library
 
 ## Fixed
+- changed methods for generating history objects
 - history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
 
 ## 6.0.1

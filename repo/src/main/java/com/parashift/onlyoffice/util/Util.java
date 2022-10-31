@@ -150,161 +150,11 @@ public class Util {
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
     }
 
-    private String parseDate(String date){
+    public String parseDate(String date){
         java.time.format.DateTimeFormatter dtf =
                 java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
         LocalDateTime dateParsed = LocalDateTime.parse(date, dtf);
         return dateParsed.toString().replace("T", " ").substring(0, dateParsed.toString().length());
-    }
-
-    public JSONObject getHistoryObj(NodeRef nodeRef){
-        JSONObject historyObj = new JSONObject();
-        JSONArray historyData = new JSONArray();
-        JSONArray history = new JSONArray();
-        try {
-            List<Version> versions = (List<Version>) versionService.getVersionHistory(nodeRef).getAllVersions();
-            for (Version version : versions) {
-                Integer jsonZipIndex= null;
-                JSONObject jsonVersion = new JSONObject();
-                NodeRef person = personService.getPersonOrNull(version.getVersionProperty("modifier").toString());
-                PersonService.PersonInfo personInfo = null;
-                if (person != null) {
-                    personInfo = personService.getPerson(person);
-                }
-                JSONObject user = new JSONObject();
-                if (personInfo != null) {
-                    user.put("id", personInfo.getUserName());
-                    user.put("name", personInfo.getFirstName() + " " + personInfo.getLastName());
-                }
-                jsonVersion.put("created", parseDate(version.getVersionProperty("created").toString()));
-                jsonVersion.put("user", user);
-                jsonVersion.put("changes", (Collection) null);
-                NodeRef zipNodeRef = null;
-                if (!version.getVersionLabel().equals("1.0")) {
-                    NodeRef jsonNodeRef = null;
-                    Boolean isCurrentVersion = version.getVersionLabel().equals(versionService.getCurrentVersion(nodeRef).getVersionLabel());
-                    for(ChildAssociationRef assoc : nodeService.getChildAssocs(isCurrentVersion ? nodeRef : version.getFrozenStateNodeRef())) {
-                        if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("changes.json")) {
-                            jsonNodeRef = assoc.getChildRef();
-                        } else if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("diff.zip")) {
-                            zipNodeRef = assoc.getChildRef();
-                        }
-                    }
-                    if (jsonNodeRef != null) {
-                        List<Version> jsonVersions = (List<Version>) versionService.getVersionHistory(jsonNodeRef).getAllVersions();
-                        for (Version jsonNodeVersion : jsonVersions) {
-                            if (checkTimes(jsonNodeVersion, version)) {
-                                jsonZipIndex = jsonVersions.indexOf(jsonNodeVersion);
-                            }
-                        }
-                        if (jsonZipIndex != null) {
-                            NodeRef jsonNode;
-                            if (jsonZipIndex != 0) {
-                                jsonNode = jsonVersions.get(jsonZipIndex).getFrozenStateNodeRef();
-                            } else {
-                                jsonNode = jsonNodeRef;
-                            }
-                            ContentReader reader = this.contentService.getReader(jsonNode, ContentModel.PROP_CONTENT);
-                            JSONObject hist = new JSONObject(reader.getContentString());
-                            jsonVersion.put("changes", hist.getJSONArray("changes"));
-                            jsonVersion.put("created", ((JSONObject) hist.getJSONArray("changes").get(0)).getString("created"));
-                            jsonVersion.put("serverVersion", hist.getString("serverVersion"));
-                            jsonVersion.put("user", ((JSONObject) hist.getJSONArray("changes").get(0)).getJSONObject("user"));
-                        }
-                    }
-                }
-                jsonVersion.put("key", getKey(nodeRef).split("_")[0] + "_" + version.getVersionLabel());
-                jsonVersion.put("version", version.getVersionLabel());
-                history.put(jsonVersion);
-                JSONObject historyDataObj = new JSONObject();
-                if (versionService.getVersionHistory(nodeRef).getAllVersions().size() == 1) {
-                    historyDataObj.put("version", "1.0");
-                    historyDataObj.put("key", getKey(nodeRef));
-                    historyDataObj.put("url", getContentUrl(nodeRef));
-                    historyData.put(historyDataObj);
-                } else {
-                    if (version.getVersionLabel().equals("1.0")) {
-                        JSONObject firstVersion = new JSONObject();
-                        NodeRef rootVersion = versionService.getVersionHistory(nodeRef).getRootVersion().getFrozenStateNodeRef();
-                        firstVersion.put("version", "1.0");
-                        firstVersion.put("key", getKey(rootVersion));
-                        firstVersion.put("url", getContentUrl(rootVersion));
-                        if (jwtManager.jwtEnabled()) {
-                            try {
-                                firstVersion.put("token", jwtManager.createToken(firstVersion));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                throw new WebScriptException("Unable to create JWT");
-                            }
-                        }
-                        historyData.put(firstVersion);
-                    } else {
-                        NodeRef versionChild;
-                        if (version.getVersionLabel().equals(versionService.getCurrentVersion(nodeRef).getVersionLabel())) {
-                            versionChild = nodeRef;
-                        } else {
-                            versionChild = version.getFrozenStateNodeRef();
-                        }
-                        String vers = version.getVersionLabel();
-                        historyDataObj.put("version", vers);
-                        historyDataObj.put("key", getKey(nodeRef).split("_")[0] + "_" + vers);
-                        historyDataObj.put("url", getContentUrl(versionChild));
-                        if (jsonZipIndex != null) {
-                            List<Version> zipVersions = (List<Version>) versionService.getVersionHistory(zipNodeRef).getAllVersions();
-                            JSONObject previous = new JSONObject();
-                            Integer previousMajor = getPreviousMajorVersion(versions, version);
-                            if (previousMajor == null) {
-                                throw new WebScriptException("Error to get previous major version");
-                            }
-                            String previousKey = getKey(versions.get(previousMajor).getFrozenStateNodeRef());
-                            String previousUrl = getContentUrl(versions.get(previousMajor).getFrozenStateNodeRef());
-                            previous.put("key", previousKey);
-                            previous.put("url", previousUrl);
-                            historyDataObj.put("previous", previous);
-                            historyDataObj.put("changesUrl", jsonZipIndex == 0 ? getContentUrlWithoutJWTCheck(zipNodeRef) : getContentUrlWithoutJWTCheck(zipVersions.get(jsonZipIndex).getFrozenStateNodeRef()));
-                        }
-                        historyData.put(historyDataObj);
-                    }
-                }
-                if (jwtManager.jwtEnabled()) {
-                    try {
-                        historyDataObj.put("token", jwtManager.createToken(historyDataObj));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new WebScriptException("Unable to create JWT");
-                    }
-                }
-                historyObj.put("data", historyData);
-                historyObj.put("history", history);
-            }
-        } catch (JSONException ex){
-            ex.printStackTrace();
-        }
-        return historyObj;
-    }
-
-    private Boolean checkTimes(Version jsonNodeVersion, Version version) {
-        java.time.format.DateTimeFormatter dtf =
-                java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
-        LocalDateTime jsonDateParsed = LocalDateTime.parse(jsonNodeVersion.getVersionProperty("frozenModified").toString(), dtf);
-        LocalDateTime nodeDateParsed = LocalDateTime.parse(version.getVersionProperty("frozenModified").toString(), dtf);
-        if (jsonDateParsed.minusSeconds(1L).equals(nodeDateParsed) || jsonNodeVersion.getVersionProperty("modified").toString().equals(version.getVersionProperty("created").toString())
-                || jsonNodeVersion.getVersionProperty("modified").toString().equals(version.getVersionProperty("modified").toString())
-                || jsonNodeVersion.getVersionProperty("created").toString().equals(version.getVersionProperty("created").toString())
-                || jsonNodeVersion.getVersionProperty("frozenModified").toString().equals(version.getVersionProperty("frozenModified").toString())) {
-            return true;
-        }
-        return false;
-    }
-
-    private Integer getPreviousMajorVersion(List<Version> versions, Version versionForPreviousVersion) {
-        int index = versions.indexOf(versionForPreviousVersion);
-        for (int i = 0 ; i < versions.size(); i++) {
-            if (versions.get(i).getVersionType() == VersionType.MAJOR && i > index) {
-                return i;
-            }
-        }
-        return null;
     }
 
     public String getCreateNewUrl(NodeRef nodeRef, String docExt){
@@ -328,16 +178,20 @@ public class Util {
         return "parashift/onlyoffice/editor-api/favorite?nodeRef=" + nodeRef.toString();
     }
 
-    public String getHistoryUrl(NodeRef nodeRef) {
-        return "parashift/onlyoffice/history?nodeRef=" + nodeRef.toString();
+    public String getHistoryInfoUrl(NodeRef nodeRef) {
+        return "parashift/onlyoffice/history/info?nodeRef=" + nodeRef.toString();
     }
 
-    private String getContentUrlWithoutJWTCheck(NodeRef nodeRef) {
-        return getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&wjc=true&alf_ticket=" + authenticationService.getCurrentTicket();
+    public String getHistoryDataUrl(NodeRef nodeRef) {
+        return "parashift/onlyoffice/history/data?nodeRef=" + nodeRef.toString();
+    }
+
+    public String getHistoryDiffUrl(NodeRef nodeRef) {
+        return getAlfrescoUrl() + "s/parashift/onlyoffice/download/diff?nodeRef=" + nodeRef.toString() + "&alf_ticket=" + authenticationService.getCurrentTicket();
     }
 
     public String getContentUrl(NodeRef nodeRef) {
-        return  getAlfrescoUrl() + "s/parashift/onlyoffice/download?nodeRef=" + nodeRef.toString() + "&alf_ticket=" + authenticationService.getCurrentTicket();
+        return  getAlfrescoUrl() + "s/parashift/onlyoffice/download/file?nodeRef=" + nodeRef.toString() + "&alf_ticket=" + authenticationService.getCurrentTicket();
     }
 
     public String getCallbackUrl(NodeRef nodeRef) {
@@ -530,5 +384,36 @@ public class Util {
         } else {
             return parentAssoc.getParentRef();
         }
+    }
+
+    public NodeRef getChildNodeByName(NodeRef nodeRef, String name) {
+        List<ChildAssociationRef> changesNodeRef = nodeService.getChildAssocs(nodeRef);
+
+        for (ChildAssociationRef assoc : changesNodeRef) {
+            if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals(name)) {
+                return assoc.getChildRef();
+            }
+        }
+
+        return null;
+    }
+
+    public String getTitle(NodeRef nodeRef) {
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        return (String) properties.get(ContentModel.PROP_NAME);
+    }
+
+    public String getExtension(NodeRef nodeRef) {
+        String title = getTitle(nodeRef);
+        String extension = null;
+
+        if (title != null) {
+            int index =  title.lastIndexOf('.');
+            if (index > -1 && (index < title.length() - 1)) {
+                extension = title.substring(index + 1);
+            }
+        }
+
+        return extension;
     }
 }

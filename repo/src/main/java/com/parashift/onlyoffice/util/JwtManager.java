@@ -17,6 +17,11 @@ import java.util.Map;
 */
 @Service
 public class JwtManager {
+    private final ObjectMapper objectMapper;
+
+    public JwtManager() {
+        this.objectMapper = new ObjectMapper();
+    }
 
     @Autowired
     ConfigManager configManager;
@@ -26,10 +31,19 @@ public class JwtManager {
     }
 
     public String createToken(JSONObject payload) throws Exception {
-        Algorithm algorithm = Algorithm.HMAC256(getJwtSecret());
-
-        ObjectMapper objectMapper = new ObjectMapper();
         Map<String, ?> payloadMap = objectMapper.readValue(payload.toString(), Map.class);
+
+        return createToken(payloadMap);
+    }
+
+    public String createToken(Object payload) throws Exception {
+        Map<String, ?> payloadMap = objectMapper.convertValue(payload, Map.class);
+
+        return createToken(payloadMap);
+    }
+
+    public String createToken(Map<String, ?> payloadMap) throws Exception {
+        Algorithm algorithm = Algorithm.HMAC256(getJwtSecret());
 
         String token = JWT.create()
                 .withPayload(payloadMap)
