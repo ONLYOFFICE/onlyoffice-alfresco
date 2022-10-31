@@ -120,6 +120,7 @@ public class Prepare extends AbstractWebScript {
                 }
                 writer.putContent(in);
                 util.ensureVersioningEnabled(nodeRef);
+                util.postActivity(nodeRef, true);
 
                 responseJson.put("nodeRef", nodeRef);
             } else {
