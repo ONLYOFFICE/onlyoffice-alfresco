@@ -2,10 +2,16 @@ package com.parashift.onlyoffice.util;
 
 import com.parashift.onlyoffice.constants.Format;
 import com.parashift.onlyoffice.constants.Formats;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -50,6 +56,15 @@ public class Util {
 
     @Autowired
     UrlManager urlManager;
+
+    @Autowired
+    ActivityService activityService;
+
+    @Autowired
+    SiteService siteService;
+
+    @Autowired
+    TenantService tenantService;
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
@@ -252,5 +267,50 @@ public class Util {
         }
 
         return extension;
+    }
+
+    private String getCurrentTenantDomain() {
+        String tenantDomain = tenantService.getCurrentUserDomain();
+        if (tenantDomain == null) {
+            return TenantService.DEFAULT_DOMAIN;
+        }
+
+        return tenantDomain;
+    }
+
+    public void postActivity(NodeRef nodeRef, boolean isNew) {
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN)) {
+            return;
+        }
+
+        SiteInfo siteInfo = siteService.getSite(nodeRef);
+        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+
+        if (siteId == null && siteId.equals("")) {
+            return;
+        }
+
+        JSONObject json =  new JSONObject();
+
+        try {
+            json.put("nodeRef", nodeRef);
+            json.put("title", nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+            json.put("page", "document-details?nodeRef=" + nodeRef);
+
+            String tenantDomain = getCurrentTenantDomain();
+
+            if (tenantDomain!= null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN)) {
+                json.put("tenantDomain", tenantDomain);
+            }
+        } catch (JSONException jsonError) {
+            throw new AlfrescoRuntimeException("Unabled to create activities json", jsonError);
+        }
+
+        activityService.postActivity(
+                isNew ? ActivityType.FILE_ADDED : ActivityType.FILE_UPDATED,
+                siteId,
+                "onlyoffice",
+                json.toString()
+        );
     }
 }

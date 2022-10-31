@@ -228,6 +228,9 @@ public class CallBack extends AbstractWebScript {
                     changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
                     historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
 
+                    util.postActivity(nodeRef, false);
+
+                    logger.debug("Save complete");
                     break;
                 case 3:
                     logger.error("ONLYOFFICE has reported that saving the document has failed");
@@ -263,6 +266,7 @@ public class CallBack extends AbstractWebScript {
 
                     changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
                     historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                    util.postActivity(nodeRef, false);
 
                     logger.debug("Forcesave complete");
                     break;

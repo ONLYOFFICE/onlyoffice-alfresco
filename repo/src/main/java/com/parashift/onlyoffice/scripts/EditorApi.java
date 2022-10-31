@@ -222,6 +222,7 @@ public class EditorApi extends AbstractWebScript {
         try (InputStream in = connection.getInputStream()) {
             writer.putContent(in);
             util.ensureVersioningEnabled(nodeRef);
+            util.postActivity(nodeRef, true);
         } finally {
             connection.disconnect();
         }
