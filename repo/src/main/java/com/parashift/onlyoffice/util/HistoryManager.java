@@ -75,7 +75,7 @@ public class HistoryManager {
         logger.debug("History saved successfully.");
     }
 
-    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name, boolean fromString) {
+    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name, final boolean fromString) {
         if (data == null || data.isEmpty()) {
             logger.error("Error saving history " + name + "History data is null!");
             return;
@@ -130,7 +130,7 @@ public class HistoryManager {
         props.put(ContentModel.PROP_NAME, name);
         props.put(ContentModel.PROP_IS_INDEXED, Boolean.FALSE);
 
-         NodeRef historyNode = nodeService.createNode(parentNodeRef, RenditionModel.ASSOC_RENDITION,
+        NodeRef historyNode = nodeService.createNode(parentNodeRef, RenditionModel.ASSOC_RENDITION,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                 ContentModel.TYPE_CONTENT, props).getChildRef();
 
@@ -214,13 +214,14 @@ public class HistoryManager {
             if (changesNodeRef != null) {
                 ContentReader reader = contentService.getReader(changesNodeRef, ContentModel.PROP_CONTENT);
                 JSONObject changes = null;
-                    try {
-                        changes = new JSONObject(reader.getContentString());
-                        info.setChanges(objectMapper.readValue(changes.getJSONArray("changes").toString(), Object.class));
-                        info.setServerVersion(changes.getString("serverVersion"));
-                    } catch (JSONException e) {
-                        throw new IOException(e.getMessage(), e);
-                    }
+
+                try {
+                    changes = new JSONObject(reader.getContentString());
+                    info.setChanges(objectMapper.readValue(changes.getJSONArray("changes").toString(), Object.class));
+                    info.setServerVersion(changes.getString("serverVersion"));
+                } catch (JSONException e) {
+                    throw new IOException(e.getMessage(), e);
+                }
             }
 
             history.add(info);
