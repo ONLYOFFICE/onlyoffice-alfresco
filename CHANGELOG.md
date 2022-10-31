@@ -1,7 +1,7 @@
 # Change Log
 
 ## Added
-- Chinese (Traditional, Taiwan), Basque (Spain), Armenian and Malay (Malaysia) empty file templates
+- Chinese (Traditional, Taiwan) and Malay (Malaysia) empty file templates
 
 ## 6.0.1
 ## Fixed
