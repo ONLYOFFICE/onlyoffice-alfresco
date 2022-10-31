@@ -2,6 +2,7 @@ package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConvertManager;
 import com.parashift.onlyoffice.util.JwtManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 
 import org.alfresco.model.ContentModel;
@@ -67,6 +68,9 @@ public class EditorApi extends AbstractWebScript {
     @Autowired
     MessageService mesService;
 
+    @Autowired
+    UrlManager urlManager;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -103,15 +107,13 @@ public class EditorApi extends AbstractWebScript {
                 NodeRef node = new NodeRef(nodes.getString(i));
 
                 if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                    Map<QName, Serializable> properties = nodeService.getProperties(node);
-                    String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                    String fileType = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                    String fileType = util.getExtension(node);
 
                     if (requestData.has("command")) {
                         data.put("c", requestData.get("command"));
                     }
                     data.put("fileType", fileType);
-                    data.put("url", util.getContentUrl(node));
+                    data.put("url", urlManager.getContentUrl(node));
                     if (jwtManager.jwtEnabled()) {
                         try {
                             data.put("token", jwtManager.createToken(data));
@@ -151,15 +153,14 @@ public class EditorApi extends AbstractWebScript {
             JSONObject data = new JSONObject();
 
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                Map<QName, Serializable> properties = nodeService.getProperties(node);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String fileType = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(node);
+                String fileType = util.getExtension(node);
                 if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
                 }
 
                 try {
-                    String downloadUrl = converterService.convert(util.getKey(node), fileType, "docxf", util.getContentUrl(node), mesService.getLocale().toLanguageTag());
+                    String downloadUrl = converterService.convert(util.getKey(node), fileType, "docxf", urlManager.getContentUrl(node), mesService.getLocale().toLanguageTag());
                     docTitle = docTitle.substring(0, docTitle.lastIndexOf("."));
                     String newNode = createNode(folderNode, docTitle, "docxf", downloadUrl);
                     data.put("nodeRef", newNode);
@@ -203,7 +204,7 @@ public class EditorApi extends AbstractWebScript {
     }
 
     private String createNode(NodeRef folderNode, String title, String ext, String url) throws IOException {
-        url = util.replaceDocEditorURLToInternal(url);
+        url = urlManager.replaceDocEditorURLToInternal(url);
         String fileName = util.getCorrectName(folderNode, title, ext);
 
         NodeRef nodeRef = nodeService.createNode(

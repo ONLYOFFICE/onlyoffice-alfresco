@@ -52,6 +52,9 @@ public class ConvertManager {
     Util util;
 
     @Autowired
+    UrlManager urlManager;
+
+    @Autowired
     MessageService mesService;
 
     private static Set<String> ConvertBackList = new HashSet<String>() {{
@@ -101,7 +104,7 @@ public class ConvertManager {
         logger.info("Received conversion request from " + srcType + " to " + outType);
 
         try {
-            String url = convert(key, srcType, outType, util.getContentUrl(sourceNodeRef), mesService.getLocale().toLanguageTag());
+            String url = convert(key, srcType, outType, urlManager.getContentUrl(sourceNodeRef), mesService.getLocale().toLanguageTag());
             saveFromUrl(url, writer);
         } catch (Exception ex) {
             logger.info("Conversion failed: " + ex.getMessage());
@@ -121,7 +124,7 @@ public class ConvertManager {
             body.put("region", region);
 
             StringEntity requestEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
-            HttpPost request = new HttpPost(util.getEditorInnerUrl() + "ConvertService.ashx");
+            HttpPost request = new HttpPost(urlManager.getEditorInnerUrl() + "ConvertService.ashx");
             request.setEntity(requestEntity);
             request.setHeader("Accept", "application/json");
 

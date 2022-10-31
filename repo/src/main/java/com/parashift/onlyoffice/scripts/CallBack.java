@@ -79,6 +79,9 @@ public class CallBack extends AbstractWebScript {
     @Autowired
     Util util;
 
+    @Autowired
+    UrlManager urlManager;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -212,7 +215,7 @@ public class CallBack extends AbstractWebScript {
                     break;
                 case 2:
                     logger.debug("Document Updated, changing content");
-                    downloadUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
+                    downloadUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
                     updateNode(wc, downloadUrl);
 
                     logger.info("removing prop");
@@ -222,7 +225,7 @@ public class CallBack extends AbstractWebScript {
                     versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
                     cociService.checkin(wc, versionProperties, null);
 
-                    changesUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
+                    changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
                     historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
 
                     break;
@@ -243,7 +246,7 @@ public class CallBack extends AbstractWebScript {
                     }
 
                     logger.debug("Forcesave request (type: " + callBackJSon.getInt("forcesavetype") + ")");
-                    downloadUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
+                    downloadUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
                     updateNode(wc, downloadUrl);
 
                     String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
@@ -258,7 +261,7 @@ public class CallBack extends AbstractWebScript {
                     nodeService.setProperty(wc, Util.EditingHashAspect, hash);
                     nodeService.setProperty(wc, Util.EditingKeyAspect, key);
 
-                    changesUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
+                    changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
                     historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
 
                     logger.debug("Forcesave complete");

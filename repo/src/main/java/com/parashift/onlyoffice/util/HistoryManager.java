@@ -59,6 +59,9 @@ public class HistoryManager {
     Util util;
 
     @Autowired
+    UrlManager urlManager;
+
+    @Autowired
     JwtManager jwtManager;
 
     public static final QName ContentVersionUUID = QName.createQName("onlyoffice:content-version-uuid");
@@ -245,17 +248,17 @@ public class HistoryManager {
                 historyData = new HistoryData();
                 historyData.setVersion(version.getVersionLabel());
                 historyData.setKey(util.getKey(version.getFrozenStateNodeRef()));
-                historyData.setUrl(util.getContentUrl(version.getFrozenStateNodeRef()));
+                historyData.setUrl(urlManager.getContentUrl(version.getFrozenStateNodeRef()));
                 historyData.setFileType(util.getExtension(version.getFrozenStateNodeRef()));
 
                 NodeRef diffZipNodeRef = getHistoryNodeForVersion(version, "diff.zip");
 
                 if (diffZipNodeRef != null) {
                     if (previousMajorVersion != null) {
-                        historyData.setChangesUrl(util.getHistoryDiffUrl(version.getFrozenStateNodeRef()));
+                        historyData.setChangesUrl(urlManager.getHistoryDiffUrl(version.getFrozenStateNodeRef()));
                         historyData.setPrevious(
                                 util.getKey(previousMajorVersion.getFrozenStateNodeRef()),
-                                util.getContentUrl(previousMajorVersion.getFrozenStateNodeRef()),
+                                urlManager.getContentUrl(previousMajorVersion.getFrozenStateNodeRef()),
                                 util.getExtension(previousMajorVersion.getFrozenStateNodeRef())
                         );
                     }

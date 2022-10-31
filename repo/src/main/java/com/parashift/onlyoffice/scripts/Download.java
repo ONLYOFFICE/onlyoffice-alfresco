@@ -2,6 +2,7 @@ package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.HistoryManager;
 import com.parashift.onlyoffice.util.JwtManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -40,6 +41,9 @@ public class Download extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -86,7 +90,7 @@ public class Download extends AbstractWebScript {
                     throw new WebScriptException(Status.STATUS_NOT_FOUND, "Not found diff.zip for version: " + nodeRefString);
                 }
 
-                String editorUrl = util.getEditorUrl();
+                String editorUrl = urlManager.getEditorUrl();
                 if (editorUrl.endsWith("/")) {
                     editorUrl = editorUrl.substring(0, editorUrl.length() - 1);
                 }
