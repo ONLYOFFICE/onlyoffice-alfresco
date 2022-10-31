@@ -1,6 +1,7 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConvertManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.DownloadModel;
@@ -74,6 +75,9 @@ public class DownloadAs extends AbstractWebScript {
     @Autowired
     MessageService mesService;
 
+    @Autowired
+    UrlManager urlManager;
+
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
         try {
@@ -91,16 +95,15 @@ public class DownloadAs extends AbstractWebScript {
                     throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                 }
 
-                Map<QName, Serializable> properties = nodeService.getProperties(node);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(node);
+                String currentExt = util.getExtension(node);
 
                 if (currentExt.equals(outputType)) {
                     contentURL = getDownloadAPIUrl(node, docTitle);
                 } else {
-                    String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, util.getContentUrl(node), region);
+                    String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
                     docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
-                    URL url = new URL(util.replaceDocEditorURLToInternal(downloadUrl));
+                    URL url = new URL(urlManager.replaceDocEditorURLToInternal(downloadUrl));
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     try (InputStream inputStream = connection.getInputStream()) {
                         contentURL = createDownloadNode(docTitle, mimetypeService.getMimetype(outputType), inputStream, connection.getContentLength(), 1);
@@ -127,9 +130,8 @@ public class DownloadAs extends AbstractWebScript {
                             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
-                        Map<QName, Serializable> properties = nodeService.getProperties(node);
-                        String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                        String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                        String docTitle = util.getTitle(node);
+                        String currentExt = util.getExtension(node);
 
                         if (currentExt.equals(outputType)) {
                             ContentReader reader = contentService.getReader(node, ContentModel.PROP_CONTENT);
@@ -138,9 +140,9 @@ public class DownloadAs extends AbstractWebScript {
                                 totalSize = totalSize + IOUtils.copyLarge(inputStream, out);
                             }
                         } else {
-                            String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, util.getContentUrl(node), region);
+                            String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
                             docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
-                            URL url = new URL(util.replaceDocEditorURLToInternal(downloadUrl));
+                            URL url = new URL(urlManager.replaceDocEditorURLToInternal(downloadUrl));
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             try (InputStream inputStream = connection.getInputStream()) {
                                 out.putArchiveEntry(new ZipArchiveEntry(docTitle));
