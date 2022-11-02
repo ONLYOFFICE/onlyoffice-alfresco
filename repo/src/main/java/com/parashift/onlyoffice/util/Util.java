@@ -286,11 +286,11 @@ public class Util {
         SiteInfo siteInfo = siteService.getSite(nodeRef);
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
 
-        if (siteId == null && siteId.equals("")) {
+        if (siteId == null || siteId.equals("")) {
             return;
         }
 
-        JSONObject json =  new JSONObject();
+        JSONObject json = new JSONObject();
 
         try {
             json.put("nodeRef", nodeRef);
