@@ -20,7 +20,8 @@ if (url.args.sample) query +="&sample=" + url.args.sample;
     model.favorite = pObj.favorite;
     model.historyInfoUrl = pObj.historyInfoUrl;
     model.historyDataUrl = pObj.historyDataUrl;
-
+    model.canManagePermissions = pObj.canManagePermissions;
+    model.nodeRef = url.args.nodeRef;
 } else {
     var query = "parentNodeRef=" + url.args.parentNodeRef;
     query += "&new=" + url.args.new;

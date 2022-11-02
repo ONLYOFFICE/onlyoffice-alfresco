@@ -173,6 +173,7 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
                 responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
                 responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));
+                responseJson.put("canManagePermissions", permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));
