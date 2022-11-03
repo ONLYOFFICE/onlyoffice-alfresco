@@ -79,9 +79,8 @@ Module configuration can be found inside `Alfresco Administration Console` or by
 
 > You can also add `onlyoffice.url` in `alfresco-global.properties`. Configuration made via settings page will override `alfresco-global.properties`.
 
-JWT can be configured via [configuration page](#configuration) or by adding `onlyoffice.jwtsecret` in `alfresco-global.properties`.
-
-The JWT configuration on the Document Server side can be found [here](https://api.onlyoffice.com/editors/signature/).
+Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
+Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.jwtsecret* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
 
 ## Compiling ONLYOFFICE Alfresco module package
 
