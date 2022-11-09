@@ -100,6 +100,7 @@
     <script type="text/javascript" src="${url.context}/res/components/manage-permissions/manage-permissions.js"></script>
     <script type="text/javascript" src="${url.context}/res/modules/roles-tooltip.js"></script>
     <script type="text/javascript" src="${url.context}/res/components/people-finder/authority-finder.js"></script>
+    <script type="text/javascript" src="${url.context}/res/templates/manage-permissions/template.manage-permissions.js"></script>
 
     <link rel="stylesheet" type="text/css" href="${url.context}/res/css/yui-fonts-grids.css" />
     <#if theme = 'default'>
@@ -240,6 +241,11 @@
 
         var onRequestSharingSettings = function (event) {
             var id = "doc-manage-permissions";
+
+            if (YAHOO.Bubbling.defaultActions["action-link"] != null) {
+                delete YAHOO.Bubbling.defaultActions["action-link"];
+            }
+
             var managePermissionsDialog = new Alfresco.module.SimpleDialog(id);
 
             managePermissionsDialog.setOptions({
@@ -260,36 +266,16 @@
                             body.appendChild(body.nextSibling);
                         }
 
-                        nodeRef = Alfresco.util.ComponentManager.get(id).options.nodeRef;
+                        var managePermissions = new Alfresco.template.ManagePermissions();
 
-                        var url;
-                        if (nodeRef.uri) {
-                            url = Alfresco.constants.PROXY_URI + 'slingshot/doclib/node/' + nodeRef.uri;
-                        } else {
-                            var nodeRefObj = Alfresco.util.NodeRef(nodeRef);
-                            url = Alfresco.constants.PROXY_URI + 'slingshot/doclib/node/' + nodeRefObj.storeType + "/" + nodeRefObj.storeId + "/" + nodeRefObj.id;
-                        }
-
-                        Alfresco.util.Ajax.jsonGet({
-                            url: url,
-                            successCallback: {
-                                fn: function (response) {
-                                    if (response.json !== undefined) {
-                                        var nodeDetails = response.json.item;
-
-                                         // Fire event to inform any listening components that the data is ready
-                                         YAHOO.Bubbling.fire("nodeDetailsAvailable", {
-                                            nodeDetails: nodeDetails,
-                                            metadata: response.json.metadata
-                                         });
-
-                                         Alfresco.util.ComponentManager.get(id).onReady();
-                                    }
-                                },
-                                scope: this
-                            },
-                            failureMessage: "Failed to load data for permission details"
+                        managePermissions.setOptions({
+                            nodeRef: new Alfresco.util.NodeRef("${nodeRef}"),
+                            siteId: "${page.url.templateArgs.site!""}",
+                            rootNode: "${(config.scoped["RepositoryLibrary"]["root-node"].getValue())!"alfresco://company/home"}"
                         });
+
+                        managePermissions.onReady();
+                        Alfresco.util.ComponentManager.get(id).onReady();
 
                         Alfresco.util.ComponentManager.get(id)._navigateForward = function() {
                             managePermissionsDialog.hide();
