@@ -67,10 +67,9 @@ public class ConvertAction extends ActionExecuterAbstractBase {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
                 if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
                         !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
-                    String nodeName = util.getTitle(actionedUponNodeRef);
+                    String title = util.getTitleWithoutExtension(actionedUponNodeRef);
                     String srcExt = util.getExtension(actionedUponNodeRef);
 
-                    String title = nodeName.substring(0, nodeName.lastIndexOf('.'));
                     String targetExt = converterService.getTargetExt(srcExt);
 
                     if (targetExt == null) {

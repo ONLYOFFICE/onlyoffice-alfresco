@@ -255,12 +255,25 @@ public class Util {
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
 
+    public String getTitleWithoutExtension(NodeRef nodeRef) {
+        String title = getTitle(nodeRef);
+
+        if (title != null) {
+            int index = title.lastIndexOf('.');
+            if (index > -1) {
+                return title.substring(0, title.lastIndexOf("."));
+            }
+        }
+
+        return title;
+    }
+
     public String getExtension(NodeRef nodeRef) {
         String title = getTitle(nodeRef);
         String extension = null;
 
         if (title != null) {
-            int index =  title.lastIndexOf('.');
+            int index = title.lastIndexOf('.');
             if (index > -1 && (index < title.length() - 1)) {
                 extension = title.substring(index + 1);
             }
