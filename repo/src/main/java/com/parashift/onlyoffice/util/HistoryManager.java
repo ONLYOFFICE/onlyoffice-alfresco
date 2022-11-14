@@ -13,6 +13,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.http.HttpEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -22,9 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.*;
 
 /*
@@ -63,6 +62,9 @@ public class HistoryManager {
 
     @Autowired
     JwtManager jwtManager;
+
+    @Autowired
+    RequestManager requestManager;
 
     public static final QName ContentVersionUUID = QName.createQName("onlyoffice:content-version-uuid");
 
@@ -106,17 +108,20 @@ public class HistoryManager {
                 dbNodeService.setProperty(versionNodeHistory, ContentVersionUUID, versionNode.getId());
 
                 String extension = name.substring(name.lastIndexOf(".") + 1).trim().toLowerCase();
-                String mimeType = mimetypeService.getMimetype(extension);
-                ContentWriter writer = contentService.getWriter(versionNodeHistory, ContentModel.PROP_CONTENT, true);
+                final String mimeType = mimetypeService.getMimetype(extension);
+                final ContentWriter writer = contentService.getWriter(versionNodeHistory, ContentModel.PROP_CONTENT, true);
 
                 if (fromString) {
                     writer.setMimetype(mimeType);
                     writer.putContent(data);
                 } else {
-                    URL url = new URL(data);
-                    InputStream in = url.openStream();
-                    writer.setMimetype(mimeType);
-                    writer.putContent(in);
+                    requestManager.executeRequestToDocumentServer(data, new RequestManager.Callback<Void>() {
+                        public Void doWork(HttpEntity httpEntity) throws IOException {
+                            writer.setMimetype(mimeType);
+                            writer.putContent(httpEntity.getContent());
+                            return null;
+                        }
+                    });
                 }
 
                 return null;

@@ -8,9 +8,9 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.http.HttpEntity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -23,20 +23,9 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by cetra on 20/10/15.
@@ -81,6 +70,9 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     UrlManager urlManager;
+
+    @Autowired
+    RequestManager requestManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -201,8 +193,7 @@ public class CallBack extends AbstractWebScript {
         public Object execute() throws Throwable {
             NodeRef wc = cociService.getWorkingCopy(nodeRef);
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-            String downloadUrl = null;
-            String changesUrl = null;
+
             //Status codes from here: https://api.onlyoffice.com/editors/editor
             switch(callBackJSon.getInt("status")) {
                 case 0:
@@ -215,8 +206,7 @@ public class CallBack extends AbstractWebScript {
                     break;
                 case 2:
                     logger.debug("Document Updated, changing content");
-                    downloadUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
-                    updateNode(wc, downloadUrl);
+                    updateNode(wc, callBackJSon.getString("url"));
 
                     logger.info("removing prop");
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
@@ -227,8 +217,7 @@ public class CallBack extends AbstractWebScript {
 
                     if (callBackJSon.has("history")) {
                         try {
-                            changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
-                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), callBackJSon.getString("changesurl"));
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                         }
@@ -255,8 +244,7 @@ public class CallBack extends AbstractWebScript {
                     }
 
                     logger.debug("Forcesave request (type: " + callBackJSon.getInt("forcesavetype") + ")");
-                    downloadUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
-                    updateNode(wc, downloadUrl);
+                    updateNode(wc, callBackJSon.getString("url"));
 
                     String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
                     String key = (String) nodeService.getProperty(wc, Util.EditingKeyAspect);
@@ -272,8 +260,7 @@ public class CallBack extends AbstractWebScript {
 
                     if (callBackJSon.has("history")) {
                         try {
-                            changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
-                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), callBackJSon.getString("changesurl"));
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
                         }
@@ -315,64 +302,12 @@ public class CallBack extends AbstractWebScript {
             }
         }
 
-        try {
-            checkCert();
-            InputStream in = new URL( url ).openStream();
-            contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new Exception("Error while downloading new document version: " + e.getMessage(), e);
-        }
-    }
-
-    private void checkCert() {
-        String cert = (String) configManager.getOrDefault("cert", "no");
-        if (cert.equals("true")) {
-            TrustManager[] trustAllCerts = new TrustManager[]
-            {
-                new X509TrustManager()
-                {
-                    @Override
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers()
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] certs, String authType)
-                    {
-                    }
-
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] certs, String authType)
-                    {
-                    }
-                }
-            };
-
-            SSLContext sc;
-
-            try
-            {
-                sc = SSLContext.getInstance("SSL");
-                sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
+            public Void doWork(HttpEntity httpEntity) throws IOException {
+                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(httpEntity.getContent());
+                return null;
             }
-            catch (NoSuchAlgorithmException | KeyManagementException ex)
-            {
-            }
-
-            HostnameVerifier allHostsValid = new HostnameVerifier()
-            {
-                @Override
-                public boolean verify(String hostname, SSLSession session)
-                {
-                return true;
-                }
-            };
-
-            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-        }
+        });
     }
 }
 
