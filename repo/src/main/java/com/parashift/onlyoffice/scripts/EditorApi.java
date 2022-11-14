@@ -153,7 +153,6 @@ public class EditorApi extends AbstractWebScript {
             JSONObject data = new JSONObject();
 
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                String docTitle = util.getTitle(node);
                 String fileType = util.getExtension(node);
                 if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
@@ -161,7 +160,7 @@ public class EditorApi extends AbstractWebScript {
 
                 try {
                     String downloadUrl = converterService.convert(util.getKey(node), fileType, "docxf", urlManager.getContentUrl(node), mesService.getLocale().toLanguageTag());
-                    docTitle = docTitle.substring(0, docTitle.lastIndexOf("."));
+                    String docTitle = util.getTitleWithoutExtension(node);
                     String newNode = createNode(folderNode, docTitle, "docxf", downloadUrl);
                     data.put("nodeRef", newNode);
                 } catch (Exception e) {

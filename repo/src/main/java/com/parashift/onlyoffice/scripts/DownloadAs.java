@@ -95,14 +95,16 @@ public class DownloadAs extends AbstractWebScript {
                     throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                 }
 
-                String docTitle = util.getTitle(node);
                 String currentExt = util.getExtension(node);
 
                 if (currentExt.equals(outputType)) {
+                    String docTitle = util.getTitle(node);
+
                     contentURL = getDownloadAPIUrl(node, docTitle);
                 } else {
                     String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
-                    docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
+                    String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+
                     URL url = new URL(urlManager.replaceDocEditorURLToInternal(downloadUrl));
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     try (InputStream inputStream = connection.getInputStream()) {
@@ -130,10 +132,10 @@ public class DownloadAs extends AbstractWebScript {
                             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
-                        String docTitle = util.getTitle(node);
                         String currentExt = util.getExtension(node);
 
                         if (currentExt.equals(outputType)) {
+                            String docTitle = util.getTitle(node);
                             ContentReader reader = contentService.getReader(node, ContentModel.PROP_CONTENT);
                             try (InputStream inputStream = reader.getContentInputStream()) {
                                 out.putArchiveEntry(new ZipArchiveEntry(docTitle));
@@ -141,7 +143,8 @@ public class DownloadAs extends AbstractWebScript {
                             }
                         } else {
                             String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
-                            docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
+                            String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+
                             URL url = new URL(urlManager.replaceDocEditorURLToInternal(downloadUrl));
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             try (InputStream inputStream = connection.getInputStream()) {
