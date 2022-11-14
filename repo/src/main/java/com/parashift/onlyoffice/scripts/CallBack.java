@@ -225,8 +225,14 @@ public class CallBack extends AbstractWebScript {
                     versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
                     cociService.checkin(wc, versionProperties, null);
 
-                    changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
-                    historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                    if (callBackJSon.has("history")) {
+                        try {
+                            changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
 
                     util.postActivity(nodeRef, false);
 
@@ -264,8 +270,15 @@ public class CallBack extends AbstractWebScript {
                     nodeService.setProperty(wc, Util.EditingHashAspect, hash);
                     nodeService.setProperty(wc, Util.EditingKeyAspect, key);
 
-                    changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
-                    historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                    if (callBackJSon.has("history")) {
+                        try {
+                            changesUrl = urlManager.replaceDocEditorURLToInternal(callBackJSon.getString("changesurl"));
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), changesUrl);
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+
                     util.postActivity(nodeRef, false);
 
                     logger.debug("Forcesave complete");
