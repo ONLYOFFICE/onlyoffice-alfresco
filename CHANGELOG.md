@@ -1,7 +1,6 @@
 # Change Log
 
-## 
-
+## 6.1.0
 ## Added
 - manage permissions from editor
 - activity when users creating and updating file
