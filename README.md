@@ -10,8 +10,11 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 
 Supported formats:
 
-* For viewing and editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
-* For converting to Office Open XML: ODT, ODP, ODS, DOC, XLS, PPT.
+* For editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
+* For editing via conversion to OOXML: CSV, ODP, ODS, ODT, RTF, TXT.
+* For viewing: DJVU, DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, PDF, RTF, TXT, XPS, OXPS, XML, CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX.
+* For converting (download as): DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XPS, OXPS, XML, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
+* For converting to Office Open XML: DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XML, FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM.
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
 
