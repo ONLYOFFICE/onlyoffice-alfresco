@@ -41,3 +41,7 @@ div {
 .invalid {
     background-color: #faecee;
 }
+
+.permissions .authority-finder-container.active {
+    top: 95px !important;
+}

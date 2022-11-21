@@ -42,6 +42,22 @@
         Alfresco.constants.URL_RESCONTEXT = "${url.context?js_string}/res/";
         Alfresco.constants.URL_PAGECONTEXT = "${url.context?js_string}/page/";
         Alfresco.constants.URL_SERVICECONTEXT = "${url.context?js_string}/service/";
+        Alfresco.constants.URI_TEMPLATES =
+            {
+                "remote-site-page": "/site/{site}/{pageid}/p/{pagename}",
+                "remote-page": "/{pageid}/p/{pagename}",
+                "share-site-page": "/site/{site}/{pageid}/ws/{webscript}",
+                "sitedashboardpage": "/site/{site}/dashboard",
+                "contextpage": "/context/{pagecontext}/{pageid}",
+                "sitepage": "/site/{site}/{pageid}",
+                "userdashboardpage": "/user/{userid}/dashboard",
+                "userpage": "/user/{userid}/{pageid}",
+                "userprofilepage": "/user/{userid}/profile",
+                "userdefaultpage": "/user/{pageid}",
+                "consoletoolpage": "/console/{pageid}/{toolid}",
+                "consolepage": "/console/{pageid}",
+                "share-page": "/{pageid}/ws/{webscript}"
+            };
 
         Alfresco.constants.JS_LOCALE = "${locale}";
         Alfresco.constants.CSRF_POLICY = {
@@ -79,6 +95,12 @@
     <script type="text/javascript" src="${url.context}/res/modules/documentlibrary/global-folder.js"></script>
     <script type="text/javascript" src="${url.context}/res/modules/documentlibrary/copy-move-to.js"></script>
     <script type="text/javascript" src="${url.context}/res/modules/documentlibrary/doclib-actions.js"></script>
+    <script type="text/javascript" src="${url.context}/res/js/forms-runtime.js"></script>
+    <script type="text/javascript" src="${url.context}/res/modules/simple-dialog.js"></script>
+    <script type="text/javascript" src="${url.context}/res/components/manage-permissions/manage-permissions.js"></script>
+    <script type="text/javascript" src="${url.context}/res/modules/roles-tooltip.js"></script>
+    <script type="text/javascript" src="${url.context}/res/components/people-finder/authority-finder.js"></script>
+    <script type="text/javascript" src="${url.context}/res/templates/manage-permissions/template.manage-permissions.js"></script>
 
     <link rel="stylesheet" type="text/css" href="${url.context}/res/css/yui-fonts-grids.css" />
     <#if theme = 'default'>
@@ -93,6 +115,9 @@
     <link rel="stylesheet" type="text/css" href="${url.context}/res/components/documentlibrary/tree.css">
     <link rel="stylesheet" type="text/css" href="${url.context}/res/modules/document-picker/document-picker.css" />
     <link rel="stylesheet" type="text/css" href="${url.context}/res/components/object-finder/object-finder.css" />
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/modules/roles-tooltip.css" />
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/components/people-finder/authority-finder.css" />
+    <link rel="stylesheet" type="text/css" href="${url.context}/res/components/manage-permissions/manage-permissions.css" />
 </head>
 
 <body id="Share" class="yui-skin-${theme} alfresco-share claro">
@@ -213,6 +238,52 @@
             documentPicker.docEditorEvent = docEditor.setRevisedFile;
             documentPicker.onShowPicker();
         };
+
+        var onRequestSharingSettings = function (event) {
+            var id = "doc-manage-permissions";
+
+            if (YAHOO.Bubbling.defaultActions["action-link"] != null) {
+                delete YAHOO.Bubbling.defaultActions["action-link"];
+            }
+
+            var managePermissionsDialog = new Alfresco.module.SimpleDialog(id);
+
+            managePermissionsDialog.setOptions({
+                width: "auto",
+                destroyOnHide: true,
+                templateUrl: Alfresco.constants.URL_SERVICECONTEXT + "components/manage-permissions/manage-permissions?nodeRef=${nodeRef}&htmlid=" + id,
+                doBeforeDialogShow: {
+                    fn: function onPermissionsTemplateLoaded() {
+                        this.dialog.header.innerText = Alfresco.util.message("page.managePermissions.title");
+
+                        var body = document.createElement("div");
+                        body.className="bd";
+                        body.style.cssText = "padding-bottom: 1em;";
+
+                        this.dialog.element.querySelector("#" + id + "-body_h").after(body);
+
+                        while (body.nextSibling) {
+                            body.appendChild(body.nextSibling);
+                        }
+
+                        var managePermissions = new Alfresco.template.ManagePermissions();
+
+                        managePermissions.setOptions({
+                            nodeRef: new Alfresco.util.NodeRef("${nodeRef}"),
+                            siteId: "${page.url.templateArgs.site!""}",
+                            rootNode: "${(config.scoped["RepositoryLibrary"]["root-node"].getValue())!"alfresco://company/home"}"
+                        });
+
+                        managePermissions.onReady();
+                        Alfresco.util.ComponentManager.get(id).onReady();
+
+                        Alfresco.util.ComponentManager.get(id)._navigateForward = function() {
+                            managePermissionsDialog.hide();
+                        }
+                    }
+                }
+            }).show();
+        }
 
         var onRequestSaveAs = function (event) {
             var copyMoveTo = new Alfresco.module.DoclibCopyMoveTo("onlyoffice-editor-copyMoveTo");
@@ -337,6 +408,9 @@
             "onRequestCompareFile": onRequestCompareFile,
             "onRequestSaveAs": onRequestSaveAs
         };
+        if (${(canManagePermissions!false)?c}) {
+            editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;
+        }
 
         if (/android|avantgo|playbook|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\|plucker|pocket|psp|symbian|treo|up\\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i
             .test(navigator.userAgent)) {
