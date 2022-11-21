@@ -106,9 +106,7 @@ public class Util {
             String version = (String) properties.get(ContentModel.PROP_VERSION_LABEL);
 
             if (version == null || version.isEmpty()) {
-                ensureVersioningEnabled(nodeRef);
-                Version v = versionService.getCurrentVersion(nodeRef);
-                key = nodeRef.getId() + "_" + v.getVersionLabel();
+                key = nodeRef.getId() + "_1.0";
             } else {
                 key = nodeRef.getId() + "_" + version;
             }
@@ -119,7 +117,8 @@ public class Util {
 
     public void ensureVersioningEnabled(NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();
-        versionProps.put(ContentModel.PROP_INITIAL_VERSION, true);
+        versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
+        versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
     }
 

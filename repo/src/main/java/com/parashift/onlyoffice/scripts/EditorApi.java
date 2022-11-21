@@ -1,9 +1,6 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConvertManager;
-import com.parashift.onlyoffice.util.JwtManager;
-import com.parashift.onlyoffice.util.UrlManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
@@ -14,6 +11,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.http.HttpEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,10 +23,7 @@ import org.springframework.extensions.webscripts.*;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +65,9 @@ public class EditorApi extends AbstractWebScript {
 
     @Autowired
     UrlManager urlManager;
+
+    @Autowired
+    RequestManager requestManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -202,31 +200,31 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private String createNode(NodeRef folderNode, String title, String ext, String url) throws IOException {
-        url = urlManager.replaceDocEditorURLToInternal(url);
+    private String createNode(NodeRef folderNode, String title, final String ext, String url) throws IOException {
         String fileName = util.getCorrectName(folderNode, title, ext);
 
-        NodeRef nodeRef = nodeService.createNode(
+        final NodeRef nodeRef = nodeService.createNode(
                 folderNode,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                 ContentModel.TYPE_CONTENT,
                 Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
-        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(mimetypeService.getMimetype(ext));
+        requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
+            public Void doWork(HttpEntity httpEntity) throws IOException {
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetypeService.getMimetype(ext));
+                writer.putContent(httpEntity.getContent());
+                return null;
+            }
+        });
 
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        util.ensureVersioningEnabled(nodeRef);
+        util.postActivity(nodeRef, true);
 
-        try (InputStream in = connection.getInputStream()) {
-            writer.putContent(in);
-            util.ensureVersioningEnabled(nodeRef);
-            util.postActivity(nodeRef, true);
-        } finally {
-            connection.disconnect();
-        }
         return nodeRef.toString();
     }
+
     private void favorite(WebScriptRequest request, WebScriptResponse response) throws IOException {
         if (request.getParameter("nodeRef") != null) {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));

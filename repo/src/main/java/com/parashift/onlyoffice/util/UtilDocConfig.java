@@ -105,6 +105,7 @@ public class UtilDocConfig {
             permObject.put("edit", false);
         } else {
             if (!cociService.isCheckedOut(nodeRef)) {
+                util.ensureVersioningEnabled(nodeRef);
                 NodeRef copyRef = cociService.checkout(nodeRef);
                 ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
                 nodeService.setProperty(copyRef, Util.EditingKeyAspect, documentObject.getString("key"));

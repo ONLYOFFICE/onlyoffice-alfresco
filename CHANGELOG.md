@@ -10,6 +10,7 @@
 - using auth0/java-jwt library
 
 ## Fixed
+- issue with a connection to a document server with a self-signed certificate [#158](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
 - changed methods for generating history objects
 - history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
 
