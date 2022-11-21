@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get Info 
         run: |
-          echo "::set-output name=artifact::$(awk '/<artifactId>/,/<\/artifactId>/' pom.xml | head -n 1 | sed 's/^[[:space:]]*//g' | sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p')"
+          echo "artifact=$(awk '/<artifactId>/,/<\/artifactId>/' pom.xml | head -n 1 | sed 's/^[[:space:]]*//g' | sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p')" >> $GITHUB_OUTPUT
         id: info
       - name: Install Java 11
         uses: actions/setup-java@v3
@@ -27,15 +27,15 @@ jobs:
           git submodule update --init --recursive
           mvn -version
           mvn clean install
-          mv ./repo/target/${{ steps.info.outputs.artifact }}-repo.jar $cwd
-          mv ./share/target/${{ steps.info.outputs.artifact }}-share.jar $cwd
+          mv ./repo/target/${{ steps.info.outputs.artifact }}-repo.amp $cwd
+          mv ./share/target/${{ steps.info.outputs.artifact }}-share.amp $cwd
       - name: Upload Repo Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.info.outputs.artifact }}-repo
-          path: ${{ steps.info.outputs.artifact }}-repo.jar
+          path: ${{ steps.info.outputs.artifact }}-repo.amp
       - name: Upload Share Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.info.outputs.artifact }}-share
-          path: ${{ steps.info.outputs.artifact }}-share.jar
+          path: ${{ steps.info.outputs.artifact }}-share.amp
