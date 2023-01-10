@@ -94,13 +94,6 @@ public class ConfigCallback extends AbstractWebScript {
             configManager.set("formatTXT", formats.getString("txt"));
             configManager.set("formatRTF", formats.getString("rtf"));
 
-            String alfrescoProto = (String) globalProp.getOrDefault("alfresco.protocol", "http");
-
-            if (alfrescoProto == "https" && docUrl.toLowerCase().startsWith("http://")) {
-                response.getWriter().write("{\"success\": false, \"message\": \"mixedcontent\"}");
-                return;
-            }
-
             logger.debug("Checking docserv url");
             if (!CheckDocServUrl()) {
                 response.getWriter().write("{\"success\": false, \"message\": \"docservunreachable\"}");
