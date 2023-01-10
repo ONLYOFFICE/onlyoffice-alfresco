@@ -1,6 +1,5 @@
 package com.parashift.onlyoffice.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -19,7 +18,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,24 +49,24 @@ public class RequestManager {
     JwtManager jwtManager;
 
     public static final int REQUEST_TIMEOUT = 60;
-    public <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback) {
+    public <R> R executeRequestToDocumentServer(String url, RequestManager.Callback<R> callback) throws Exception {
         HttpGet request = new HttpGet(urlManager.replaceDocEditorURLToInternal(url));
 
         return executeRequest(request, "Document Server", callback);
     }
 
-    public <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback) throws JsonProcessingException, JSONException {
+    public <R> R executeRequestToCommandService(JSONObject body, RequestManager.Callback<R> callback) throws Exception {
         HttpPost request = new HttpPost(urlManager.getEditorInnerUrl() + "coauthoring/CommandService.ashx");
 
         return executeRequestPost(request, body, "Command Service", callback);
     }
 
-    public <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback) throws JsonProcessingException, JSONException {
+    public <R> R executeRequestToConversionService(JSONObject body, RequestManager.Callback<R> callback) throws Exception {
         HttpPost request = new HttpPost(urlManager.getEditorInnerUrl() + "ConvertService.ashx");
         return executeRequestPost(request, body, "Conversion Service", callback);
     }
 
-    private  <R> R executeRequestPost(HttpPost request, JSONObject body, String name, RequestManager.Callback<R> callback) throws JsonProcessingException, JSONException {
+    private  <R> R executeRequestPost(HttpPost request, JSONObject body, String name, RequestManager.Callback<R> callback) throws Exception {
         if (jwtManager.jwtEnabled()) {
             String token = jwtManager.createToken(body);
 
@@ -88,7 +86,7 @@ public class RequestManager {
         return executeRequest(request, name, callback);
     }
 
-    private <R> R executeRequest(HttpUriRequest request, String name, RequestManager.Callback<R> callback) {
+    private <R> R executeRequest(HttpUriRequest request, String name, RequestManager.Callback<R> callback) throws Exception {
         try (CloseableHttpClient httpClient = getHttpClient()) {
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 StatusLine statusLine = response.getStatusLine();
@@ -110,11 +108,7 @@ public class RequestManager {
                 EntityUtils.consume(resEntity);
 
                 return result;
-            } catch (IOException e) {
-                throw new AlfrescoRuntimeException(name + " failed to connect or to read the response", e);
             }
-        } catch (Exception e) {
-            throw new AlfrescoRuntimeException(name + " failed to create an HttpClient", e);
         }
     }
 

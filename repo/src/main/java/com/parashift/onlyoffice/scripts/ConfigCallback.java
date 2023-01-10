@@ -1,6 +1,5 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.parashift.onlyoffice.util.*;
 import org.alfresco.repo.i18n.MessageService;
 import org.apache.commons.io.IOUtils;
@@ -136,42 +135,55 @@ public class ConfigCallback extends AbstractWebScript {
         String url = urlManager.getEditorInnerUrl() + "healthcheck";
 
         logger.debug("Sending GET to Document Server healthcheck");
-        return requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Boolean>() {
-            public Boolean doWork(HttpEntity httpEntity) throws IOException {
-                String content = IOUtils.toString(httpEntity.getContent(), "utf-8").trim();
-                return content.equalsIgnoreCase("true");
-            }
-        });
+
+        try {
+            return requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8").trim();
+                    return content.equalsIgnoreCase("true");
+                }
+            });
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
     }
 
-    private Boolean CheckDocServCommandService() throws SecurityException, JsonProcessingException, JSONException {
+    private Boolean CheckDocServCommandService() throws SecurityException, JSONException {
         JSONObject body = new JSONObject();
         body.put("c", "version");
 
         logger.debug("Sending POST to Command Service: " + body.toString());
-        return requestManager.executeRequestToCommandService(body, new RequestManager.Callback<Boolean>() {
-            public Boolean doWork(HttpEntity httpEntity) throws IOException, JSONException {
-                String content = IOUtils.toString(httpEntity.getContent(), "utf-8");
+        try {
+            return requestManager.executeRequestToCommandService(body, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException, JSONException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8");
 
-                logger.debug("/CommandService content: " + content);
+                    logger.debug("/CommandService content: " + content);
 
-                JSONObject callBackJson = new JSONObject(content);
+                    JSONObject callBackJson = new JSONObject(content);
 
-                if (callBackJson.isNull("error")) {
-                    return false;
+                    if (callBackJson.isNull("error")) {
+                        return false;
+                    }
+
+                    Integer errorCode = callBackJson.getInt("error");
+
+                    if (errorCode == 6) {
+                        throw new SecurityException();
+                    } else if (errorCode != 0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
-
-                Integer errorCode = callBackJson.getInt("error");
-
-                if (errorCode == 6) {
-                    throw new SecurityException();
-                } else if (errorCode != 0) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        });
+            });
+        } catch (SecurityException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     private Boolean CheckDocServConvert() throws SecurityException {

@@ -84,7 +84,7 @@ public class HistoryManager {
         }
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-            public Void doWork() throws IOException {
+            public Void doWork() throws Exception {
                 NodeRef versionNode = versionService.getCurrentVersion(nodeRef).getFrozenStateNodeRef();
                 NodeRef historyNode = util.getChildNodeByName(nodeRef, name);
                 Version historyVersion = null;

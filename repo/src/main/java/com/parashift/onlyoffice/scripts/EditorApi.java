@@ -2,6 +2,7 @@ package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.*;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -210,14 +211,20 @@ public class EditorApi extends AbstractWebScript {
                 ContentModel.TYPE_CONTENT,
                 Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
-        requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
-            public Void doWork(HttpEntity httpEntity) throws IOException {
-                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(mimetypeService.getMimetype(ext));
-                writer.putContent(httpEntity.getContent());
-                return null;
-            }
-        });
+        try {
+            requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
+                public Void doWork(HttpEntity httpEntity) throws IOException {
+                    ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(mimetypeService.getMimetype(ext));
+                    writer.putContent(httpEntity.getContent());
+                    return null;
+                }
+            });
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AlfrescoRuntimeException(e.getMessage(), e);
+        }
 
         util.ensureVersioningEnabled(nodeRef);
         util.postActivity(nodeRef, true);
