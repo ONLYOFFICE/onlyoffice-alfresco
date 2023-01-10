@@ -58,6 +58,7 @@ public class JwtManager {
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
         DecodedJWT jwt = JWT.require(algorithm)
+                .acceptLeeway(3)
                 .build()
                 .verify(token);
 
