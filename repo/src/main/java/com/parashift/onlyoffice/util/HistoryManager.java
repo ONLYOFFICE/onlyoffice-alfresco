@@ -202,7 +202,7 @@ public class HistoryManager {
             Info info = new Info();
             info.setVersion(version.getVersionLabel());
             info.setKey(util.getKey(version.getFrozenStateNodeRef()));
-            info.setCreated(util.parseDate(version.getVersionProperty("created").toString()));
+            info.setCreated(util.parseDate((Date)version.getVersionProperty(Version2Model.PROP_FROZEN_MODIFIED)));
 
             NodeRef person = personService.getPersonOrNull(version.getVersionProperty("modifier").toString());
 

@@ -12,20 +12,21 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /*
@@ -65,6 +66,8 @@ public class Util {
 
     @Autowired
     TenantService tenantService;
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
@@ -122,11 +125,10 @@ public class Util {
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
     }
 
-    public String parseDate(String date){
-        java.time.format.DateTimeFormatter dtf =
-                java.time.format.DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss zzz yyyy");
-        LocalDateTime dateParsed = LocalDateTime.parse(date, dtf);
-        return dateParsed.toString().replace("T", " ").substring(0, dateParsed.toString().length());
+    public String parseDate(Date date){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        return dateFormat.format(date);
     }
 
     public String generateHash() {
