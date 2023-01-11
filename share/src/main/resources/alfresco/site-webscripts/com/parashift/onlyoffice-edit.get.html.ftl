@@ -191,6 +191,27 @@
                 successCallback: {
                     fn: function (response) {
                         var historyInfo = response.json;
+
+                        for (var i = 0; i < historyInfo.history.length; i++) {
+                            historyInfo.history[i].created = Alfresco.util.formatDate(Alfresco.util.fromISO8601(historyInfo.history[i].created), "ddd d mmm yyyy HH:MM:ss");
+
+                            if (historyInfo.history[i].changes) {
+                                for (var t = 0; t < historyInfo.history[i].changes.length; t++) {
+                                    const created = new Date(historyInfo.history[i].changes[t].created);
+                                    const createdUTC = new Date(Date.UTC(
+                                        created.getFullYear(),
+                                        created.getMonth(),
+                                        created.getDate(),
+                                        created.getHours(),
+                                        created.getMinutes(),
+                                        created.getSeconds()
+                                    ));
+
+                                    historyInfo.history[i].changes[t].created = Alfresco.util.formatDate(Alfresco.util.fromISO8601(createdUTC.toISOString()), "ddd d mmm yyyy HH:MM:ss");
+                                }
+                            }
+                        }
+
                         docEditor.refreshHistory({
                             currentVersion: historyInfo.currentVersion,
                             history: historyInfo.history

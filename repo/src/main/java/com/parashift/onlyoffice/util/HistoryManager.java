@@ -13,6 +13,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
 import org.apache.http.HttpEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,7 +203,8 @@ public class HistoryManager {
             Info info = new Info();
             info.setVersion(version.getVersionLabel());
             info.setKey(util.getKey(version.getFrozenStateNodeRef()));
-            info.setCreated(util.parseDate((Date)version.getVersionProperty(Version2Model.PROP_FROZEN_MODIFIED)));
+            Date created = (Date) version.getVersionProperty(Version2Model.PROP_FROZEN_MODIFIED);
+            info.setCreated(ISO8601DateFormat.format(created));
 
             NodeRef person = personService.getPersonOrNull(version.getVersionProperty("modifier").toString());
 

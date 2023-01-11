@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /*
@@ -128,12 +127,6 @@ public class Util {
         versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
         versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
-    }
-
-    public String parseDate(Date date){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        return dateFormat.format(date);
     }
 
     public String generateHash() {
