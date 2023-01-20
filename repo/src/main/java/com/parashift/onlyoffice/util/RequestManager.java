@@ -35,7 +35,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Service

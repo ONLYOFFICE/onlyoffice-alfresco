@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /*
-   Copyright (c) Ascensio System SIA 2022. All rights reserved.
+   Copyright (c) Ascensio System SIA 2023. All rights reserved.
    http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.editor-api.post")

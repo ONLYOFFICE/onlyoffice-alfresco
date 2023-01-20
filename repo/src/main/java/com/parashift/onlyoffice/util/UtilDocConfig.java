@@ -20,7 +20,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.stereotype.Service;
 
 /*
-   Copyright (c) Ascensio System SIA 2022. All rights reserved.
+   Copyright (c) Ascensio System SIA 2023. All rights reserved.
    http://www.onlyoffice.com
 */
 
