@@ -82,6 +82,7 @@ public class Util {
         put("en", "en-US");
         put("es", "es-ES");
         put("fr", "fr-FR");
+        put("gl", "gl-ES");
         put("it", "it-IT");
         put("ja", "ja-JP");
         put("ko", "ko-KR");
