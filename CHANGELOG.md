@@ -4,7 +4,7 @@
 ## Added
 - manage permissions from editor
 - activity when users creating and updating file
-- Chinese (Traditional, Taiwan) and Malay (Malaysia) empty file templates
+- Chinese (Traditional, Taiwan), Turkish (Turkey) and Malay (Malaysia) empty file templates
 - moving from a Simple Module (JAR) to AMP (Alfresco Module Package)
 - using auth0/java-jwt library
 

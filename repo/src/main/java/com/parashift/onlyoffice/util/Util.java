@@ -86,6 +86,8 @@ public class Util {
         put("ja", "ja-JP");
         put("ko", "ko-KR");
         put("lv", "lv-LV");
+        put("ms", "ms-MY");
+        put("ms-MY", "ms-MY");
         put("nl", "nl-NL");
         put("pl", "pl-PL");
         put("pt-BR", "pt-BR");
@@ -93,9 +95,11 @@ public class Util {
         put("ru", "ru-RU");
         put("sk", "sk-SK");
         put("sv", "sv-SE");
+        put("tr", "tr-TR");
         put("uk", "uk-UA");
         put("vi", "vi-VN");
         put("zh", "zh-CN");
+        put("zh-TW", "zh-TW");
     }};
 
     public String getKey(NodeRef nodeRef) {
