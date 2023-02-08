@@ -278,6 +278,19 @@
                         Alfresco.util.ComponentManager.get(id).onReady();
 
                         Alfresco.util.ComponentManager.get(id)._navigateForward = function() {
+                            Alfresco.util.Ajax.jsonGet({
+                                url:  Alfresco.constants.PROXY_URI + "parashift/onlyoffice/copy-permissions?nodeRef=${nodeRef}",
+                                failureCallback: {
+                                    fn: function(response) {
+                                        Alfresco.util.PopupManager.displayPrompt({
+                                            title: this.msg("message.failure"),
+                                            text: "Failed to copy permissions from source node to working copy node!"
+                                        });
+                                    },
+                                    scope: this
+                               }
+                            });
+
                             managePermissionsDialog.hide();
                         }
                     }
