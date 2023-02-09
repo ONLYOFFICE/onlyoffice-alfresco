@@ -266,6 +266,10 @@
                             body.appendChild(body.nextSibling);
                         }
 
+                        // fix before https://github.com/Alfresco/alfresco-community-share/blob/24adbcea9179ff70075b2ee85ab90003acdaf7fe/share/src/main/webapp/modules/simple-dialog.js#L382
+                        this.widgets.okButton = Alfresco.util.createYUIButton(this, "okButton", null, { type: "submit" });
+                        this.widgets.cancelButton = Alfresco.util.createYUIButton(this, "cancelButton", this.onCancel);
+
                         var managePermissions = new Alfresco.template.ManagePermissions();
 
                         managePermissions.setOptions({
