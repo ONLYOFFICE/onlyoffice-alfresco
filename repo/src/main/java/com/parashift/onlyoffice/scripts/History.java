@@ -1,72 +1,79 @@
 package com.parashift.onlyoffice.scripts;
 
-
-import com.parashift.onlyoffice.util.Util;
-import org.alfresco.service.cmr.repository.NodeRef;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.parashift.onlyoffice.util.HistoryManager;
+import com.parashift.onlyoffice.util.HistoryManager.HistoryData;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.*;
 import org.springframework.stereotype.Component;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.history.get")
 public class History extends AbstractWebScript {
 
-    @Autowired
-    Util util;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     PermissionService permissionService;
 
+    @Autowired
+    HistoryManager historyManager;
+
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
-        response.setContentType("application/json; charset=utf-8");
-        response.setContentEncoding("UTF-8");
-        if (request.getParameter("nodeRef") != null) {
-            NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
-                throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
-            }
-            JSONObject history = util.getHistoryObj(nodeRef);
-            if (request.getParameter("version") == null) {
-                try {
-                    response.getWriter().write(history.getJSONArray("history").toString(3));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    throw new WebScriptException("Error on casting json to string: " + e.getMessage());
+        ObjectMapper objectMapper = new ObjectMapper();
+        String type = request.getServiceMatch().getTemplateVars().get("type");
+        String nodeRefString = request.getParameter("nodeRef");
+
+        if (type == null || type.isEmpty()) {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not find required 'type' parameter!");
+        }
+
+        if (nodeRefString == null || nodeRefString.isEmpty()) {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not find required 'nodeRef' parameter!");
+        }
+
+        NodeRef nodeRef = new NodeRef(nodeRefString);
+
+        if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
+        }
+
+        switch (type.toLowerCase()) {
+            case "info":
+                Map<String, Object> historyInfo = historyManager.getHistoryInfo(nodeRef);
+
+                response.setContentType("application/json; charset=utf-8");
+                response.setContentEncoding("UTF-8");
+                response.getWriter().write(objectMapper.writeValueAsString(historyInfo));
+                break;
+            case "data":
+                String versionLabel = request.getParameter("version");
+
+                if (versionLabel == null || versionLabel.isEmpty()) {
+                    throw new WebScriptException(404, "Not found parameter version!");
                 }
-            } else {
-                Boolean versionExist = false;
-                String version = request.getParameter("version");
-                try {
-                    JSONArray historyDataArray = history.getJSONArray("data");
-                    for (int i = 0; i < historyDataArray.length(); i++) {
-                        if (version.equals(historyDataArray.getJSONObject(i).getString("version"))) {
-                            versionExist = true;
-                            response.getWriter().write(historyDataArray.getJSONObject(i).toString(3));
-                        }
-                    }
-                    if (!versionExist) {
-                        response.getWriter().write((String) null);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    throw new WebScriptException("Error with historyData array :" + e.getMessage());
-                }
-            }
+
+                HistoryData historyData = historyManager.getHistoryData(nodeRef, versionLabel);
+
+                response.setContentType("application/json; charset=utf-8");
+                response.setContentEncoding("UTF-8");
+                response.getWriter().write(objectMapper.writeValueAsString(historyData));
+                break;
+            default:
+                throw new WebScriptException(404, "Unknown parameter 'type': '" + type + "'!");
         }
     }
 }

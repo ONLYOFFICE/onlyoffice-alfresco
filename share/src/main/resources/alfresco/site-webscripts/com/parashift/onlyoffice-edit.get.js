@@ -1,5 +1,5 @@
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -18,7 +18,10 @@ if (url.args.sample) query +="&sample=" + url.args.sample;
     model.folderNode = pObj.folderNode;
     model.demo = pObj.demo;
     model.favorite = pObj.favorite;
-    model.historyUrl = pObj.historyUrl;
+    model.historyInfoUrl = pObj.historyInfoUrl;
+    model.historyDataUrl = pObj.historyDataUrl;
+    model.canManagePermissions = pObj.canManagePermissions;
+    model.nodeRef = url.args.nodeRef;
 } else {
     var query = "parentNodeRef=" + url.args.parentNodeRef;
     query += "&new=" + url.args.new;

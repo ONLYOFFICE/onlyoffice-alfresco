@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 -->
 
@@ -14,7 +14,11 @@
                 docEditor = new DocsAPI.DocEditor("embeddedView", editorConfig);
             }
 
-            YAHOO.Bubbling.on("webPreviewSetupComplete", connectEditor, this);
+            if (window.addEventListener) {
+                window.addEventListener("load", connectEditor);
+            } else if (window.attachEvent) {
+                window.attachEvent("load", connectEditor);
+            }
         </script>
     </@markup>
 </#if>

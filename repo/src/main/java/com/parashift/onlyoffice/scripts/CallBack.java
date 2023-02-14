@@ -1,27 +1,17 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConfigManager;
-import com.parashift.onlyoffice.util.ConvertManager;
-import com.parashift.onlyoffice.util.JwtManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.*;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.RenditionModel;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.http.HttpEntity;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,27 +23,15 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.Base64;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by cetra on 20/10/15.
  */
  /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.callback.post")
@@ -62,10 +40,6 @@ public class CallBack extends AbstractWebScript {
     @Autowired
     @Qualifier("checkOutCheckInService")
     CheckOutCheckInService cociService;
-
-    @Autowired
-    @Qualifier("policyBehaviourFilter")
-    BehaviourFilter behaviourFilter;
 
     @Autowired
     ContentService contentService;
@@ -89,10 +63,16 @@ public class CallBack extends AbstractWebScript {
     TransactionService transactionService;
 
     @Autowired
-    VersionService versionService;
+    HistoryManager historyManager;
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
+
+    @Autowired
+    RequestManager requestManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -109,6 +89,7 @@ public class CallBack extends AbstractWebScript {
 
             if (jwtManager.jwtEnabled()) {
                 String token = callBackJSon.optString("token");
+                String payload = null;
                 Boolean inBody = true;
 
                 if (token == null || token == "") {
@@ -122,11 +103,13 @@ public class CallBack extends AbstractWebScript {
                     throw new SecurityException("Expected JWT");
                 }
 
-                if (!jwtManager.verify(token)) {
+                try {
+                    payload = jwtManager.verify(token);
+                } catch (Exception e) {
                     throw new SecurityException("JWT verification failed");
                 }
 
-                JSONObject bodyFromToken = new JSONObject(new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]), "UTF-8"));
+                JSONObject bodyFromToken = new JSONObject(payload);
 
                 if (inBody) {
                     callBackJSon = bodyFromToken;
@@ -209,7 +192,8 @@ public class CallBack extends AbstractWebScript {
         @Override
         public Object execute() throws Throwable {
             NodeRef wc = cociService.getWorkingCopy(nodeRef);
-            String downloadUrl = null;
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+
             //Status codes from here: https://api.onlyoffice.com/editors/editor
             switch(callBackJSon.getInt("status")) {
                 case 0:
@@ -222,15 +206,26 @@ public class CallBack extends AbstractWebScript {
                     break;
                 case 2:
                     logger.debug("Document Updated, changing content");
-                    downloadUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
-                    updateNode(wc, downloadUrl);
+                    updateNode(wc, callBackJSon.getString("url"));
 
                     logger.info("removing prop");
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
                     nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
-                    cociService.checkin(wc, null, null);
-                    saveHistoryToChildNode(nodeRef, callBackJSon, false);
+                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+                    cociService.checkin(wc, versionProperties, null);
+
+                    if (callBackJSon.has("history")) {
+                        try {
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), callBackJSon.getString("changesurl"));
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+
+                    util.postActivity(nodeRef, false);
+
+                    logger.debug("Save complete");
                     break;
                 case 3:
                     logger.error("ONLYOFFICE has reported that saving the document has failed");
@@ -249,8 +244,7 @@ public class CallBack extends AbstractWebScript {
                     }
 
                     logger.debug("Forcesave request (type: " + callBackJSon.getInt("forcesavetype") + ")");
-                    downloadUrl = util.replaceDocEditorURLToInternal(callBackJSon.getString("url"));
-                    updateNode(wc, downloadUrl);
+                    updateNode(wc, callBackJSon.getString("url"));
 
                     String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
                     String key = (String) nodeService.getProperty(wc, Util.EditingKeyAspect);
@@ -258,81 +252,26 @@ public class CallBack extends AbstractWebScript {
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
                     nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
-                    cociService.checkin(wc, null, null, true);
+                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                    cociService.checkin(wc, versionProperties, null, true);
 
                     nodeService.setProperty(wc, Util.EditingHashAspect, hash);
                     nodeService.setProperty(wc, Util.EditingKeyAspect, key);
 
-                    saveHistoryToChildNode(nodeRef, callBackJSon, true);
+                    if (callBackJSon.has("history")) {
+                        try {
+                            historyManager.saveHistory(nodeRef, callBackJSon.getJSONObject("history"), callBackJSon.getString("changesurl"));
+                        } catch (Exception e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    }
+
+                    util.postActivity(nodeRef, false);
 
                     logger.debug("Forcesave complete");
                     break;
             }
             return null;
-        }
-    }
-
-    private void saveHistoryToChildNode(final NodeRef nodeRef, final JSONObject changes, final Boolean forceSave) {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-            public Void doWork() {
-                Map<QName, Serializable> props = new HashMap<>();
-                NodeRef jsonNode = null;
-                NodeRef zipNode = null;
-                for (ChildAssociationRef assoc : nodeService.getChildAssocs(nodeRef)) {
-                    if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("changes.json")) {
-                        jsonNode = assoc.getChildRef();
-                    } else if (nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_NAME).equals("diff.zip")) {
-                        zipNode = assoc.getChildRef();
-                    }
-                }
-                if (jsonNode == null && zipNode == null) {
-                    props.put(ContentModel.PROP_NAME, "diff.zip");
-                    NodeRef historyNodeRefZip = nodeService.createNode(nodeRef, RenditionModel.ASSOC_RENDITION,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "diff.zip"),
-                            ContentModel.TYPE_CONTENT, props).getChildRef();
-
-                    props.clear();
-                    props.put(ContentModel.PROP_NAME, "changes.json");
-                    NodeRef historyNodeRefJson = nodeService.createNode(nodeRef, RenditionModel.ASSOC_RENDITION,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "changes.json"),
-                            ContentModel.TYPE_CONTENT, props).getChildRef();
-                    writeContent(historyNodeRefZip, historyNodeRefJson, changes, forceSave, nodeRef);
-
-                    util.ensureVersioningEnabled(historyNodeRefZip);
-                    util.ensureVersioningEnabled(historyNodeRefJson);
-                } else {
-                    writeContent(zipNode, jsonNode, changes, forceSave, nodeRef);
-                }
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-    private void writeContent(NodeRef zipNode, NodeRef jsonNode, JSONObject changes, Boolean forceSave, NodeRef nodeRef) {
-        try {
-            if (!forceSave) {
-                Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-                if (!versionService.getCurrentVersion(nodeRef).getVersionLabel().equals("1.0")) {
-                    Version nodeRefVersion = versionService.createVersion(nodeRef, versionProperties);
-                    versionProperties.put(ContentModel.PROP_INITIAL_VERSION.getLocalName(), false);
-                    Version zipNodeVersion = versionService.createVersion(zipNode, versionProperties);
-                    Version jsonNodeVersion = versionService.createVersion(jsonNode, versionProperties);
-                    zipNodeVersion.getVersionProperties().put(VersionModel.PROP_CREATED_DATE, nodeRefVersion.getVersionProperty(VersionModel.PROP_CREATED_DATE));
-                    jsonNodeVersion.getVersionProperties().put(VersionModel.PROP_CREATED_DATE, nodeRefVersion.getVersionProperty(VersionModel.PROP_CREATED_DATE));
-                } else {
-                    versionService.createVersion(nodeRef, versionProperties);
-                }
-            }
-            ContentWriter writer = this.contentService.getWriter(zipNode, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype("application/zip");
-            URL url = new URL(changes.getString("changesurl"));
-            InputStream in = url.openStream();
-            writer.putContent(in);
-            writer = this.contentService.getWriter(jsonNode, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype("application/json");
-            writer.putContent(changes.getJSONObject("history").toString());
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -363,64 +302,12 @@ public class CallBack extends AbstractWebScript {
             }
         }
 
-        try {
-            checkCert();
-            InputStream in = new URL( url ).openStream();
-            contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new Exception("Error while downloading new document version: " + e.getMessage(), e);
-        }
-    }
-
-    private void checkCert() {
-        String cert = (String) configManager.getOrDefault("cert", "no");
-        if (cert.equals("true")) {
-            TrustManager[] trustAllCerts = new TrustManager[]
-            {
-                new X509TrustManager()
-                {
-                    @Override
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers()
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public void checkClientTrusted(X509Certificate[] certs, String authType)
-                    {
-                    }
-
-                    @Override
-                    public void checkServerTrusted(X509Certificate[] certs, String authType)
-                    {
-                    }
-                }
-            };
-
-            SSLContext sc;
-
-            try
-            {
-                sc = SSLContext.getInstance("SSL");
-                sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
+            public Void doWork(HttpEntity httpEntity) throws IOException {
+                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(httpEntity.getContent());
+                return null;
             }
-            catch (NoSuchAlgorithmException | KeyManagementException ex)
-            {
-            }
-
-            HostnameVerifier allHostsValid = new HostnameVerifier()
-            {
-                @Override
-                public boolean verify(String hostname, SSLSession session)
-                {
-                return true;
-                }
-            };
-
-            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-        }
+        });
     }
 }
 

@@ -1,0 +1,6 @@
+<webscript>
+    <shortname>ONLYOFFICE Permissions Copy</shortname>
+    <description>Permissions copy from source node to working copy node</description>
+    <url>/parashift/onlyoffice/copy-permissions</url>
+    <authentication>user</authentication>
+</webscript>

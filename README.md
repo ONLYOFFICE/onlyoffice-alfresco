@@ -10,8 +10,11 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 
 Supported formats:
 
-* For viewing and editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
-* For converting to Office Open XML: ODT, ODP, ODS, DOC, XLS, PPT.
+* For editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
+* For editing via conversion to OOXML: CSV, ODP, ODS, ODT, RTF, TXT.
+* For viewing: DJVU, DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, PDF, RTF, TXT, XPS, OXPS, XML, CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX.
+* For converting (download as): DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XPS, OXPS, XML, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
+* For converting to Office Open XML: DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XML, FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM.
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
 
@@ -33,14 +36,27 @@ To start using ONLYOFFICE Document Server with Alfresco, the following steps mus
 
 The latest compiled package files are available [here](https://github.com/onlyoffice/onlyoffice-alfresco/releases).
 
-1. Upload the compiled **\*.jar** packages to directories accordingly for your Alfresco installation:
-    * from `onlyoffice-alfresco/repo/target/` to the `/webapps/alfresco/WEB-INF/lib/` for Alfresco repository,
-    * from `onlyoffice-alfresco/share/target/` to `/webapps/share/WEB-INF/lib/` for Share.
+1. Upload the compiled **\*.amp** packages to directories accordingly for your Alfresco installation:
+    * from `onlyoffice-alfresco/repo/target/` to the `/usr/local/tomcat/amps/` for Alfresco repository,
+    * from `onlyoffice-alfresco/share/target/` to `/usr/local/tomcat/amps_share/` for Share.
 
-2. Make sure that Document Server will be able to POST to Alfresco.
+2. Use the Module Management Tool (MMT) to install modules, run this commands:
+
+    Alfresco:
+    ```
+    java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt.jar install /usr/local/tomcat/amps/onlyoffice-integration-repo.amp /usr/local/tomcat/webapps/alfresco
+    ```
+
+    Share:
+    ```
+    java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt.jar install /usr/local/tomcat/amps_share/onlyoffice-integration-share.amp /usr/local/tomcat/webapps/share
+    ```
+
+    > More details about using MMT can be found here `https://docs.alfresco.com/content-services/latest/install/zip/amp/`
+
+3. Make sure that Document Server will be able to POST to Alfresco.
 
     You may need to change these lines in `alfresco-global.properties` or you can set it using [configuration page](#configuration)
-
     ```
     alfresco.host=<hostname>
     alfresco.port=443

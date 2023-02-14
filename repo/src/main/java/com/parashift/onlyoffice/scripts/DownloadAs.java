@@ -1,7 +1,6 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConvertManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.download.DownloadStatusUpdateService;
@@ -17,24 +16,22 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.zip.Deflater;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.download-as.post")
@@ -44,8 +41,6 @@ public class DownloadAs extends AbstractWebScript {
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String ZIP_EXTENSION = ".zip";
     private final static String CONTENT_DOWNLOAD_API_URL = "slingshot/node/content/{0}/{1}/{2}/{3}";
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     ConvertManager converterService;
@@ -74,6 +69,12 @@ public class DownloadAs extends AbstractWebScript {
     @Autowired
     MessageService mesService;
 
+    @Autowired
+    UrlManager urlManager;
+
+    @Autowired
+    RequestManager requestManager;
+
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
         try {
@@ -85,26 +86,30 @@ public class DownloadAs extends AbstractWebScript {
                 JSONObject data = requestDataJson.getJSONObject(0);
 
                 NodeRef node = new NodeRef(data.getString("nodeRef"));
-                String outputType = data.getString("outputType");
+                final String outputType = data.getString("outputType");
 
                 if (permissionService.hasPermission(node, PermissionService.READ) != AccessStatus.ALLOWED) {
                     throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                 }
 
-                Map<QName, Serializable> properties = nodeService.getProperties(node);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String currentExt = util.getExtension(node);
 
                 if (currentExt.equals(outputType)) {
+                    String docTitle = util.getTitle(node);
+
                     contentURL = getDownloadAPIUrl(node, docTitle);
                 } else {
-                    String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, util.getContentUrl(node), region);
-                    docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
-                    URL url = new URL(util.replaceDocEditorURLToInternal(downloadUrl));
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    try (InputStream inputStream = connection.getInputStream()) {
-                        contentURL = createDownloadNode(docTitle, mimetypeService.getMimetype(outputType), inputStream, connection.getContentLength(), 1);
-                    }
+                    String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
+                    final String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+
+                    contentURL = requestManager.executeRequestToDocumentServer(downloadUrl, new RequestManager.Callback<String>() {
+                        public String doWork(HttpEntity httpEntity) throws IOException {
+                            byte[] bytes = EntityUtils.toByteArray(httpEntity);
+                            InputStream inputStream = new ByteArrayInputStream(bytes);
+
+                            return createDownloadNode(docTitle, mimetypeService.getMimetype(outputType), inputStream, bytes.length, 1);
+                        }
+                    });
                 }
             } else {
                 File zip = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ZIP_EXTENSION);
@@ -127,25 +132,26 @@ public class DownloadAs extends AbstractWebScript {
                             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
-                        Map<QName, Serializable> properties = nodeService.getProperties(node);
-                        String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                        String currentExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                        String currentExt = util.getExtension(node);
 
                         if (currentExt.equals(outputType)) {
+                            String docTitle = util.getTitle(node);
                             ContentReader reader = contentService.getReader(node, ContentModel.PROP_CONTENT);
                             try (InputStream inputStream = reader.getContentInputStream()) {
                                 out.putArchiveEntry(new ZipArchiveEntry(docTitle));
                                 totalSize = totalSize + IOUtils.copyLarge(inputStream, out);
                             }
                         } else {
-                            String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, util.getContentUrl(node), region);
-                            docTitle = docTitle.substring(0, docTitle.lastIndexOf(".") + 1) + outputType;
-                            URL url = new URL(util.replaceDocEditorURLToInternal(downloadUrl));
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                            try (InputStream inputStream = connection.getInputStream()) {
-                                out.putArchiveEntry(new ZipArchiveEntry(docTitle));
-                                totalSize = totalSize + IOUtils.copyLarge(inputStream, out);
-                            }
+                            String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
+                            String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+
+                            out.putArchiveEntry(new ZipArchiveEntry(docTitle));
+
+                            totalSize += requestManager.executeRequestToDocumentServer(downloadUrl, new RequestManager.Callback<Long>() {
+                                public Long doWork(HttpEntity httpEntity) throws IOException {
+                                    return IOUtils.copyLarge(httpEntity.getContent(), out);
+                                }
+                            });
                         }
 
                         out.closeArchiveEntry();

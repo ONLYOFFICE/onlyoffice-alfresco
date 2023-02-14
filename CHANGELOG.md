@@ -1,5 +1,18 @@
 # Change Log
 
+## 6.1.0
+## Added
+- manage permissions from editor
+- activity when users creating and updating file
+- Chinese (Traditional, Taiwan), Turkish (Turkey) and Malay (Malaysia) empty file templates
+- moving from a Simple Module (JAR) to AMP (Alfresco Module Package)
+- using auth0/java-jwt library
+
+## Fixed
+- issue with a connection to a document server with a self-signed certificate [#158](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/158)
+- changed methods for generating history objects
+- history files were hidden [#164](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/164)
+
 ## 6.0.1
 ## Fixed
 - issue with preview documents [#162](https://github.com/ONLYOFFICE/onlyoffice-alfresco/issues/162)

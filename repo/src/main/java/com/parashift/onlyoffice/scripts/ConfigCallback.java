@@ -1,19 +1,9 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConfigManager;
-import com.parashift.onlyoffice.util.ConvertManager;
-import com.parashift.onlyoffice.util.JwtManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.*;
 import org.alfresco.repo.i18n.MessageService;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.HttpEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -31,7 +21,7 @@ import java.util.Date;
 import java.util.Properties;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.onlyoffice-config.post")
@@ -41,9 +31,6 @@ public class ConfigCallback extends AbstractWebScript {
     ConfigManager configManager;
 
     @Autowired
-    JwtManager jwtManager;
-
-    @Autowired
     @Qualifier("global-properties")
     Properties globalProp;
 
@@ -51,10 +38,13 @@ public class ConfigCallback extends AbstractWebScript {
     ConvertManager converter;
 
     @Autowired
-    Util util;
+    UrlManager urlManager;
 
     @Autowired
     MessageService mesService;
+
+    @Autowired
+    RequestManager requestManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -76,7 +66,6 @@ public class ConfigCallback extends AbstractWebScript {
 
             if (configManager.demoActive()) {
                 docUrl = configManager.getDemo("url");
-                docInnerUrl = configManager.getDemo("url");
             } else {
                 configManager.set("url", docUrl);
                 configManager.set("innerurl", docInnerUrl);
@@ -104,29 +93,21 @@ public class ConfigCallback extends AbstractWebScript {
             configManager.set("formatTXT", formats.getString("txt"));
             configManager.set("formatRTF", formats.getString("rtf"));
 
-            String alfrescoProto = (String) globalProp.getOrDefault("alfresco.protocol", "http");
-
-            if (alfrescoProto == "https" && docUrl.toLowerCase().startsWith("http://")) {
-                response.getWriter().write("{\"success\": false, \"message\": \"mixedcontent\"}");
-                return;
-            }
-
-            docInnerUrl = docInnerUrl.isEmpty() ? docUrl : docInnerUrl;
             logger.debug("Checking docserv url");
-            if (!CheckDocServUrl(docInnerUrl)) {
+            if (!CheckDocServUrl()) {
                 response.getWriter().write("{\"success\": false, \"message\": \"docservunreachable\"}");
                 return;
             }
 
             try {
                 logger.debug("Checking docserv commandservice");
-                if (!CheckDocServCommandService(docInnerUrl)) {
+                if (!CheckDocServCommandService()) {
                     response.getWriter().write("{\"success\": false, \"message\": \"docservcommand\"}");
                     return;
                 }
 
                 logger.debug("Checking docserv convert");
-                if (!CheckDocServConvert(docInnerUrl)) {
+                if (!CheckDocServConvert()) {
                     response.getWriter().write("{\"success\": false, \"message\": \"docservconvert\"}");
                     return;
                 }
@@ -150,79 +131,66 @@ public class ConfigCallback extends AbstractWebScript {
         return url;
     }
 
-    private Boolean CheckDocServUrl(String url) {
-        try(CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet(url + "healthcheck");
-            try(CloseableHttpResponse response = httpClient.execute(request)) {
-                String content = IOUtils.toString(response.getEntity().getContent(), "utf-8").trim();
-                if (content.equalsIgnoreCase("true")) return true;
-            }
-        } catch (Exception e) {
-            logger.debug("/healthcheck error: " + e.getMessage());
-        }
+    private Boolean CheckDocServUrl() {
+        String url = urlManager.getEditorInnerUrl() + "healthcheck";
 
-        return false;
+        logger.debug("Sending GET to Document Server healthcheck");
+
+        try {
+            return requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8").trim();
+                    return content.equalsIgnoreCase("true");
+                }
+            });
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return false;
+        }
     }
 
-    private Boolean CheckDocServCommandService(String url) throws SecurityException {
-        Integer errorCode = -1;
-        try(CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            JSONObject body = new JSONObject();
-            body.put("c", "version");
+    private Boolean CheckDocServCommandService() throws SecurityException, JSONException {
+        JSONObject body = new JSONObject();
+        body.put("c", "version");
 
-            HttpPost request = new HttpPost(url + "coauthoring/CommandService.ashx");
+        logger.debug("Sending POST to Command Service: " + body.toString());
+        try {
+            return requestManager.executeRequestToCommandService(body, new RequestManager.Callback<Boolean>() {
+                public Boolean doWork(HttpEntity httpEntity) throws IOException, JSONException {
+                    String content = IOUtils.toString(httpEntity.getContent(), "utf-8");
 
-            if (jwtManager.jwtEnabled()) {
-                String token = jwtManager.createToken(body);
-                JSONObject payloadBody = new JSONObject();
-                payloadBody.put("payload", body);
-                String headerToken = jwtManager.createToken(body);
-                body.put("token", token);
-                request.setHeader(jwtManager.getJwtHeader(), "Bearer " + headerToken);
-            }
-
-            StringEntity requestEntity = new StringEntity(body.toString(), ContentType.APPLICATION_JSON);
-            request.setEntity(requestEntity);
-            request.setHeader("Accept", "application/json");
-
-            logger.debug("Sending POST to Docserver: " + body.toString());
-            try(CloseableHttpResponse response = httpClient.execute(request)) {
-                int status = response.getStatusLine().getStatusCode();
-
-                if(status != HttpStatus.SC_OK) {
-                    return false;
-                } else {
-                    String content = IOUtils.toString(response.getEntity().getContent(), "utf-8");
                     logger.debug("/CommandService content: " + content);
-                    JSONObject callBackJSon = null;
-                    callBackJSon = new JSONObject(content);
 
-                    if (callBackJSon.isNull("error")) {
+                    JSONObject callBackJson = new JSONObject(content);
+
+                    if (callBackJson.isNull("error")) {
                         return false;
                     }
 
-                    errorCode = callBackJSon.getInt("error");
-                }
-            }
-        } catch (Exception e) {
-            logger.debug("/CommandService error: " + e.getMessage());
-            return false;
-        }
+                    Integer errorCode = callBackJson.getInt("error");
 
-        if (errorCode == 6) {
-            throw new SecurityException();
-        } else if (errorCode != 0) {
+                    if (errorCode == 6) {
+                        throw new SecurityException();
+                    } else if (errorCode != 0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            });
+        } catch (SecurityException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             return false;
-        } else {
-            return true;
         }
     }
 
-    private Boolean CheckDocServConvert(String url) throws SecurityException {
+    private Boolean CheckDocServConvert() throws SecurityException {
         String key = new SimpleDateFormat("MMddyyyyHHmmss").format(new Date());
 
         try {
-            String newFileUrl = converter.convert(key, "txt", "docx", util.getTestConversionUrl(), mesService.getLocale().toLanguageTag());
+            String newFileUrl = converter.convert(key, "txt", "docx", urlManager.getTestConversionUrl(), mesService.getLocale().toLanguageTag());
             logger.debug("/ConvertService url: " + newFileUrl);
 
             if (newFileUrl == null || newFileUrl.isEmpty()) {

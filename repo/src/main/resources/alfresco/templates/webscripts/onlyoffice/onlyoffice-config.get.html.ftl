@@ -1,13 +1,18 @@
 <#include "/org/alfresco/repository/admin/admin-template.ftl" />
 
 <!--
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 -->
 
 <@page title=msg("onlyoffice-config.title") readonly=true>
 
 </form>
+
+<div style="margin: 1em 0 0.666em;" class="hidden">
+    <span data-saved="${msg('onlyoffice-config.saved')}" data-error="${msg('onlyoffice-config.error')}" data-mixedcontent="${msg('onlyoffice-config.mixedcontent')}" data-jsonparse="${msg('onlyoffice-config.jsonparse')}" data-docservunreachable="${msg('onlyoffice-config.docservunreachable')}" data-docservcommand="${msg('onlyoffice-config.docservcommand')}" data-docservconvert="${msg('onlyoffice-config.docservconvert')}" data-jwterror="${msg('onlyoffice-config.jwterror')}" data-statuscode="${msg('onlyoffice-config.statuscode')}" id="onlyresponse" class="message hidden"></span>
+</div>
+
 <div class="column-left">
    <@section label=msg("onlyoffice-config.doc-section") />
 
@@ -133,8 +138,6 @@
           </tr>
       </table>
    </form>
-   <br>
-   <span data-saved="${msg('onlyoffice-config.saved')}" data-error="${msg('onlyoffice-config.error')}" data-mixedcontent="${msg('onlyoffice-config.mixedcontent')}" data-jsonparse="${msg('onlyoffice-config.jsonparse')}" data-docservunreachable="${msg('onlyoffice-config.docservunreachable')}" data-docservcommand="${msg('onlyoffice-config.docservcommand')}" data-docservconvert="${msg('onlyoffice-config.docservconvert')}" data-jwterror="${msg('onlyoffice-config.jwterror')}" data-statuscode="${msg('onlyoffice-config.statuscode')}" id="onlyresponse" class="message hidden"></span>
 </div>
 
 <script type="text/javascript">//<![CDATA[
@@ -234,6 +237,7 @@
 
       var hideMessage = function() {
          msg.classList.add("hidden");
+         msg.parentNode.classList.add("hidden");
          msg.classList.remove("error");
          msg.innerText = "";
       };
@@ -246,6 +250,7 @@
 
          msg.innerText = message;
          msg.classList.remove("hidden");
+         msg.parentNode.classList.remove("hidden");
 
          if (msgTimeout != null) {
             clearTimeout(msgTimeout);
@@ -264,6 +269,12 @@
                   showMessage(msg.dataset.error + " " + msg.dataset.docservunreachable, true);
               }
           };
+
+          if (window.location.href.startsWith("https://") && obj.url.toLowerCase().startsWith("http://")) {
+              btn.disabled = false;
+              showMessage(msg.dataset.error + " " + msg.dataset["mixedcontent"], true);
+              return;
+          }
 
           delete DocsAPI;
 

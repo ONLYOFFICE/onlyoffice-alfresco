@@ -1,21 +1,28 @@
 package com.parashift.onlyoffice.util;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
-import java.util.Base64.Encoder;
-
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.Mac;
+import java.util.Map;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Service
 public class JwtManager {
+    private final ObjectMapper objectMapper;
+
+    public JwtManager() {
+        this.objectMapper = new ObjectMapper();
+    }
 
     @Autowired
     ConfigManager configManager;
@@ -24,57 +31,47 @@ public class JwtManager {
         return configManager.demoActive() || configManager.get("jwtsecret") != null && !((String)configManager.get("jwtsecret")).isEmpty();
     }
 
-    public String createToken(JSONObject payload) throws Exception {
-        JSONObject header = new JSONObject();
-        header.put("alg", "HS256");
-        header.put("typ", "JWT");
+    public String createToken(JSONObject payload) throws JsonProcessingException {
+        Map<String, ?> payloadMap = objectMapper.readValue(payload.toString(), Map.class);
 
-        Encoder enc = Base64.getUrlEncoder();
-
-        String encHeader = enc.encodeToString(header.toString().getBytes("UTF-8")).replace("=", "");
-        String encPayload = enc.encodeToString(payload.toString().getBytes("UTF-8")).replace("=", "");
-        String hash = calculateHash(encHeader, encPayload);
-
-        return encHeader + "." + encPayload + "." + hash;
+        return createToken(payloadMap);
     }
 
-    public Boolean verify(String token) {
-        if (!jwtEnabled()) return false;
+    public String createToken(Object payload) {
+        Map<String, ?> payloadMap = objectMapper.convertValue(payload, Map.class);
 
-        String[] jwt = token.split("\\.");
-        if (jwt.length != 3) {
-            return false;
-        }
-
-        try {
-            String hash = calculateHash(jwt[0], jwt[1]);
-            if (!hash.equals(jwt[2])) return false;
-        } catch(Exception ex) {
-            return false;
-        }
-
-        return true;
+        return createToken(payloadMap);
     }
 
-    private String calculateHash(String header, String payload) throws Exception {
-        Mac hasher;
-        hasher = getHasher();
-        return Base64.getUrlEncoder().encodeToString(hasher.doFinal((header + "." + payload).getBytes("UTF-8"))).replace("=", "");
+    public String createToken(Map<String, ?> payloadMap) {
+        Algorithm algorithm = Algorithm.HMAC256(getJwtSecret());
+
+        String token = JWT.create()
+                .withPayload(payloadMap)
+                .sign(algorithm);
+
+        return token;
     }
 
-    private Mac getHasher() throws Exception {
-        String jwts = configManager.demoActive() ? configManager.getDemo("secret") : (String) configManager.get("jwtsecret");
+    public String verify(String token) {
+        Algorithm algorithm = Algorithm.HMAC256(getJwtSecret());
+        Base64.Decoder decoder = Base64.getUrlDecoder();
 
-        Mac sha256 = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secret_key = new SecretKeySpec(jwts.getBytes("UTF-8"), "HmacSHA256");
-        sha256.init(secret_key);
+        DecodedJWT jwt = JWT.require(algorithm)
+                .acceptLeeway(3)
+                .build()
+                .verify(token);
 
-        return sha256;
+        return new String(decoder.decode(jwt.getPayload()));
     }
 
     public String getJwtHeader(){
         String header = configManager.demoActive() ? configManager.getDemo("header") : (String) configManager.getOrDefault("jwtheader", "");
         return header == null || header.isEmpty() ? "Authorization" : header;
+    }
+
+    private String getJwtSecret() {
+        return configManager.demoActive() ? configManager.getDemo("secret") : (String) configManager.get("jwtsecret");
     }
 }
 

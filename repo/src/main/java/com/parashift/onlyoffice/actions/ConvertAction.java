@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -67,9 +67,9 @@ public class ConvertAction extends ActionExecuterAbstractBase {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
                 if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
                         !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
-                    String nodeName = (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
-                    String title = nodeName.substring(0, nodeName.lastIndexOf('.'));
-                    String srcExt = nodeName.substring(title.length() + 1).trim().toLowerCase();
+                    String title = util.getTitleWithoutExtension(actionedUponNodeRef);
+                    String srcExt = util.getExtension(actionedUponNodeRef);
+
                     String targetExt = converterService.getTargetExt(srcExt);
 
                     if (targetExt == null) {

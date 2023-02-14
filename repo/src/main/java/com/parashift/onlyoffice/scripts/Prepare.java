@@ -1,6 +1,7 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConfigManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import com.parashift.onlyoffice.util.UtilDocConfig;
 import com.parashift.onlyoffice.constants.Type;
@@ -31,7 +32,7 @@ import java.util.Map;
  * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
  */
  /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.prepare.get")
@@ -59,6 +60,9 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
 
     @Autowired
     UtilDocConfig utilDocConfig;
@@ -116,6 +120,7 @@ public class Prepare extends AbstractWebScript {
                 }
                 writer.putContent(in);
                 util.ensureVersioningEnabled(nodeRef);
+                util.postActivity(nodeRef, true);
 
                 responseJson.put("nodeRef", nodeRef);
             } else {
@@ -129,9 +134,8 @@ public class Prepare extends AbstractWebScript {
                     return;
                 }
 
-                Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                String docExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                String docTitle = util.getTitle(nodeRef);
+                String docExt = util.getExtension(nodeRef);
                 String documentType = util.getDocType(docExt);
                 if (docExt.equals("docxf") || docExt.equals("oform")) {
                     documentType = Type.WORD.name().toLowerCase();
@@ -162,12 +166,14 @@ public class Prepare extends AbstractWebScript {
                 JSONObject configJson = utilDocConfig.getConfigJson(nodeRef, null, username, documentType, docTitle,
                         docExt, preview, isReadOnly);
                 responseJson.put("editorConfig", configJson);
-                responseJson.put("onlyofficeUrl", util.getEditorUrl());
+                responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
                 responseJson.put("mime", mimetypeService.getMimetype(docExt));
                 responseJson.put("folderNode", util.getParentNodeRef(nodeRef));
                 responseJson.put("demo", configManager.demoActive());
-                responseJson.put("historyUrl", util.getHistoryUrl(nodeRef));
-                responseJson.put("favorite", util.getFavoriteUrl(nodeRef));
+                responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
+                responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
+                responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));
+                responseJson.put("canManagePermissions", permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

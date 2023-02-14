@@ -10,13 +10,21 @@
     <parent>
         <groupId>com.onlyoffice.alfresco</groupId>
         <artifactId>onlyoffice-integration</artifactId>
-        <version>6.0.1</version>
+        <version>6.1.0</version>
     </parent>
 
     <properties>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

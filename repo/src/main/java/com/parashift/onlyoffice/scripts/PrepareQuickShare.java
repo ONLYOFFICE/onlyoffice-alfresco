@@ -1,6 +1,7 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.parashift.onlyoffice.util.ConfigManager;
+import com.parashift.onlyoffice.util.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import com.parashift.onlyoffice.util.UtilDocConfig;
 import org.alfresco.model.ContentModel;
@@ -24,7 +25,7 @@ import java.io.Serializable;
 import java.util.Map;
 
  /*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
+    Copyright (c) Ascensio System SIA 2023. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -47,6 +48,9 @@ public class PrepareQuickShare extends AbstractWebScript {
 
     @Autowired
     Util util;
+
+    @Autowired
+    UrlManager urlManager;
 
     @Autowired
     UtilDocConfig utilDocConfig;
@@ -73,9 +77,8 @@ public class PrepareQuickShare extends AbstractWebScript {
                         try {
                             JSONObject responseJson = new JSONObject();
 
-                            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                            String docTitle = (String) properties.get(ContentModel.PROP_NAME);
-                            String docExt = docTitle.substring(docTitle.lastIndexOf(".") + 1).trim().toLowerCase();
+                            String docTitle = util.getTitle(nodeRef);
+                            String docExt = util.getExtension(nodeRef);
                             String documentType = util.getDocType(docExt);
 
                             if (documentType == null) {
@@ -97,7 +100,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                                     docTitle, docExt, true, true);
 
                             responseJson.put("editorConfig", configJson);
-                            responseJson.put("onlyofficeUrl", util.getEditorUrl());
+                            responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
                             responseJson.put("mime", mimetypeService.getMimetype(docExt));
 
                             logger.debug("Sending JSON prepare object");
