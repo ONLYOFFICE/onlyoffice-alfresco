@@ -206,7 +206,7 @@ public class CallBack extends AbstractWebScript {
                     break;
                 case 2:
                     logger.debug("Document Updated, changing content");
-                    updateNode(wc, callBackJSon.getString("url"));
+                    updateNode(wc, callBackJSon.getString("url"), callBackJSon.getString("filetype"));
 
                     logger.info("removing prop");
                     nodeService.removeProperty(wc, Util.EditingHashAspect);
@@ -244,7 +244,7 @@ public class CallBack extends AbstractWebScript {
                     }
 
                     logger.debug("Forcesave request (type: " + callBackJSon.getInt("forcesavetype") + ")");
-                    updateNode(wc, callBackJSon.getString("url"));
+                    updateNode(wc, callBackJSon.getString("url"), callBackJSon.getString("filetype"));
 
                     String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
                     String key = (String) nodeService.getProperty(wc, Util.EditingKeyAspect);
@@ -275,7 +275,7 @@ public class CallBack extends AbstractWebScript {
         }
     }
 
-    private void updateNode(final NodeRef nodeRef, String url) throws Exception {
+    private void updateNode(final NodeRef nodeRef, String url, String fileType) throws Exception {
         logger.debug("Retrieving URL:" + url);
 
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -295,8 +295,7 @@ public class CallBack extends AbstractWebScript {
         if (converterService.shouldConvertBack(mimeType)) {
             try {
                 logger.debug("Should convert back");
-                String downloadExt = util.getFileExtension(url).replace(".", "");
-                url = converterService.convert(util.getKey(nodeRef), downloadExt, mimetypeService.getExtension(mimeType), url, null);
+                url = converterService.convert(util.getKey(nodeRef), fileType, mimetypeService.getExtension(mimeType), url, null);
             } catch (Exception e) {
                 throw new Exception("Error while converting document back to original format: " + e.getMessage(), e);
             }

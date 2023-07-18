@@ -193,14 +193,6 @@ public class Util {
         return name;
     }
 
-    public String getFileExtension(String url)
-    {
-        String fileName = getFileName(url);
-        if (fileName == null) return null;
-        String fileExt = fileName.substring(fileName.lastIndexOf("."));
-        return fileExt.toLowerCase();
-    }
-
     public String getDocType(String ext) {
         List<Format> supportedFormats = Formats.getSupportedFormats();
 

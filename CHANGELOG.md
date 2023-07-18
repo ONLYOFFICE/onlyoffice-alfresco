@@ -1,5 +1,9 @@
 # Change Log
 
+## 
+## Added
+- document server v6.4 and earlier is no longer supported
+- 
 ## 6.1.0
 ## Added
 - manage permissions from editor
