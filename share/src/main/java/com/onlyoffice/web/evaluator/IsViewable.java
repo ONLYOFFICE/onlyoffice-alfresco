@@ -5,10 +5,10 @@
 
 package com.onlyoffice.web.evaluator;
 
+import com.onlyoffice.model.common.Format;
 import com.onlyoffice.web.scripts.OnlyofficeSettingsQuery;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class IsViewable extends BaseEvaluator {
@@ -25,14 +25,13 @@ public class IsViewable extends BaseEvaluator {
             if (fileName != null) {
                 String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 
-                JSONArray supportedFormats = onlyofficeSettings.getSupportedFormats();
                 boolean canView = false;
 
-                for (int i = 0; i < supportedFormats.size(); i++) {
-                    JSONObject format = (JSONObject) supportedFormats.get(i);
-                    if (format.get("name").equals(docExt) && !Boolean.parseBoolean(format.get("edit").toString())) {
+                for (Format format : onlyofficeSettings.getSupportedFormats()) {
+                    if (format.getName().equals(docExt)
+                            && format.getActions().contains("view")
+                            && !onlyofficeSettings.getEditableFormats().contains(docExt)) {
                         canView = true;
-                        break;
                     }
                 }
 
