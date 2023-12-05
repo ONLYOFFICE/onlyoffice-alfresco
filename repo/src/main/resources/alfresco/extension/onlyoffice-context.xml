@@ -40,6 +40,34 @@
         <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
     </bean>
 
+    <bean id="onlyoffice-sdk-config-service"
+          class="com.parashift.onlyoffice.sdk.service.ConfigServiceImpl">
+        <constructor-arg name="documentManager" ref="onlyoffice-sdk-document-manager"/>
+        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
+        <constructor-arg name="jwtManager" ref="onlyoffice-sdk-jwt-manager"/>
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-convert-service"
+          class="com.onlyoffice.service.convert.DefaultConvertService">
+        <constructor-arg name="documentManager" ref="onlyoffice-sdk-document-manager"/>
+        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
+        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-callback-service"
+          class="com.parashift.onlyoffice.sdk.service.CallbackServiceImpl">
+        <constructor-arg name="jwtManager" ref="onlyoffice-sdk-jwt-manager"/>
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-settings-validation-service"
+          class="com.parashift.onlyoffice.sdk.service.SettingsValidationServiceImpl">
+        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
+        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
     <bean id="webscripts.resources" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
