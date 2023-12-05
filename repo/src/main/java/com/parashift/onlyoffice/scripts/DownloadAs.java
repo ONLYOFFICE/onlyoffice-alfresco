@@ -1,6 +1,10 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.*;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.request.RequestManager;
+import com.onlyoffice.model.convertservice.ConvertRequest;
+import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.service.convert.ConvertService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.download.DownloadStatusUpdateService;
@@ -43,12 +47,6 @@ public class DownloadAs extends AbstractWebScript {
     private final static String CONTENT_DOWNLOAD_API_URL = "slingshot/node/content/{0}/{1}/{2}/{3}";
 
     @Autowired
-    ConvertManager converterService;
-
-    @Autowired
-    Util util;
-
-    @Autowired
     PermissionService permissionService;
 
     @Autowired
@@ -70,10 +68,13 @@ public class DownloadAs extends AbstractWebScript {
     MessageService mesService;
 
     @Autowired
-    UrlManager urlManager;
+    RequestManager requestManager;
 
     @Autowired
-    RequestManager requestManager;
+    ConvertService convertService;
+
+    @Autowired
+    DocumentManager documentManager;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -92,22 +93,37 @@ public class DownloadAs extends AbstractWebScript {
                     throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                 }
 
-                String currentExt = util.getExtension(node);
+                String docTitle = documentManager.getDocumentName(node.toString());
+                String currentExt = documentManager.getExtension(docTitle);
 
                 if (currentExt.equals(outputType)) {
-                    String docTitle = util.getTitle(node);
-
                     contentURL = getDownloadAPIUrl(node, docTitle);
                 } else {
-                    String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
-                    final String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+                    ConvertRequest convertRequest = ConvertRequest.builder()
+                            .outputtype(outputType)
+                            .region(region)
+                            .build();
 
-                    contentURL = requestManager.executeRequestToDocumentServer(downloadUrl, new RequestManager.Callback<String>() {
-                        public String doWork(HttpEntity httpEntity) throws IOException {
-                            byte[] bytes = EntityUtils.toByteArray(httpEntity);
+                    ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
+
+                    if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                        throw new SecurityException();
+                    }
+
+                    if (!convertResponse.getEndConvert()
+                            || convertResponse.getFileUrl().isEmpty()) {
+                        throw new Exception("'endConvert' is false or 'fileUrl' is empty");
+                    }
+
+                    String downloadUrl = convertResponse.getFileUrl();
+                    final String newTitle = documentManager.getBaseName(docTitle) + "." + outputType;
+
+                    contentURL = requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<String>() {
+                        public String doWork(Object response) throws IOException {
+                            byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
                             InputStream inputStream = new ByteArrayInputStream(bytes);
 
-                            return createDownloadNode(docTitle, mimetypeService.getMimetype(outputType), inputStream, bytes.length, 1);
+                            return createDownloadNode(newTitle, mimetypeService.getMimetype(outputType), inputStream, bytes.length, 1);
                         }
                     });
                 }
@@ -132,24 +148,40 @@ public class DownloadAs extends AbstractWebScript {
                             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
-                        String currentExt = util.getExtension(node);
+                        String docTitle = documentManager.getDocumentName(node.toString());
+                        String currentExt = documentManager.getExtension(docTitle);
 
                         if (currentExt.equals(outputType)) {
-                            String docTitle = util.getTitle(node);
                             ContentReader reader = contentService.getReader(node, ContentModel.PROP_CONTENT);
                             try (InputStream inputStream = reader.getContentInputStream()) {
                                 out.putArchiveEntry(new ZipArchiveEntry(docTitle));
                                 totalSize = totalSize + IOUtils.copyLarge(inputStream, out);
                             }
                         } else {
-                            String downloadUrl = converterService.convert(util.getKey(node), currentExt, outputType, urlManager.getContentUrl(node), region);
-                            String docTitle = util.getTitleWithoutExtension(node) + "." + outputType;
+                            ConvertRequest convertRequest = ConvertRequest.builder()
+                                    .outputtype(outputType)
+                                    .region(region)
+                                    .build();
 
-                            out.putArchiveEntry(new ZipArchiveEntry(docTitle));
+                            ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
 
-                            totalSize += requestManager.executeRequestToDocumentServer(downloadUrl, new RequestManager.Callback<Long>() {
-                                public Long doWork(HttpEntity httpEntity) throws IOException {
-                                    return IOUtils.copyLarge(httpEntity.getContent(), out);
+                            if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                                throw new SecurityException();
+                            }
+
+                            if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
+                                    || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
+                                throw new Exception("'endConvert' is false or 'fileUrl' is empty");
+                            }
+
+                            String downloadUrl = convertResponse.getFileUrl();
+                            String newTitle = documentManager.getBaseName(docTitle) + "." + outputType;
+
+                            out.putArchiveEntry(new ZipArchiveEntry(newTitle));
+
+                            totalSize += requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<Long>() {
+                                public Long doWork(Object response) throws IOException {
+                                    return IOUtils.copyLarge(((HttpEntity)response).getContent(), out);
                                 }
                             });
                         }
