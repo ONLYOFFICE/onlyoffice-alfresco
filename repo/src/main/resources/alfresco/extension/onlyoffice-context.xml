@@ -14,6 +14,32 @@
         parent="action-executer">
     </bean>
 
+    <bean id="onlyoffice-sdk-settings-manager"
+          class="com.parashift.onlyoffice.sdk.manager.settings.SettingsManagerImpl">
+    </bean>
+
+    <bean id="onlyoffice-sdk-jwt-manager"
+          class="com.onlyoffice.manager.security.DefaultJwtManager">
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-url-manager"
+          class="com.parashift.onlyoffice.sdk.manager.url.UrlManagerImpl">
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-document-manager"
+          class="com.parashift.onlyoffice.sdk.manager.document.DocumentManagerImpl">
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
+    <bean id="onlyoffice-sdk-request-manager"
+          class="com.onlyoffice.manager.request.DefaultRequestManager">
+        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
+        <constructor-arg name="jwtManager" ref="onlyoffice-sdk-jwt-manager"/>
+        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+    </bean>
+
     <bean id="webscripts.resources" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
         <property name="resourceBundles">
             <list>
