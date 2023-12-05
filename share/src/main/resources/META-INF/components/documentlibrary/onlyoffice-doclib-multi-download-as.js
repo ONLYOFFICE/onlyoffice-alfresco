@@ -12,7 +12,7 @@
         if (supportedFormats) {
             for (var format of supportedFormats) {
                 if (format.name == docExt) {
-                    outputTypes = format.convertTo;
+                    outputTypes = format.convert;
                 }
             }
 
@@ -20,7 +20,6 @@
                 if (outputTypes.includes(docExt)) {
                     outputTypes.splice(outputTypes.indexOf(docExt), 1);
                 }
-                outputTypes.unshift(docExt);
             }
         }
 
