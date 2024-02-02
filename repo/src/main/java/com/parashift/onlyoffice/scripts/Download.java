@@ -1,9 +1,10 @@
 package com.parashift.onlyoffice.scripts;
 
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.security.JwtManager;
+import com.onlyoffice.manager.settings.SettingsManager;
+import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.HistoryManager;
-import com.parashift.onlyoffice.util.JwtManager;
-import com.parashift.onlyoffice.util.UrlManager;
-import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.*;
@@ -40,10 +41,13 @@ public class Download extends AbstractWebScript {
     HistoryManager historyManager;
 
     @Autowired
-    Util util;
+    UrlManager urlManager;
 
     @Autowired
-    UrlManager urlManager;
+    SettingsManager settingsManager;
+
+    @Autowired
+    DocumentManager documentManager;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -58,10 +62,12 @@ public class Download extends AbstractWebScript {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not find required 'nodeRef' parameter!");
         }
 
-        if (jwtManager.jwtEnabled() ) {
-            String jwth = jwtManager.getJwtHeader();
+        if (settingsManager.isSecurityEnabled() ) {
+            String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);
-            String token = (header != null && header.startsWith("Bearer ")) ? header.substring(7) : header;
+            String authorizationPrefix = settingsManager.getSecurityPrefix();
+            String token = (header != null && header.startsWith(authorizationPrefix))
+                    ? header.substring(authorizationPrefix.length()) : header;
 
             if (token == null || token == "") {
                 throw new SecurityException("Expected JWT");
@@ -90,7 +96,7 @@ public class Download extends AbstractWebScript {
                     throw new WebScriptException(Status.STATUS_NOT_FOUND, "Not found diff.zip for version: " + nodeRefString);
                 }
 
-                String editorUrl = urlManager.getEditorUrl();
+                String editorUrl = urlManager.getDocumentServerUrl();
                 if (editorUrl.endsWith("/")) {
                     editorUrl = editorUrl.substring(0, editorUrl.length() - 1);
                 }
@@ -101,8 +107,8 @@ public class Download extends AbstractWebScript {
                 throw new WebScriptException(404, "Unknown parameter 'type': '" + type + "'!");
         }
 
-        String title = util.getTitle(nodeRef);
-        String fileType = util.getExtension(nodeRef);
+        String title = documentManager.getDocumentName(nodeRef.toString());
+        String fileType = documentManager.getExtension(title);
         ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
 
         response.setHeader("Content-Length", String.valueOf(reader.getSize()));

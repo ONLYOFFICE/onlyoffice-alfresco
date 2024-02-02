@@ -2,6 +2,7 @@
 
 ## 
 ## Added
+- core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - document server v6.4 and earlier is no longer supported
 - 
 ## 6.1.0

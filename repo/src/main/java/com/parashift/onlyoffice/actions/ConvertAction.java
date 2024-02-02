@@ -1,16 +1,22 @@
 package com.parashift.onlyoffice.actions;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.parashift.onlyoffice.util.ConfigManager;
-import com.parashift.onlyoffice.util.ConvertManager;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.request.RequestManager;
+import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.model.convertservice.ConvertRequest;
+import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.service.convert.ConvertService;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -24,6 +30,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ConvertAction extends ActionExecuterAbstractBase {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    ConvertManager converterService;
 
     @Autowired
     NodeService nodeService;
@@ -56,10 +60,22 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     Util util;
 
     @Autowired
-    ConfigManager configManager;
+    CheckOutCheckInService checkOutCheckInService;
 
     @Autowired
-    CheckOutCheckInService checkOutCheckInService;
+    DocumentManager documentManager;
+
+    @Autowired
+    SettingsManager settingsManager;
+
+    @Autowired
+    ConvertService convertService;
+
+    @Autowired
+    MessageService mesService;
+
+    @Autowired
+    RequestManager requestManager;
 
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
@@ -67,11 +83,12 @@ public class ConvertAction extends ActionExecuterAbstractBase {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
                 if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
                         !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
-                    String title = util.getTitleWithoutExtension(actionedUponNodeRef);
-                    String srcExt = util.getExtension(actionedUponNodeRef);
+                    String fileName = documentManager.getDocumentName(actionedUponNodeRef.toString());
 
-                    String targetExt = converterService.getTargetExt(srcExt);
+                    String title = documentManager.getBaseName(fileName);
+                    String srcExt = documentManager.getExtension(fileName);
 
+                    String targetExt = documentManager.getDefaultConvertExtension(fileName);
                     if (targetExt == null) {
                         logger.debug("Files of " + srcExt + " format cannot be converted");
                         return;
@@ -90,7 +107,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                     Boolean deleteNode = false;
                     Boolean checkoutNode = false;
 
-                    if (configManager.getAsBoolean("convertOriginal", "false") && !targetExt.equals("oform")) {
+                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("oform")) {
                         logger.debug("Updating node");
                         if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED) {
                             util.ensureVersioningEnabled(actionedUponNodeRef);
@@ -122,7 +139,31 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         logger.debug("Invoking .transform()");
                         writer = this.contentService.getWriter(writeNode, ContentModel.PROP_CONTENT, true);
                         writer.setMimetype(mimetypeService.getMimetype(targetExt));
-                        converterService.transform(actionedUponNodeRef, srcExt, targetExt, writer);
+
+                        ConvertRequest convertRequest = ConvertRequest.builder()
+                                .region(mesService.getLocale().toLanguageTag())
+                                .build();
+
+                        ConvertResponse convertResponse = convertService.processConvert(convertRequest,
+                                actionedUponNodeRef.toString());
+
+                        if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                            throw new SecurityException();
+                        }
+
+                        if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
+                                || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
+                            throw new Exception("'endConvert' is false or 'fileUrl' is empty");
+                        }
+
+                        final ContentWriter finalWriter = writer;
+                        requestManager.executeGetRequest(convertResponse.getFileUrl(), new RequestManager.Callback<Void>() {
+                            public Void doWork(Object response) throws IOException {
+                                finalWriter.putContent(((HttpEntity)response).getContent());
+                                return null;
+                            }
+                        });
+
                         if (checkoutNode) {
                             logger.debug("Checking in node");
                             checkOutCheckInService.checkin(writeNode, null);

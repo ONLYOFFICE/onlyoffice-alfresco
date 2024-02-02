@@ -5,11 +5,13 @@
 
 package com.onlyoffice.web.evaluator;
 
+import com.onlyoffice.model.common.Format;
 import com.onlyoffice.web.scripts.OnlyofficeSettingsQuery;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import java.util.List;
 
 public class IsCorrectDownloadAs extends BaseEvaluator {
     private OnlyofficeSettingsQuery onlyofficeSettings;
@@ -30,11 +32,10 @@ public class IsCorrectDownloadAs extends BaseEvaluator {
     }
 
     private boolean isSuppotredFormats(String ext) {
-        JSONArray supportedFormats = onlyofficeSettings.getSupportedFormats();
-        for (int i = 0; i < supportedFormats.size(); i++) {
-            JSONObject format = (JSONObject) supportedFormats.get(i);
-            JSONArray outputTypes = (JSONArray) format.get("convertTo");
-            if (format.get("name").equals(ext) && outputTypes != null && outputTypes.size() > 0){
+        List<Format> formats = onlyofficeSettings.getSupportedFormats();
+        for (Format format : formats) {
+           List<String> convert = format.getConvert();
+            if (format.getName().equals(ext) && convert != null && convert.size() > 0){
                 return true;
             }
         }

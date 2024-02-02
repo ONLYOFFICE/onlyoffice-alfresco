@@ -1,8 +1,8 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.model.documenteditor.HistoryData;
 import com.parashift.onlyoffice.util.HistoryManager;
-import com.parashift.onlyoffice.util.HistoryManager.HistoryData;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
