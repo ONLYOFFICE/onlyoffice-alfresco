@@ -194,10 +194,6 @@
         -->
     <repositories>
         <repository>
-            <id>ossrh</id>
-            <url>http://192.168.4.26:8081/repository/maven-public</url>
-        </repository>
-        <repository>
             <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
         </repository>
