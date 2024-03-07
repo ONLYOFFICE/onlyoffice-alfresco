@@ -229,9 +229,9 @@
          obj.innerUrl = innerurl.value.trim();
          obj.productInnerUrl = alfurl.value.trim();
          obj.security = {
-            key: jwts.value.trim(),
-            ignoreSSLCertificate: cert.checked.toString(),
+            key: jwts.value.trim()
          };
+         obj.ignoreSSLCertificate = cert.checked.toString();
          obj.demo = demo.checked.toString();
          obj.customization = {
             forcesave: fs.checked.toString(),
