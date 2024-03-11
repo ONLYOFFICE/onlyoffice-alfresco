@@ -14,11 +14,12 @@
                 docEditor = new DocsAPI.DocEditor("embeddedView", editorConfig);
             }
 
-            if (window.addEventListener) {
-                window.addEventListener("load", connectEditor);
-            } else if (window.attachEvent) {
-                window.attachEvent("load", connectEditor);
-            }
+            YAHOO.Bubbling.on("webPreviewSetupComplete", function() {
+                setTimeout(function() {
+                    connectEditor();
+                }, 100);
+            });
+
         </script>
     </@markup>
 </#if>
