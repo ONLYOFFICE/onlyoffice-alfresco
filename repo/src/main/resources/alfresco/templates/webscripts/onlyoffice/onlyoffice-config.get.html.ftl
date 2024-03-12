@@ -30,6 +30,12 @@
             <input class="value" id="jwtsecret" name="url" size="35" value="${(settings['security.key'])!}" />
          </span>
       </div>
+      <div class="control text">
+         <label class="label" for="securityHeader">${msg("onlyoffice-config.security.header")}</label>
+         <span class="value">
+            <input class="value" id="securityHeader" name="securityHeader" value="${(settings['security.header'])!}" />
+         </span>
+      </div>
 
       <@tsection label=msg("onlyoffice-config.advanced-section")>
          <div class="control text">
@@ -144,6 +150,7 @@
       var webpreview = document.getElementById("webpreview");
       var convertOriginal = document.getElementById("convertOriginal");
       var jwts = document.getElementById("jwtsecret");
+      var securityHeader = document.getElementById("securityHeader");
       var demo = document.getElementById("onlyofficeDemo");
 
       var form = document.getElementById("docservcfg");
@@ -229,7 +236,8 @@
          obj.innerUrl = innerurl.value.trim();
          obj.productInnerUrl = alfurl.value.trim();
          obj.security = {
-            key: jwts.value.trim()
+            key: jwts.value.trim(),
+            header: securityHeader.value.trim()
          };
          obj.ignoreSSLCertificate = cert.checked.toString();
          obj.demo = demo.checked.toString();
@@ -335,6 +343,7 @@
                url.disabled = demo.checked;
                jwts.disabled = demo.checked;
                innerurl.disabled = demo.checked;
+               securityHeader.disabled = demo.checked;
           }
       };
 
