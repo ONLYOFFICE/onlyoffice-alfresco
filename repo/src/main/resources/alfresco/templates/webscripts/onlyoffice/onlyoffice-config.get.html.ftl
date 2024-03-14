@@ -30,6 +30,12 @@
             <input class="value" id="jwtsecret" name="url" size="35" value="${(settings['security.key'])!}" />
          </span>
       </div>
+      <div class="control text">
+         <label class="label" for="securityHeader">${msg("onlyoffice-config.security.header")}</label>
+         <span class="value">
+            <input class="value" id="securityHeader" name="securityHeader" value="${(settings['security.header'])!}" />
+         </span>
+      </div>
 
       <@tsection label=msg("onlyoffice-config.advanced-section")>
          <div class="control text">
@@ -144,6 +150,7 @@
       var webpreview = document.getElementById("webpreview");
       var convertOriginal = document.getElementById("convertOriginal");
       var jwts = document.getElementById("jwtsecret");
+      var securityHeader = document.getElementById("securityHeader");
       var demo = document.getElementById("onlyofficeDemo");
 
       var form = document.getElementById("docservcfg");
@@ -165,55 +172,65 @@
          xhr.setRequestHeader("Accept", "application/json");
          xhr.overrideMimeType("application/json");
 
-         xhr.onload = function () { callback(xhr); };
+         xhr.onload = function () { savingCallback(xhr); };
 
          xhr.send(JSON.stringify(obj));
       };
 
-      var callback = function(xhr) {
+      var savingCallback = function(xhr) {
          btn.disabled = false;
 
-         if (xhr.status != 200 || !xhr.response) {
+         if (xhr.status != 200) {
                showMessage(msg.dataset["settingsSavingError"], true);
                return;
          }
 
-         if (xhr.response) {
-             const responseJson = JSON.parse(xhr.response);
-             const validationResults = responseJson.validationResults;
+         var settingsValidationRequest = new XMLHttpRequest();
+         settingsValidationRequest.open("GET", form.action + "-validation", true);
+         settingsValidationRequest.setRequestHeader("Content-type", "application/json");
+         settingsValidationRequest.setRequestHeader("Accept", "application/json");
+         settingsValidationRequest.overrideMimeType("application/json");
 
-            if (validationResults.documentServer) {
-                if (validationResults.documentServer.status == "failed") {
-                    showMessage(validationResults.documentServer.message, true);
+         settingsValidationRequest.onload = function () {
+            if (settingsValidationRequest.response) {
+                const responseJson = JSON.parse(settingsValidationRequest.response);
+                const validationResults = responseJson.validationResults;
+
+                if (validationResults.documentServer) {
+                    if (validationResults.documentServer.status == "failed") {
+                        showMessage(validationResults.documentServer.message, true);
+                    }
                 }
-            }
 
-            if (validationResults.commandService) {
-                if (validationResults.commandService.status == "failed") {
-                    showMessage(
-                        msg.dataset["onlyofficeCommandServicePrefix"].replace(
-                            "$",
-                            validationResults.commandService.message
-                        ),
-                        true
-                    );
+                if (validationResults.commandService) {
+                    if (validationResults.commandService.status == "failed") {
+                        showMessage(
+                            msg.dataset["onlyofficeCommandServicePrefix"].replace(
+                                "$",
+                                validationResults.commandService.message
+                            ),
+                            true
+                        );
+                    }
                 }
-            }
 
-            if (validationResults.convertService) {
-                if (validationResults.convertService.status == "failed") {
-                    showMessage(
-                        msg.dataset["onlyofficeConvertServicePrefix"].replace(
-                            "$",
-                            validationResults.convertService.message
-                        ),
-                        true
-                    );
+                if (validationResults.convertService) {
+                    if (validationResults.convertService.status == "failed") {
+                        showMessage(
+                            msg.dataset["onlyofficeConvertServicePrefix"].replace(
+                                "$",
+                                validationResults.convertService.message
+                            ),
+                            true
+                        );
+                    }
                 }
             }
 
             showMessage(msg.dataset["settingsSaved"]);
-         }
+         };
+
+         settingsValidationRequest.send();
       };
 
       var parseForm = function() {
@@ -229,7 +246,8 @@
          obj.innerUrl = innerurl.value.trim();
          obj.productInnerUrl = alfurl.value.trim();
          obj.security = {
-            key: jwts.value.trim()
+            key: jwts.value.trim(),
+            header: securityHeader.value.trim()
          };
          obj.ignoreSSLCertificate = cert.checked.toString();
          obj.demo = demo.checked.toString();
@@ -335,6 +353,7 @@
                url.disabled = demo.checked;
                jwts.disabled = demo.checked;
                innerurl.disabled = demo.checked;
+               securityHeader.disabled = demo.checked;
           }
       };
 

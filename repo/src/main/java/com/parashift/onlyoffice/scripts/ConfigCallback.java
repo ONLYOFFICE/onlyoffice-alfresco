@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.settings.Settings;
 import com.onlyoffice.model.settings.security.Security;
-import com.onlyoffice.model.settings.validation.ValidationResult;
-import com.parashift.onlyoffice.sdk.service.SettingsValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
 
 /*
@@ -28,9 +25,6 @@ import java.util.Map;
 public class ConfigCallback extends AbstractWebScript {
     @Autowired
     SettingsManager settingsManager;
-
-    @Autowired
-    SettingsValidationService settingsValidationService;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -73,14 +67,9 @@ public class ConfigCallback extends AbstractWebScript {
             throw new RuntimeException(e);
         }
 
-        Map<String, ValidationResult> validationResults = settingsValidationService.validateSettings();
-
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put("validationResults", validationResults);
-
         response.setContentType("application/json; charset=utf-8");
         response.setContentEncoding("UTF-8");
-        response.getWriter().write(objectMapper.writeValueAsString(responseMap));
+        response.setStatus(200);
     }
 }
 

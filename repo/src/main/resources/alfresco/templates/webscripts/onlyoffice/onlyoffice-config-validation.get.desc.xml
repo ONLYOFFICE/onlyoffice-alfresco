@@ -1,0 +1,6 @@
+<webscript>
+    <shortname>ONLYOFFICE Config Validation URL</shortname>
+    <description>Endpoint to validate settings for connecting to ONLYOFFICE Document Server</description>
+    <url>/onlyoffice/onlyoffice-config-validation</url>
+    <authentication>admin</authentication>
+</webscript>

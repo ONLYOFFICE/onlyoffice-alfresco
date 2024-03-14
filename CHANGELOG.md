@@ -4,6 +4,7 @@
 ## Added
 - core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - document server v6.4 and earlier is no longer supported
+- setting authorization header on settings page
 - 
 ## 6.1.0
 ## Added
