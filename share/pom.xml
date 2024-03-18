@@ -27,11 +27,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.alfresco.surf</groupId>
-            <artifactId>spring-surf-api</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.onlyoffice</groupId>
             <artifactId>docs-integration-sdk</artifactId>
         </dependency>
