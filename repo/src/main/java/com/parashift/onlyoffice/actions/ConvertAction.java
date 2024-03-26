@@ -107,7 +107,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                     Boolean deleteNode = false;
                     Boolean checkoutNode = false;
 
-                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("oform")) {
+                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("pdf")) {
                         logger.debug("Updating node");
                         if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED) {
                             util.ensureVersioningEnabled(actionedUponNodeRef);
