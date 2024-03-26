@@ -75,11 +75,12 @@ public class ConfigServiceImpl extends DefaultConfigService {
 
         Boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
                 == AccessStatus.ALLOWED;
-        Boolean isEditable = super.getDocumentManager().isEditable(fileName)
-                || super.getDocumentManager().isFillable(fileName);
+        Boolean isEditable = super.getDocumentManager().isEditable(fileName);
+        Boolean isFillable =  super.getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()
                 .edit(editPermission && isEditable)
+                .fillForms(editPermission && isFillable)
                 .build();
     }
 

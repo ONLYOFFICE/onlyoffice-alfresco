@@ -89,7 +89,7 @@
                 <evaluator>evaluator.doclib.action.notLocked</evaluator>
                 <evaluator>evaluator.doclib.action.isNotOnlyofficeDocxfExtension</evaluator>
             </action>
-            <action id="document-onlyoffice-docxf-to-oform" type="javascript" label="actions.document.onlyoffice-create-oform-from-docxf">
+            <action id="document-onlyoffice-docxf-to-pdf" type="javascript" label="actions.document.onlyoffice-create-pdf-from-docxf">
                 <param name="function">onActionSimpleRepoAction</param>
                 <param name="action">onlyoffice-convert</param>
                 <param name="successMessage">alfresco.document.onlyoffice.action.convert.msg.success</param>
@@ -102,11 +102,11 @@
         </actions>
         <actionGroups>
             <actionGroup id="document-browse">
-                <action index="90" id="document-onlyoffice-docxf-to-oform" />
+                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
             <actionGroup id="document-details">
-                <action index="90" id="document-onlyoffice-docxf-to-oform" />
+                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
         </actionGroups>

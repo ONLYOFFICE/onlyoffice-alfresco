@@ -129,6 +129,7 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("nodeRef", nodeRef);
             } else {
                 NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
+                boolean readonly = request.getParameter("readonly") != null && request.getParameter("readonly").equals("1");
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
@@ -152,7 +153,7 @@ public class Prepare extends AbstractWebScript {
                 Boolean preview = previewParam != null && previewParam.equals("true");
 
                 com.onlyoffice.model.documenteditor.config.document.Type type = Type.DESKTOP;
-                Mode mode = Mode.EDIT;
+                Mode mode = readonly ? Mode.VIEW : Mode.EDIT;
                 responseJson.put("previewEnabled", false);
 
                 if (preview) {
@@ -166,7 +167,7 @@ public class Prepare extends AbstractWebScript {
                     }
                 }
 
-                if (documentManager.isEditable(fileName)
+                if (documentManager.isEditable(fileName) || documentManager.isFillable(fileName)
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
                         && mode.equals(Mode.EDIT)) {
                     if (!cociService.isCheckedOut(nodeRef)) {
