@@ -6,7 +6,7 @@
 - document server v6.4 and earlier is no longer supported
 - setting authorization header on settings page
 
-##Changed
+## Changed
 - Alfresco v6.* and earlier is no longer supported
 
 ## 6.1.0
