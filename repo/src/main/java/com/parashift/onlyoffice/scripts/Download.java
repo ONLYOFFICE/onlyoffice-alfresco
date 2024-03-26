@@ -7,6 +7,7 @@ import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.HistoryManager;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -48,6 +49,9 @@ public class Download extends AbstractWebScript {
 
     @Autowired
     DocumentManager documentManager;
+
+    @Autowired
+    ContentStreamer contentStreamer;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -108,27 +112,7 @@ public class Download extends AbstractWebScript {
         }
 
         String title = documentManager.getDocumentName(nodeRef.toString());
-        String fileType = documentManager.getExtension(title);
-        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
 
-        response.setHeader("Content-Length", String.valueOf(reader.getSize()));
-        response.setHeader("Content-Type", mimetypeService.getMimetype(fileType));
-        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8\'\'" + URLEncoder.encode(title));
-
-        Writer writer = response.getWriter();
-        BufferedInputStream inputStream = null;
-
-        try {
-            InputStream fileInputStream = reader.getContentInputStream();
-            inputStream = new BufferedInputStream(fileInputStream);
-            int readBytes = 0;
-            while ((readBytes = inputStream.read()) != -1) {
-                writer.write(readBytes);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            inputStream.close();
-        }
+        contentStreamer.streamContent(request, response, nodeRef, ContentModel.PROP_CONTENT, true, title,null);
     }
 }
