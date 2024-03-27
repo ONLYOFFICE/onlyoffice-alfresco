@@ -125,7 +125,7 @@
 
       <@section label=msg("onlyoffice-config.common-section") />
       <div class="control field">
-         <input class="value" id="onlycert" name="cert" type="checkbox" <#if (settings['security.ignoreSSLCertificate'])! == 'true'>checked</#if> />
+         <input class="value" id="onlycert" name="cert" type="checkbox" <#if (settings['ignoreSSLCertificate'])! == 'true'>checked</#if> />
          <label class="label" for="onlycert">${msg("onlyoffice-config.ignore-ssl-cert")}</label>
       </div>
       <div class="control field">
