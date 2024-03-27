@@ -2,6 +2,7 @@ package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
+import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -20,8 +21,6 @@ import java.util.Map;
 */
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
-    public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
-    public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
 
     @Autowired
     @Qualifier("checkOutCheckInService")
@@ -40,7 +39,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
 
         String key = null;
         if (cociService.isCheckedOut(nodeRef)) {
-            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), EditingKeyAspect);
+            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
         }
 
         if (key == null) {
