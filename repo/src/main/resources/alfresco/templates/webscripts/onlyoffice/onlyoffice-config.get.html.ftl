@@ -1,7 +1,7 @@
 <#include "/org/alfresco/repository/admin/admin-template.ftl" />
 
 <!--
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 -->
 

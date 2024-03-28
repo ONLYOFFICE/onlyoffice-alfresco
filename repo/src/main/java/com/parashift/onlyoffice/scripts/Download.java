@@ -20,7 +20,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
 import java.io.*;
 
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.download.get")

@@ -5,7 +5,7 @@ import com.onlyoffice.model.settings.validation.ValidationResult;
 import java.util.Map;
 
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 
