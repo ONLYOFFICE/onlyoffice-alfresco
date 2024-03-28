@@ -61,7 +61,7 @@ public class IsConvertible extends BaseEvaluator {
         String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 
         for (Format format :  onlyofficeSettings.getSupportedFormats()) {
-            if (format.getName().equals(docExt)) {
+            if (format.getName().equals(docExt) && format.getType() != null) {
                 switch (format.getType()) {
                     case WORD:
                         if (format.getName().equals("docxf") && format.getConvert().contains("pdf")) {
