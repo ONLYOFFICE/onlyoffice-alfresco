@@ -1,5 +1,5 @@
 /*
-   Copyright (c) Ascensio System SIA 2023. All rights reserved.
+   Copyright (c) Ascensio System SIA 2024. All rights reserved.
    http://www.onlyoffice.com
 */
 
@@ -64,7 +64,7 @@ public class IsConvertible extends BaseEvaluator {
             if (format.getName().equals(docExt)) {
                 switch (format.getType()) {
                     case WORD:
-                        if (format.getName().equals("docxf") && format.getConvert().contains("oform")) {
+                        if (format.getName().equals("docxf") && format.getConvert().contains("pdf")) {
                             return true;
                         }
                         if (format.getConvert().contains("docx")) {

@@ -4,9 +4,6 @@
             <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document.docxf" display="ONLYOFFICE docxf">
                 <extension>docxf</extension>
             </mimetype>
-            <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document.oform" display="ONLYOFFICE oform">
-                <extension>oform</extension>
-            </mimetype>
         </mimetypes>
     </config>
 </alfresco-config>

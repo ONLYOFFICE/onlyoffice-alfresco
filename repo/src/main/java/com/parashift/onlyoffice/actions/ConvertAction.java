@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -107,7 +107,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                     Boolean deleteNode = false;
                     Boolean checkoutNode = false;
 
-                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("oform")) {
+                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("pdf")) {
                         logger.debug("Updating node");
                         if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED) {
                             util.ensureVersioningEnabled(actionedUponNodeRef);

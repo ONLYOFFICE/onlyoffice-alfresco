@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.onlyoffice.alfresco</groupId>
     <artifactId>onlyoffice-integration</artifactId>
-    <version>6.1.0</version>
+    <version>7.0.0</version>
     <name>ONLYOFFICE Alfresco Integration</name>
     <description>This Module integrates Alfresco Share with ONLYOFFICE</description>
     <packaging>pom</packaging>
@@ -84,14 +84,14 @@
                 <version>4.0.0</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.13.3</version>
-            </dependency>
-            <dependency>
                 <groupId>com.onlyoffice</groupId>
                 <artifactId>docs-integration-sdk</artifactId>
                 <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-properties</artifactId>
+                <version>2.12.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

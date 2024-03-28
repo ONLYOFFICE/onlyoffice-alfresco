@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -75,11 +75,12 @@ public class ConfigServiceImpl extends DefaultConfigService {
 
         Boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
                 == AccessStatus.ALLOWED;
-        Boolean isEditable = super.getDocumentManager().isEditable(fileName)
-                || super.getDocumentManager().isFillable(fileName);
+        Boolean isEditable = super.getDocumentManager().isEditable(fileName);
+        Boolean isFillable =  super.getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()
                 .edit(editPermission && isEditable)
+                .fillForms(editPermission && isFillable)
                 .build();
     }
 

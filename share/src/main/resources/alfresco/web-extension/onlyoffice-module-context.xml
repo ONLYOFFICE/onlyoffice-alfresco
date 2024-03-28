@@ -16,8 +16,12 @@
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
 
-    <bean id="evaluator.doclib.action.onlyofficeFillForm" class="com.onlyoffice.web.evaluator.IsFillForm"/>
+    <bean id="evaluator.doclib.action.onlyofficeFillForm" class="com.onlyoffice.web.evaluator.IsFillForm">
+        <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
+    </bean>
+
     <bean id="evaluator.doclib.action.isNotOnlyofficeFillForm" class="com.onlyoffice.web.evaluator.IsFillForm">
+        <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
         <property name="negateOutput" value="true" />
     </bean>
 

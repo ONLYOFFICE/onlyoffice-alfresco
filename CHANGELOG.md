@@ -1,13 +1,17 @@
 # Change Log
 
-## 
+## 7.0.0
 ## Added
 - core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
 - document server v6.4 and earlier is no longer supported
 - setting authorization header on settings page
+- docs cloud banner on settings page
+- filling pdf
 
-##Changed
+## Changed
 - Alfresco v6.* and earlier is no longer supported
+- default conversion format (from docxf to pdf instead oform)
+- remove filling for oform
 
 ## 6.1.0
 ## Added
