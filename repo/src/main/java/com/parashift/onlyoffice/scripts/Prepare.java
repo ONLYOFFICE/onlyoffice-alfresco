@@ -167,7 +167,7 @@ public class Prepare extends AbstractWebScript {
                     }
                 }
 
-                if (documentManager.isEditable(fileName) || documentManager.isFillable(fileName)
+                if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
                         && mode.equals(Mode.EDIT)) {
                     if (!cociService.isCheckedOut(nodeRef)) {
