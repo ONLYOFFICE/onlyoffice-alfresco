@@ -120,7 +120,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
     @Override
     public void handlerForcesave(Callback callback, String fileId) throws Exception {
-        if (!super.getSettingsManager().getSettingBoolean("editor.customization.forcesave", false)) {
+        if (!super.getSettingsManager().getSettingBoolean("customization.forcesave", false)) {
             logger.debug("Forcesave is disabled, ignoring forcesave request");
             return;
         }
