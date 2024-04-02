@@ -21,8 +21,8 @@
         <!-- Alfresco Platform and Share webapp versions, these are the original Alfresco webapps that will be
              customized and then deployed and run by the tomcat maven plugin when
              executing for example $ mvn clean install alfresco:run -->
-        <alfresco.platform.version>23.2.1</alfresco.platform.version>
-        <alfresco.share.version>23.2.0.72</alfresco.share.version>
+        <alfresco.platform.version>7.1.0</alfresco.platform.version>
+        <alfresco.share.version>11.77</alfresco.share.version>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
