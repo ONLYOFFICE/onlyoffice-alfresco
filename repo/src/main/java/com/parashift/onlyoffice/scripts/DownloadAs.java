@@ -116,14 +116,14 @@ public class DownloadAs extends AbstractWebScript {
                     }
 
                     String downloadUrl = convertResponse.getFileUrl();
-                    final String newTitle = documentManager.getBaseName(docTitle) + "." + outputType;
+                    final String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
 
                     contentURL = requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<String>() {
                         public String doWork(Object response) throws IOException {
                             byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
                             InputStream inputStream = new ByteArrayInputStream(bytes);
 
-                            return createDownloadNode(newTitle, mimetypeService.getMimetype(outputType), inputStream, bytes.length, 1);
+                            return createDownloadNode(newTitle, mimetypeService.getMimetype(convertResponse.getFileType()), inputStream, bytes.length, 1);
                         }
                     });
                 }
@@ -175,7 +175,7 @@ public class DownloadAs extends AbstractWebScript {
                             }
 
                             String downloadUrl = convertResponse.getFileUrl();
-                            String newTitle = documentManager.getBaseName(docTitle) + "." + outputType;
+                            String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
 
                             out.putArchiveEntry(new ZipArchiveEntry(newTitle));
 
