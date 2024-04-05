@@ -34,6 +34,7 @@ public class Config extends DeclarativeWebScript {
         model.put("demoAvailable", settingsManager.isDemoAvailable());
         model.put("webpreview", settingsManager.getSettingBoolean("webpreview", false));
         model.put("convertOriginal", settingsManager.getSettingBoolean("convertOriginal", false));
+        model.put("minorVersion", settingsManager.getSettingBoolean("minorVersion", false));
 
         Map<String, Boolean> lossyEditable = documentManager.getLossyEditableMap();
 

@@ -40,6 +40,7 @@ public class ConfigCallback extends AbstractWebScript {
 
         settingsManager.setSetting("convertOriginal", (String) extraSettings.get("convertOriginal"));
         settingsManager.setSetting("webpreview", (String) extraSettings.get("webpreview"));
+        settingsManager.setSetting("minorVersion", (String) extraSettings.get("minorVersion"));
 
         if (settings.getDemo() != null && settings.getDemo()) {
             settingsManager.enableDemo();
