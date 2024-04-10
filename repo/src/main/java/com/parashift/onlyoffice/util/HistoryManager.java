@@ -303,7 +303,8 @@ public class HistoryManager {
                 }
             }
 
-            if (versionType.equals(VersionType.MAJOR)) {
+            if (version.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
+                || !(Boolean) version.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
                 previousMajorVersion = version;
             }
         }
