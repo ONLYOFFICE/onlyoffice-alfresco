@@ -126,8 +126,8 @@ public class EditorApi extends AbstractWebScript {
                     String fileName = documentManager.getDocumentName(node.toString());
                     String fileType = documentManager.getExtension(fileName);
 
-                    if (requestData.has("command")) {
-                        data.put("c", requestData.get("command"));
+                    if (!requestData.get("command").equals(null)) {
+                        data.put("c", requestData.getString("command"));
                     }
                     data.put("fileType", fileType);
                     data.put("url", urlManager.getFileUrl(node.toString()));
