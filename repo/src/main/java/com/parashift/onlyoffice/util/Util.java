@@ -55,6 +55,7 @@ public class Util {
 
     public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
+    public static final QName ForcesaveAspect = QName.createQName("onlyoffice:forcesave");
 
     public void ensureVersioningEnabled(NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();

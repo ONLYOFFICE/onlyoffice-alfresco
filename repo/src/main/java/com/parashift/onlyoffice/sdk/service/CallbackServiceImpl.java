@@ -79,7 +79,12 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         nodeService.removeProperty(wc, Util.EditingHashAspect);
         nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
-        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        if (getSettingsManager().getSettingBoolean("minorVersion", false)) {
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+        } else {
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        }
+
         cociService.checkin(wc, versionProperties, null);
 
         History history = callback.getHistory();
@@ -139,6 +144,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+        versionProperties.put(Util.ForcesaveAspect.getLocalName(), true);
         cociService.checkin(wc, versionProperties, null, true);
 
         nodeService.setProperty(wc, Util.EditingHashAspect, hash);
