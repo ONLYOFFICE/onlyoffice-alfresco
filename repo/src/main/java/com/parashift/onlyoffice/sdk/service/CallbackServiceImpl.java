@@ -144,6 +144,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+        versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
         versionProperties.put(Util.ForcesaveAspect.getLocalName(), true);
         cociService.checkin(wc, versionProperties, null, true);
 
