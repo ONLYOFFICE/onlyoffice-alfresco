@@ -28,7 +28,7 @@
 
     var multipleDownloadPost = function (requestData) {
         var waitDialog = Alfresco.util.PopupManager.displayMessage({
-            text : "",
+            text : Alfresco.util.message("label.loading"),
             spanClass : "wait",
             displayTime : 0
         });

@@ -1,15 +1,19 @@
 {
-	"docurl":"${(docurl!"")?json_string}",
-	"jwtsecret":"${(jwtsecret!"")?json_string}",
-	"docinnerurl":"${(docinnerurl!"")?json_string}",
-	"alfurl":"${(alfurl!"")?json_string}",
-	"cert":"${(cert?length > 0)?c}",
-	"forcesave":"${(forcesave?length > 0)?c}",
-	"webpreview":"${(webpreview?length > 0)?c}",
-	"chat":"${(chat?length > 0)?c}",
-	"help":"${(help?length > 0)?c}",
-	"compactHeader":"${(compactHeader?length > 0)?c}",
-	"toolbarNoTabs":"${(toolbarNoTabs?length > 0)?c}",
-	"feedback":"${(feedback?length > 0)?c}",
-	"reviewDisplay":"${(reviewDisplay!"")?json_string}"
+	"url":"${(settings['url']!"")?json_string}",
+	"security": {
+		"key": ${(settings['security.key']!"")?json_string}"
+	},
+	"innerUrl":"${(settings['innerUrl']!"")?json_string}",
+	"productInnerUrl":"${(settings['productInnerUrl']!"")?json_string}",
+	"ignoreSSLCertificate":${(settings['ignoreSSLCertificate']!false)?json_string},
+	"webpreview": ${webpreview?c},
+	"customization": {
+		"forcesave": ${(settings['customization.forcesave']!false)?json_string},
+		"chat": ${settings['customization.chat']},
+		"help": ${settings['customization.help']},
+		"compactHeader": ${(settings['customization.compactHeader']!false)?json_string},
+		"toolbarNoTabs": ${(settings['customization.toolbarNoTabs']!false)?json_string},
+		"feedback": ${(settings['customization.feedback']!false)?json_string},
+		"reviewDisplay": ${settings['customization.review.reviewDisplay']}
+	}
 }
