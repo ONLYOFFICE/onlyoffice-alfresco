@@ -133,6 +133,10 @@
          <label class="label" for="webpreview">${msg("onlyoffice-config.webpreview")}</label>
       </div>
       <div class="control field">
+         <input class="value" id="minorVersion" name="minorVersion" type="checkbox" <#if minorVersion>checked</#if> />
+         <label class="label" for="minorVersion">${msg("onlyoffice-config.minor-version")}</label>
+      </div>
+      <div class="control field">
          <input class="value" id="convertOriginal" name="convertOriginal" type="checkbox" <#if convertOriginal>checked</#if> />
          <label class="label" for="convertOriginal">${msg("onlyoffice-config.convert-original")}</label>
       </div>
@@ -232,6 +236,7 @@
       var cert = document.getElementById("onlycert");
       var fs = document.getElementById("forcesave");
       var webpreview = document.getElementById("webpreview");
+      var minorVersion = document.getElementById("minorVersion");
       var convertOriginal = document.getElementById("convertOriginal");
       var jwts = document.getElementById("jwtsecret");
       var securityHeader = document.getElementById("securityHeader");
@@ -347,6 +352,7 @@
             }
          };
 
+         obj.minorVersion = minorVersion.checked.toString();
          obj.convertOriginal = convertOriginal.checked.toString();
          obj.webpreview = webpreview.checked.toString();
 
