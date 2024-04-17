@@ -8,11 +8,13 @@
 - setting the version after closing the document
 - docs cloud banner on settings page
 - filling pdf
+- comment "ONLYOFFICE (forcesave)" for forcesave versions
 
 ## Changed
 - Alfresco v6.* and earlier is no longer supported
 - default conversion format (from docxf to pdf instead oform)
 - remove filling for oform
+- forcesave versions don't show in editor history
 
 ## 6.1.0
 ## Added
