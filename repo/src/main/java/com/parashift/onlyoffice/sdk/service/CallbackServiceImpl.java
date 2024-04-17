@@ -19,6 +19,8 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.apache.http.HttpEntity;
 import org.slf4j.Logger;
@@ -54,6 +56,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     ConvertService convertService;
     @Autowired
     DocumentManager documentManager;
+    @Autowired
+    VersionService versionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -71,6 +75,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         NodeRef nodeRef = new NodeRef(fileId);
         NodeRef wc = cociService.getWorkingCopy(nodeRef);
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
         logger.debug("Document Updated, changing content");
         updateNode(wc, callback.getUrl(), callback.getFiletype());
@@ -95,6 +100,16 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                         history,
                         callback.getChangesurl()
                 );
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
+        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
+                && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+            try {
+                historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
@@ -133,6 +148,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         NodeRef nodeRef = new NodeRef(fileId);
         NodeRef wc = cociService.getWorkingCopy(nodeRef);
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
         logger.debug("Forcesave request (type: " + callback.getForcesavetype() + ")");
         updateNode(wc, callback.getUrl(), callback.getFiletype());
@@ -144,6 +160,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         nodeService.removeProperty(wc, Util.EditingKeyAspect);
 
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+        versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
         versionProperties.put(Util.ForcesaveAspect.getLocalName(), true);
         cociService.checkin(wc, versionProperties, null, true);
 
@@ -158,6 +175,16 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                         history,
                         callback.getChangesurl()
                 );
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+
+        // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
+        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
+                    && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+            try {
+                historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
