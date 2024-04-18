@@ -8,6 +8,7 @@
 - setting the version after closing the document
 - docs cloud banner on settings page
 - filling pdf
+- wait dialog for convert action
 
 ## Changed
 - Alfresco v6.* and earlier is no longer supported
