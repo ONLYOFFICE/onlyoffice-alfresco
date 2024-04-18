@@ -8,6 +8,7 @@
 - setting the version after closing the document
 - docs cloud banner on settings page
 - filling pdf
+- wait dialog for convert action
 - comment "ONLYOFFICE (forcesave)" for forcesave versions
 
 ## Changed

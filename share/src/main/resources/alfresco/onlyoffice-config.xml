@@ -80,8 +80,9 @@
     <config evaluator="string-compare" condition="DocLibActions">
         <actions>
             <action id="document-onlyoffice-convert" type="javascript" label="actions.document.onlyoffice-convert">
-                <param name="function">onActionSimpleRepoAction</param>
+                <param name="function">onOnlyofficeConvert</param>
                 <param name="action">onlyoffice-convert</param>
+                <param name="waitingMessage">alfresco.document.onlyoffice.action.convert.msg.waiting</param>
                 <param name="successMessage">alfresco.document.onlyoffice.action.convert.msg.success</param>
                 <param name="failureMessage">alfresco.document.onlyoffice.action.convert.msg.failure</param>
                 <evaluator>evaluator.doclib.action.IsConvertible</evaluator>
@@ -90,8 +91,9 @@
                 <evaluator>evaluator.doclib.action.isNotOnlyofficeDocxfExtension</evaluator>
             </action>
             <action id="document-onlyoffice-docxf-to-pdf" type="javascript" label="actions.document.onlyoffice-create-pdf-from-docxf">
-                <param name="function">onActionSimpleRepoAction</param>
+                <param name="function">onOnlyofficeConvert</param>
                 <param name="action">onlyoffice-convert</param>
+                <param name="waitingMessage">alfresco.document.onlyoffice.action.convert.msg.waiting</param>
                 <param name="successMessage">alfresco.document.onlyoffice.action.convert.msg.success</param>
                 <param name="failureMessage">alfresco.document.onlyoffice.action.convert.msg.failure</param>
                 <evaluator>evaluator.doclib.action.isOnlyofficeDocxfExtension</evaluator>
