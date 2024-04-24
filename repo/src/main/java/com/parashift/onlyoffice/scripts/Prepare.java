@@ -1,15 +1,21 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConfigManager;
-import com.parashift.onlyoffice.util.UrlManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.model.documenteditor.Config;
+import com.onlyoffice.model.documenteditor.config.document.DocumentType;
+import com.onlyoffice.model.documenteditor.config.document.Type;
+import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
+import com.onlyoffice.service.documenteditor.config.ConfigService;
+import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.Util;
-import com.parashift.onlyoffice.util.UtilDocConfig;
-import com.parashift.onlyoffice.constants.Type;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -18,6 +24,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +39,20 @@ import java.util.Map;
  * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
  */
  /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.prepare.get")
 public class Prepare extends AbstractWebScript {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    @Qualifier("checkOutCheckInService")
+    CheckOutCheckInService cociService;
+
+    @Autowired
+    OwnableService ownableService;
 
     @Autowired
     NodeService nodeService;
@@ -53,9 +67,6 @@ public class Prepare extends AbstractWebScript {
     MimetypeService mimetypeService;
 
     @Autowired
-    ConfigManager configManager;
-
-    @Autowired
     PermissionService permissionService;
 
     @Autowired
@@ -65,7 +76,13 @@ public class Prepare extends AbstractWebScript {
     UrlManager urlManager;
 
     @Autowired
-    UtilDocConfig utilDocConfig;
+    ConfigService configService;
+
+    @Autowired
+    DocumentManager documentManager;
+
+    @Autowired
+    SettingsManager settingsManager;
 
     @Override
     public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
@@ -103,21 +120,8 @@ public class Prepare extends AbstractWebScript {
                 ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(newFileMime);
 
-                String pathLocale = Util.PathLocale.get(mesService.getLocale().toLanguageTag());
+                InputStream in = documentManager.getNewBlankFile(ext, mesService.getLocale());
 
-                if (pathLocale == null) {
-                    pathLocale = Util.PathLocale.get(mesService.getLocale().getLanguage());
-
-                    if (pathLocale == null) pathLocale = Util.PathLocale.get("en");
-                }
-
-                InputStream in;
-                if (request.getParameter("templateNodeRef") != null) {
-                    NodeRef templateNodeRef = new NodeRef(request.getParameter("templateNodeRef"));
-                    in = contentService.getReader(templateNodeRef, ContentModel.PROP_CONTENT).getContentInputStream();
-                } else {
-                    in = getClass().getResourceAsStream("/newdocs/" + pathLocale + "/new." + ext);
-                }
                 writer.putContent(in);
                 util.ensureVersioningEnabled(nodeRef);
                 util.postActivity(nodeRef, true);
@@ -125,7 +129,7 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("nodeRef", nodeRef);
             } else {
                 NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-                boolean isReadOnly = request.getParameter("readonly") != null;
+                boolean readonly = request.getParameter("readonly") != null && request.getParameter("readonly").equals("1");
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
@@ -134,12 +138,9 @@ public class Prepare extends AbstractWebScript {
                     return;
                 }
 
-                String docTitle = util.getTitle(nodeRef);
-                String docExt = util.getExtension(nodeRef);
-                String documentType = util.getDocType(docExt);
-                if (docExt.equals("docxf") || docExt.equals("oform")) {
-                    documentType = Type.WORD.name().toLowerCase();
-                }
+                String fileName = documentManager.getDocumentName(nodeRef.toString());
+                String fileExtension = documentManager.getExtension(fileName);
+                DocumentType documentType = documentManager.getDocumentType(fileName);
 
                 if (documentType == null) {
                     responseJson.put("error", "File type is not supported");
@@ -151,25 +152,48 @@ public class Prepare extends AbstractWebScript {
                 String previewParam = request.getParameter("preview");
                 Boolean preview = previewParam != null && previewParam.equals("true");
 
+                com.onlyoffice.model.documenteditor.config.document.Type type = Type.DESKTOP;
+                Mode mode = readonly ? Mode.VIEW : Mode.EDIT;
+                responseJson.put("previewEnabled", false);
+
                 if (preview) {
-                    if (((String)configManager.getOrDefault("webpreview", "")).equals("true")) {
+                    if (settingsManager.getSettingBoolean("webpreview", false)) {
+                        type = Type.EMBEDDED;
+                        mode = Mode.VIEW;
                         responseJson.put("previewEnabled", true);
                     } else {
-                        responseJson.put("previewEnabled", false);
                         response.getWriter().write(responseJson.toString(3));
                         return;
                     }
                 }
 
-                String username = AuthenticationUtil.getFullyAuthenticatedUser();
+                if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
+                        && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
+                        && mode.equals(Mode.EDIT)) {
+                    if (!cociService.isCheckedOut(nodeRef)) {
+                        util.ensureVersioningEnabled(nodeRef);
+                        NodeRef copyRef = cociService.checkout(nodeRef);
+                        ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
+                        nodeService.setProperty(copyRef, Util.EditingKeyAspect, documentManager.getDocumentKey(nodeRef.toString(), false));
+                        nodeService.setProperty(copyRef, Util.EditingHashAspect, util.generateHash());
+                    }
+                }
 
-                JSONObject configJson = utilDocConfig.getConfigJson(nodeRef, null, username, documentType, docTitle,
-                        docExt, preview, isReadOnly);
-                responseJson.put("editorConfig", configJson);
-                responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
-                responseJson.put("mime", mimetypeService.getMimetype(docExt));
+                Config config = configService.createConfig(
+                        request.getParameter("nodeRef"),
+                        mode,
+                        type
+                );
+
+                config.getEditorConfig().setLang(mesService.getLocale().toLanguageTag());
+
+                ObjectMapper mapper = new ObjectMapper();
+
+                responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
+                responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
                 responseJson.put("folderNode", util.getParentNodeRef(nodeRef));
-                responseJson.put("demo", configManager.demoActive());
+                responseJson.put("demo", settingsManager.isDemoActive());
                 responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
                 responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
                 responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));

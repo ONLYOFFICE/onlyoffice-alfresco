@@ -1,25 +1,33 @@
 ONLYOFFICE Alfresco module package uses code from the following 3rd party projects.
 
-alfresco-community-repo    - This project contains the bulk of the Alfresco Content Services Repository code. (https://github.com/Alfresco/alfresco-community-repo/blob/master/LICENSE.txt)
-License:                     LGPL v3.0
-License File                 alfresco-community-repo.license
+org.alfresco.acs-community-packaging                           - Alfresco Content Services Community Packaging. (https://github.com/Alfresco/acs-community-packaging/blob/master/LICENSE)
+License:                                                         Apache License 2.0
+License File                                                     org.alfresco.acs-community-packaging.license
 
-alfresco-sdk               - The Alfresco SDK is used by developers to build extensions for the Alfresco Digital Business Platform. (https://github.com/Alfresco/alfresco-sdk/blob/master/LICENSE)
-License:                     Apache
-License File                 alfresco-sdk.license
+org.alfresco.alfresco-remote-api                               - Alfresco Remote API. (https://github.com/Alfresco/alfresco-remote-api/blob/master/LICENSE)
+License:                                                         LGPL-3.0 license
+License File                                                     org.alfresco.alfresco-remote-api.license
 
-alfresco-share             - Share is an option for the front end of the Alfresco Content Service offering. (https://github.com/Alfresco/share/blob/master/LICENSE)
-License:                     LGPL v3.0
-License File                 alfresco-share.license
+org.alfresco.share                                             - Share is an option for the front end of the Alfresco Content Service offering. (https://github.com/Alfresco/share/blob/master/LICENSE)
+License:                                                         LGPL-3.0 license
+License File                                                     org.alfresco.share.license
 
-alfresco-solr              - Solr is the popular, blazing fast open source enterprise search platform from the Apache Lucene project. (https://github.com/Alfresco/lucene-solr/blob/master/solr/LICENSE.txt)
-License:                     Apache
-License File                 alfresco-solr.license
+org.alfresco.alfresco-web-framework-commons                    - Alfresco Web Framework common libraries. (https://github.com/Alfresco/alfresco-community-share/blob/master/LICENSE)
+License:                                                         LGPL-3.0 license
+License File                                                     org.alfresco.alfresco-web-framework-commons.license
 
-alfresco-surf              - Surf is a user interface development framework that is used for implementing Share Web Scripts, pages and Dashlets. (https://github.com/Alfresco/surf/blob/develop/LICENSE.md)
-License:                     LGPL v3.0
-License File                 alfresco-surf.license
+com.auth0.java-jwt                                             - Java implementation of JSON Web Token (JWT). (https://github.com/auth0/java-jwt/blob/master/LICENSE)
+License:                                                         MIT license
+License File                                                     com.auth0.java-jwt.license
 
-alfresco-surf-webscripts   - Surf Web Scripts are basically Rest-based APIs that are used when implementing pages and Dashlets for the Alfresco Share web application. (https://github.com/Alfresco/surf-webscripts/blob/master/LICENSE)
-License:                     Apache
-License File                 alfresco-surf-webscripts.license
+com.fasterxml.jackson.core.jackson-databind                    - General data-binding functionality for Jackson: works on core streaming API. (https://github.com/FasterXML/jackson-databind/blob/2.18/LICENSE)
+License:                                                         Apache License 2.0
+License File                                                     com.fasterxml.jackson.core.jackson-databind.license
+
+com.fasterxml.jackson.dataformat.jackson-dataformat-properties - Support for reading and writing content of "Java Properties" style configuration files as if there was implied nesting structure (by default using dots as separators). (https://github.com/FasterXML/jackson-dataformats-text/blob/2.18/LICENSE)
+License:                                                         Apache License 2.0
+License File                                                     com.fasterxml.jackson.dataformat.jackson-dataformat-properties.license
+
+javax.servlet.javax.servlet-api                                - Java Servlet is the foundation web specification in the Java Enterprise Platform. Developers can build web applications using the Servlet API to interact with the request/response workflow. (https://oss.oracle.com/licenses/CDDL+GPL-1.1)
+License:                                                         CDDL + GPLv2 with classpath exception
+License File                                                     javax.servlet.javax.servlet-api.license

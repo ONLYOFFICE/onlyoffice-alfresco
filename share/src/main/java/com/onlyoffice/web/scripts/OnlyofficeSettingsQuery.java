@@ -1,10 +1,15 @@
 /*
-   Copyright (c) Ascensio System SIA 2023. All rights reserved.
+   Copyright (c) Ascensio System SIA 2024. All rights reserved.
    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.scripts;
 
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.model.common.Format;
+import com.onlyoffice.model.settings.Settings;
+import com.onlyoffice.web.model.OnlyofficeSettings;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -12,13 +17,17 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.extensions.webscripts.ScriptRemote;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.connector.Response;
+
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class OnlyofficeSettingsQuery {
     private static Set<String> editableFormats = new HashSet<String>();
     private static Boolean convertOriginal = false;
-    private static JSONArray supportedFormats = new JSONArray();
+    private static List<Format> supportedFormats = new ArrayList<>();
     private static long timeLastRequest = 0;
     private ScriptRemote remote;
 
@@ -28,21 +37,30 @@ public class OnlyofficeSettingsQuery {
 
     private void requestOnlyofficeSettingsFromRepo() {
         if ((System.nanoTime() - timeLastRequest)/1000000000 > 10) {
-            Set<String> editableFormats = new HashSet<>();
             Response response = remote.call("/parashift/onlyoffice/onlyoffice-settings");
             if (response.getStatus().getCode() == Status.STATUS_OK) {
                 timeLastRequest = System.nanoTime();
                 try {
-                    JSONParser parser = new JSONParser();
-                    JSONObject json = (JSONObject) parser.parse(response.getResponse());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
 
-                    JSONArray formats = (JSONArray) json.get("editableFormats");
-                    for (Object format : formats) {
-                        editableFormats.add((String) format);
+                    OnlyofficeSettings settings = objectMapper.readValue(response.getResponse(),
+                            OnlyofficeSettings.class);
+
+                    for (Map.Entry<String, Boolean> format : settings.getEditableFormats().entrySet()) {
+                        if (format.getValue()) {
+                            this.editableFormats.add(format.getKey());
+                        }
                     }
-                    this.editableFormats = editableFormats;
-                    this.convertOriginal = (Boolean) json.get("convertOriginal");
-                    this.supportedFormats = (JSONArray) json.get("supportedFormats");
+                    for (Format format : settings.getSupportedFormats()) {
+                        if (format.getActions().contains("edit")) {
+                            this.editableFormats.add(format.getName());
+                        }
+                    }
+
+
+                    this.convertOriginal = settings.getConvertOriginal();
+                    this.supportedFormats = settings.getSupportedFormats();
                 } catch (Exception err) {
                     throw new AlfrescoRuntimeException("Failed to parse response from Alfresco: " + err.getMessage());
                 }
@@ -64,7 +82,7 @@ public class OnlyofficeSettingsQuery {
         return convertOriginal;
     }
 
-    public JSONArray getSupportedFormats() {
+    public List<Format> getSupportedFormats() {
         requestOnlyofficeSettingsFromRepo();
         return supportedFormats;
     }

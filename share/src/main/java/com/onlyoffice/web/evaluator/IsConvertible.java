@@ -1,14 +1,14 @@
 /*
-   Copyright (c) Ascensio System SIA 2023. All rights reserved.
+   Copyright (c) Ascensio System SIA 2024. All rights reserved.
    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.evaluator;
 
+import com.onlyoffice.model.common.Format;
 import com.onlyoffice.web.scripts.OnlyofficeSettingsQuery;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class IsConvertible extends BaseEvaluator {
@@ -60,26 +60,26 @@ public class IsConvertible extends BaseEvaluator {
         String fileName = (String) jsonObject.get("fileName");
         String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 
-        JSONArray supportedFormats = onlyofficeSettings.getSupportedFormats();
-
-        for (int i = 0; i < supportedFormats.size(); i++) {
-            JSONObject format = (JSONObject) supportedFormats.get(i);
-            JSONArray outputTypes = (JSONArray) format.get("convertTo");
-
-            if (format.get("name").equals(docExt)) {
-                if (docExt.equals("txt") || docExt.equals("csv")) return false;
-                switch (format.get("type").toString()) {
-                    case "FORM":
-                        if (outputTypes.contains("oform")) return true;
+        for (Format format :  onlyofficeSettings.getSupportedFormats()) {
+            if (format.getName().equals(docExt) && format.getType() != null) {
+                switch (format.getType()) {
+                    case WORD:
+                        if (format.getName().equals("docxf") && format.getConvert().contains("pdf")) {
+                            return true;
+                        }
+                        if (format.getConvert().contains("docx")) {
+                            return true;
+                        }
                         break;
-                    case "WORD":
-                        if (outputTypes.contains("docx")) return true;
+                    case CELL:
+                        if (format.getConvert().contains("xlsx")) {
+                            return true;
+                        }
                         break;
-                    case "CELL":
-                        if (outputTypes.contains("xlsx")) return true;
-                        break;
-                    case "SLIDE":
-                        if (outputTypes.contains("pptx")) return true;
+                    case SLIDE:
+                        if (format.getConvert().contains("pptx")) {
+                            return true;
+                        }
                         break;
                     default:
                         break;

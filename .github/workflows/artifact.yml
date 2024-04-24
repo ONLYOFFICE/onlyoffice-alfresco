@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get Info 
         run: |
           echo "artifact=$(awk '/<artifactId>/,/<\/artifactId>/' pom.xml | head -n 1 | sed 's/^[[:space:]]*//g' | sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p')" >> $GITHUB_OUTPUT
         id: info
-      - name: Install Java 11
-        uses: actions/setup-java@v3
+      - name: Install Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
       - name: Build Artifact
         run: |
           cd ${{ github.workspace }}
@@ -30,12 +30,12 @@ jobs:
           mv ./repo/target/${{ steps.info.outputs.artifact }}-repo.amp $cwd
           mv ./share/target/${{ steps.info.outputs.artifact }}-share.amp $cwd
       - name: Upload Repo Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.info.outputs.artifact }}-repo
           path: ${{ steps.info.outputs.artifact }}-repo.amp
       - name: Upload Share Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.info.outputs.artifact }}-share
           path: ${{ steps.info.outputs.artifact }}-share.amp

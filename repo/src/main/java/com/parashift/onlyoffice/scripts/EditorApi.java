@@ -1,5 +1,14 @@
 package com.parashift.onlyoffice.scripts;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.request.RequestManager;
+import com.onlyoffice.manager.security.JwtManager;
+import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.model.convertservice.ConvertRequest;
+import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.service.convert.ConvertService;
+import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.*;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -27,11 +36,12 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /*
-   Copyright (c) Ascensio System SIA 2023. All rights reserved.
+   Copyright (c) Ascensio System SIA 2024. All rights reserved.
    http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.editor-api.post")
@@ -59,9 +69,6 @@ public class EditorApi extends AbstractWebScript {
     JwtManager jwtManager;
 
     @Autowired
-    ConvertManager converterService;
-
-    @Autowired
     MessageService mesService;
 
     @Autowired
@@ -70,6 +77,16 @@ public class EditorApi extends AbstractWebScript {
     @Autowired
     RequestManager requestManager;
 
+    @Autowired
+    ConvertService convertService;
+
+    @Autowired
+    SettingsManager settingsManager;
+
+    @Autowired
+    DocumentManager documentManager;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
@@ -98,22 +115,23 @@ public class EditorApi extends AbstractWebScript {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray nodes = requestData.getJSONArray("nodes");
-            List<Object> responseJson = new ArrayList<>();
+            List<Map<String, Object>> responseJson = new ArrayList<>();
 
             for (int i = 0; i < nodes.length(); i++) {
-                JSONObject data = new JSONObject();
+                Map<String, Object> data = new HashMap<>();
 
                 NodeRef node = new NodeRef(nodes.getString(i));
 
                 if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                    String fileType = util.getExtension(node);
+                    String fileName = documentManager.getDocumentName(node.toString());
+                    String fileType = documentManager.getExtension(fileName);
 
-                    if (requestData.has("command")) {
-                        data.put("c", requestData.get("command"));
+                    if (!requestData.get("command").equals(null)) {
+                        data.put("c", requestData.getString("command"));
                     }
                     data.put("fileType", fileType);
-                    data.put("url", urlManager.getContentUrl(node));
-                    if (jwtManager.jwtEnabled()) {
+                    data.put("url", urlManager.getFileUrl(node.toString()));
+                    if (settingsManager.isSecurityEnabled()) {
                         try {
                             data.put("token", jwtManager.createToken(data));
                         } catch (Exception e) {
@@ -126,7 +144,7 @@ public class EditorApi extends AbstractWebScript {
             }
 
             response.setContentType("application/json");
-            response.getWriter().write(responseJson.toString());
+            response.getWriter().write(objectMapper.writeValueAsString(responseJson));
         } catch (JSONException e) {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from request", e);
         }
@@ -152,14 +170,31 @@ public class EditorApi extends AbstractWebScript {
             JSONObject data = new JSONObject();
 
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
-                String fileType = util.getExtension(node);
+                String fileName = documentManager.getDocumentName(node.toString());
+                String fileType = documentManager.getExtension(fileName);
                 if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
                 }
 
                 try {
-                    String downloadUrl = converterService.convert(util.getKey(node), fileType, "docxf", urlManager.getContentUrl(node), mesService.getLocale().toLanguageTag());
-                    String docTitle = util.getTitleWithoutExtension(node);
+                    ConvertRequest convertRequest = ConvertRequest.builder()
+                            .outputtype("docxf")
+                            .region(mesService.getLocale().toLanguageTag())
+                            .build();
+
+                    ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
+
+                    if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                        throw new SecurityException();
+                    }
+
+                    if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
+                            || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
+                        throw new Exception("'endConvert' is false or 'fileUrl' is empty");
+                    }
+
+                    String downloadUrl = convertResponse.getFileUrl();
+                    String docTitle = documentManager.getBaseName(fileName);
                     String newNode = createNode(folderNode, docTitle, "docxf", downloadUrl);
                     data.put("nodeRef", newNode);
                 } catch (Exception e) {
@@ -203,6 +238,7 @@ public class EditorApi extends AbstractWebScript {
 
     private String createNode(NodeRef folderNode, String title, final String ext, String url) throws IOException {
         String fileName = util.getCorrectName(folderNode, title, ext);
+        url = urlManager.replaceToInnerDocumentServerUrl(url);
 
         final NodeRef nodeRef = nodeService.createNode(
                 folderNode,
@@ -212,11 +248,11 @@ public class EditorApi extends AbstractWebScript {
                 Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
         try {
-            requestManager.executeRequestToDocumentServer(url, new RequestManager.Callback<Void>() {
-                public Void doWork(HttpEntity httpEntity) throws IOException {
+            requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
+                public Void doWork(Object response) throws IOException {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.setMimetype(mimetypeService.getMimetype(ext));
-                    writer.putContent(httpEntity.getContent());
+                    writer.putContent(((HttpEntity)response).getContent());
                     return null;
                 }
             });

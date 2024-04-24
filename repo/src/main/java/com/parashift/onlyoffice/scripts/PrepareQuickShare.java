@@ -1,16 +1,20 @@
 package com.parashift.onlyoffice.scripts;
 
-import com.parashift.onlyoffice.util.ConfigManager;
-import com.parashift.onlyoffice.util.UrlManager;
-import com.parashift.onlyoffice.util.Util;
-import com.parashift.onlyoffice.util.UtilDocConfig;
-import org.alfresco.model.ContentModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.manager.document.DocumentManager;
+import com.onlyoffice.manager.settings.SettingsManager;
+
+import com.onlyoffice.model.documenteditor.Config;
+import com.onlyoffice.model.documenteditor.config.document.DocumentType;
+import com.onlyoffice.model.documenteditor.config.document.Type;
+import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
+import com.onlyoffice.service.documenteditor.config.ConfigService;
+import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.*;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,11 +25,9 @@ import org.springframework.extensions.webscripts.*;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.Map;
 
  /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -38,22 +40,22 @@ public class PrepareQuickShare extends AbstractWebScript {
     NodeService nodeService;
 
     @Autowired
-    ConfigManager configManager;
-
-    @Autowired
     MimetypeService mimetypeService;
 
     @Autowired
     QuickShareService quickShareService;
 
     @Autowired
-    Util util;
-
-    @Autowired
     UrlManager urlManager;
 
     @Autowired
-    UtilDocConfig utilDocConfig;
+    ConfigService configService;
+
+    @Autowired
+    DocumentManager documentManager;
+
+    @Autowired
+    SettingsManager settingsManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
@@ -77,9 +79,9 @@ public class PrepareQuickShare extends AbstractWebScript {
                         try {
                             JSONObject responseJson = new JSONObject();
 
-                            String docTitle = util.getTitle(nodeRef);
-                            String docExt = util.getExtension(nodeRef);
-                            String documentType = util.getDocType(docExt);
+                            String fileName = documentManager.getDocumentName(nodeRef.toString());
+                            String fileExtension = documentManager.getExtension(fileName);
+                            DocumentType documentType = documentManager.getDocumentType(fileName);
 
                             if (documentType == null) {
                                 responseJson.put("error", "File type is not supported");
@@ -88,7 +90,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                                 return null;
                             }
 
-                            if (((String)configManager.getOrDefault("webpreview", "")).equals("true")) {
+                            if (settingsManager.getSettingBoolean("webpreview", false)) {
                                 responseJson.put("previewEnabled", true);
                             } else {
                                 responseJson.put("previewEnabled", false);
@@ -96,12 +98,19 @@ public class PrepareQuickShare extends AbstractWebScript {
                                 return null;
                             }
 
-                            JSONObject configJson = utilDocConfig.getConfigJson(nodeRef, sharedId, null, documentType,
-                                    docTitle, docExt, true, true);
+                            Config config = configService.createConfig(nodeRef.toString(), Mode.VIEW, Type.EMBEDDED);
 
-                            responseJson.put("editorConfig", configJson);
-                            responseJson.put("onlyofficeUrl", urlManager.getEditorUrl());
-                            responseJson.put("mime", mimetypeService.getMimetype(docExt));
+                            config.getEditorConfig().getEmbedded().setSaveUrl(
+                                    urlManager.getEmbeddedSaveUrl(nodeRef.toString(), sharedId)
+                            );
+
+                            config.getEditorConfig().getCustomization().setGoback(null);
+
+                            ObjectMapper mapper = new ObjectMapper();
+
+                            responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
+                            responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                            responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
 
                             logger.debug("Sending JSON prepare object");
                             logger.debug(responseJson.toString(3));

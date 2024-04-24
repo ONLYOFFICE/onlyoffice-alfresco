@@ -1,5 +1,22 @@
 # Change Log
 
+## 7.0.0
+## Added
+- core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
+- document server v6.4 and earlier is no longer supported
+- setting authorization header on settings page
+- setting the version after closing the document
+- docs cloud banner on settings page
+- filling pdf
+- wait dialog for convert action
+- comment "ONLYOFFICE (forcesave)" for forcesave versions
+
+## Changed
+- Alfresco v7.0.* and earlier is no longer supported
+- default conversion format (from docxf to pdf instead oform)
+- remove filling for oform
+- forcesave versions don't show in editor history
+
 ## 6.1.0
 ## Added
 - manage permissions from editor

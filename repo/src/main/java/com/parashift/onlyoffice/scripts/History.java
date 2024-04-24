@@ -1,8 +1,8 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.model.documenteditor.HistoryData;
 import com.parashift.onlyoffice.util.HistoryManager;
-import com.parashift.onlyoffice.util.HistoryManager.HistoryData;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -17,7 +17,7 @@ import java.io.*;
 import java.util.*;
 
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 @Component(value = "webscript.onlyoffice.history.get")

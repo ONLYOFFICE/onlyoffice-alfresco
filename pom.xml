@@ -3,41 +3,29 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.onlyoffice.alfresco</groupId>
     <artifactId>onlyoffice-integration</artifactId>
-    <version>6.1.0</version>
+    <version>7.0.0</version>
     <name>ONLYOFFICE Alfresco Integration</name>
     <description>This Module integrates Alfresco Share with ONLYOFFICE</description>
     <packaging>pom</packaging>
 
     <properties>
         <!-- Alfresco Maven Plugin version to use -->
-        <alfresco.sdk.version>3.0.1</alfresco.sdk.version>
+        <alfresco.sdk.version>4.8.0</alfresco.sdk.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Duplicated with alfresco.solrHome in the plugin, we need them out here to do filtering -->
-        <solr.home>${alfresco.data.location}/solr</solr.home>
-        <solr.model.dir>${solr.home}/alfrescoModels</solr.model.dir>
-        <solr.content.dir>${solr.home}/index</solr.content.dir>
-
         <!-- Properties used in dependency declarations, you don't need to change these -->
         <alfresco.groupId>org.alfresco</alfresco.groupId>
+        <alfresco.bomDependencyArtifactId>acs-community-packaging</alfresco.bomDependencyArtifactId>
 
         <!-- Alfresco Platform and Share webapp versions, these are the original Alfresco webapps that will be
              customized and then deployed and run by the tomcat maven plugin when
              executing for example $ mvn clean install alfresco:run -->
-        <alfresco.platform.version>5.2.f</alfresco.platform.version>
-        <alfresco.share.version>5.2.e</alfresco.share.version>
+        <alfresco.platform.version>7.1.0</alfresco.platform.version>
+        <alfresco.share.version>11.77</alfresco.share.version>
 
-        <!-- Alfresco Surf version, if you change Share version you might need to change Surf version -->
-        <alfresco.surf.version>6.11</alfresco.surf.version>
-
-        <!-- Environment to use, Alfresco Maven Plugin will
-             copy alfresco-global-*.properties files from this directory, such as src/test/properties/local -->
-        <env>local</env>
-
-        <!-- Compile with Java 7, default is 5 -->
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -45,7 +33,8 @@
         <!-- The main Alfresco Repo dependency for compiling Java code in src/main/java -->
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-repository</artifactId>
+            <artifactId>alfresco-remote-api</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>
@@ -60,7 +49,7 @@
             -->
             <dependency>
                 <groupId>${alfresco.groupId}</groupId>
-                <artifactId>alfresco-platform-distribution</artifactId>
+                <artifactId>${alfresco.bomDependencyArtifactId}</artifactId>
                 <version>${alfresco.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -89,29 +78,20 @@
                 <scope>provided</scope>
             </dependency>
 
-            <!-- Redefine the following surf dependencies as they have no resolvable version in the
-                 alfresco-platform-distribution artifact -->
-            <dependency>
-                <groupId>org.alfresco.surf</groupId>
-                <artifactId>spring-surf</artifactId>
-                <version>${alfresco.surf.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco.surf</groupId>
-                <artifactId>spring-surf-api</artifactId>
-                <version>${alfresco.surf.version}</version>
-                <scope>provided</scope>
-            </dependency>
             <dependency>
                 <groupId>com.auth0</groupId>
                 <artifactId>java-jwt</artifactId>
                 <version>4.0.0</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.13.3</version>
+                <groupId>com.onlyoffice</groupId>
+                <artifactId>docs-integration-sdk</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-properties</artifactId>
+                <version>2.12.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -156,7 +136,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                         <nonFilteredFileExtensions> <!-- jpg, jpeg, gif, bmp and png are added automatically -->
@@ -184,9 +164,7 @@
 
     </build>
 
-    <!--
-        Alfresco Maven Repositories
-        -->
+    <!-- Alfresco Maven Repositories -->
     <repositories>
         <repository>
             <id>alfresco-public</id>
@@ -204,6 +182,10 @@
         <repository>
             <id>alfresco-private-repository</id>
             <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+        </repository>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
         </repository>
     </repositories>
   <modules>

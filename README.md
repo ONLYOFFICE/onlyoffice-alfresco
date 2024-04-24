@@ -8,13 +8,34 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 * Share documents with other users.
 * Co-edit documents in real-time: use two co-editing modes (Fast and Strict), Track Changes, comments, and built-in chat.
 
-Supported formats:
+## Supported formats
 
-* For editing: DOCX, XLSX, PPTX, DOCXF, OFORM.
-* For editing via conversion to OOXML: CSV, ODP, ODS, ODT, RTF, TXT.
-* For viewing: DJVU, DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, PDF, RTF, TXT, XPS, OXPS, XML, CSV, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX.
-* For converting (download as): DOC, DOCM, DOCX, DOCXF, OFORM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XPS, OXPS, XML, FODS, ODS, OTS, XLS, XLSM, XLSX, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX
-* For converting to Office Open XML: DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTML, MHT, ODT, OTT, RTF, XML, FODS, ODS, OTS, XLS, XLSM, XLT, XLTM, XLTX, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM.
+**For viewing:**
+* **WORD**: DJVU, DOC, DOCM, DOCX, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OFORM, OTT, OXPS, PDF, RTF, STW, SXW, TXT, WPS, WPT, XML, XPS
+* **CELL**: CSV, ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLSX, XLT, XLTM, XLTX
+* **SLIDE**: DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
+
+**For editing:**
+
+* **WORD**: DOCM, DOCX, DOCXF, DOTM, DOTX
+* **CELL**: XLSM, XLSX, XLTM, XLTX
+* **SLIDE**: POTM, POTX, PPSM, PPSX, PPTM, PPTX
+
+**For editing with possible loss of information:**
+
+* **WORD**: EPUB, FB2, HTML, ODT, OTT, RTF, TXT
+* **CELL**: CSV, ODS, OTS
+* **SLIDE**: ODP, OTP
+
+**For filling:**
+
+* **WORD**: PDF
+
+**For converting to Office Open XML formats:**
+
+* **WORD:** DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, OXPS, PDF, RTF, STW, SXW, WPS, WPT, XML, XPS
+* **CELL:** ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLT, XLTM, XLTX
+* **SLIDE:** DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, SXI
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
 
@@ -83,7 +104,7 @@ Module configuration can be found inside `Alfresco Administration Console` or by
 > You can also add `onlyoffice.url` in `alfresco-global.properties`. Configuration made via settings page will override `alfresco-global.properties`.
 
 Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
-Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.jwtsecret* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
+Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.security.key* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
 
 ## Compiling ONLYOFFICE Alfresco module package
 
@@ -207,12 +228,18 @@ The table below will help you make the right choice.
 | Font and paragraph formatting   | + | + |
 | Object insertion                | + | + |
 | Transitions                     | + | + |
+| Animations                      | + | + |
 | Presenter mode                  | + | + |
 | Notes                           | + | + |
 | **Form creator features** | **Community Edition** | **Enterprise Edition** |
 | Adding form fields	          | + | + |
 | Form preview                    | + | + |
 | Saving as PDF	                  | + | + |
+| **Working with PDF**      | **Community Edition** | **Enterprise Edition** |
+| Text annotations (highlight, underline, cross out) | + | + |
+| Comments                        | + | + |
+| Freehand drawings               | + | + |
+| Form filling                    | + | + |
 | | [Get it now](https://www.onlyoffice.com/download-docs.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubAlfresco#docs-community)  | [Start Free Trial](https://www.onlyoffice.com/download-docs.aspx?utm_source=github&utm_medium=cpc&utm_campaign=GitHubAlfresco#docs-enterprise) |
 
 \* If supported by DMS.

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) Ascensio System SIA 2023. All rights reserved.
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -12,7 +12,7 @@
         if (supportedFormats) {
             for (var format of supportedFormats) {
                 if (format.name == docExt) {
-                    outputTypes = format.convertTo;
+                    outputTypes = format.convert;
                 }
             }
 
@@ -20,7 +20,6 @@
                 if (outputTypes.includes(docExt)) {
                     outputTypes.splice(outputTypes.indexOf(docExt), 1);
                 }
-                outputTypes.unshift(docExt);
             }
         }
 
@@ -29,7 +28,7 @@
 
     var multipleDownloadPost = function (requestData) {
         var waitDialog = Alfresco.util.PopupManager.displayMessage({
-            text : "",
+            text : Alfresco.util.message("label.loading"),
             spanClass : "wait",
             displayTime : 0
         });
