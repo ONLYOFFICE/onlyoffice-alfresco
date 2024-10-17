@@ -7,8 +7,8 @@
     var documentPicker;
     const subMenuItemsData = [
         {
-            id: "onlyoffice-newform-blank",
-            title: Alfresco.util.message("actions.document.onlyoffice-create-docxf.blank"),
+            id: "onlyoffice-new-form-blank",
+            title: Alfresco.util.message("actions.document.onlyoffice-create-pdf.blank"),
             onClick: _onCreateFormFromBlank
         },
         {
