@@ -134,10 +134,6 @@
         </property>
     </bean>
 
-    <bean id="evaluator.doclib.action.isOnlyofficeDocxfExtension" class="com.onlyoffice.web.evaluator.IsDocxfExtension" />
-    <bean id="evaluator.doclib.action.isNotOnlyofficeDocxfExtension" class="com.onlyoffice.web.evaluator.IsDocxfExtension" >
-        <property name="negateOutput" value="true"/>
-    </bean>
     <bean id="evaluator.doclib.action.IsCorrectDownloadAs" class="com.onlyoffice.web.evaluator.IsCorrectDownloadAs">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>

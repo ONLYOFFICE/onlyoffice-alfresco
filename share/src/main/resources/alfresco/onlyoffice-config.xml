@@ -88,27 +88,13 @@
                 <evaluator>evaluator.doclib.action.IsConvertible</evaluator>
                 <evaluator>evaluator.doclib.action.isNotWorkingCopy</evaluator>
                 <evaluator>evaluator.doclib.action.notLocked</evaluator>
-                <evaluator>evaluator.doclib.action.isNotOnlyofficeDocxfExtension</evaluator>
-            </action>
-            <action id="document-onlyoffice-docxf-to-pdf" type="javascript" label="actions.document.onlyoffice-create-pdf-from-docxf">
-                <param name="function">onOnlyofficeConvert</param>
-                <param name="action">onlyoffice-convert</param>
-                <param name="waitingMessage">alfresco.document.onlyoffice.action.convert.msg.waiting</param>
-                <param name="successMessage">alfresco.document.onlyoffice.action.convert.msg.success</param>
-                <param name="failureMessage">alfresco.document.onlyoffice.action.convert.msg.failure</param>
-                <evaluator>evaluator.doclib.action.isOnlyofficeDocxfExtension</evaluator>
-                <evaluator>evaluator.doclib.action.IsConvertible</evaluator>
-                <evaluator>evaluator.doclib.action.isNotWorkingCopy</evaluator>
-                <evaluator>evaluator.doclib.action.notLocked</evaluator>
             </action>
         </actions>
         <actionGroups>
             <actionGroup id="document-browse">
-                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
             <actionGroup id="document-details">
-                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
         </actionGroups>
