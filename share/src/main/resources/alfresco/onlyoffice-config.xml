@@ -56,8 +56,8 @@
 
     <config evaluator="string-compare" condition="DocumentLibrary">
         <create-content>
-            <content id="document-onlyoffice-create-docxf" type="javascript"
-                     label="actions.document.onlyoffice-create-docxf"/>
+            <content id="document-onlyoffice-create-pdf" type="javascript"
+                     label="actions.document.onlyoffice-create-pdf"/>
         </create-content>
     </config>
 
