@@ -7,20 +7,20 @@
     var documentPicker;
     const subMenuItemsData = [
         {
-            id: "onlyoffice-new-form-blank",
+            id: "onlyoffice-new-pdf-from-blank",
             title: Alfresco.util.message("actions.document.onlyoffice-create-pdf.blank"),
             onClick: _onCreateFormFromBlank
         },
         {
-            id: "onlyoffice-newform-docx",
-            title: Alfresco.util.message("actions.document.onlyoffice-create-docxf.form-exs"),
+            id: "onlyoffice-new-pdf-from-docx",
+            title: Alfresco.util.message("actions.document.onlyoffice-create-pdf.from-exs"),
             onClick: _onCreateFormFromExistingFile
         }
     ];
 
     onLoadCreateMenuItems(function() {
         var subMenu;
-        var targetMenuItem = document.getElementsByClassName("document-onlyoffice-create-docxf-file")[0]
+        var targetMenuItem = document.getElementsByClassName("document-onlyoffice-create-pdf-file")[0]
                 .parentElement
                 .parentElement;
         targetMenuItem.classList.add("yuimenuitem-hassubmenu");
@@ -107,7 +107,7 @@
     }
 
     function onLoadCreateMenuItems(callback) {
-        if (document.getElementsByClassName("document-onlyoffice-create-docxf-file").length
+        if (document.getElementsByClassName("document-onlyoffice-create-pdf-file").length
             && Alfresco.ObjectRenderer
         ) {
             callback();
@@ -163,7 +163,7 @@
                                 delete documentPicker.singleSelectedItem;
                                 waitDialog.destroy();
                                 Alfresco.util.PopupManager.displayMessage({
-                                    text: Alfresco.util.message("actions.document.onlyoffice-create-docxf.form-exs-failure")
+                                    text: Alfresco.util.message("actions.document.onlyoffice-create-pdf.from-exs-failure")
                                 });
                             },
                             scope: this

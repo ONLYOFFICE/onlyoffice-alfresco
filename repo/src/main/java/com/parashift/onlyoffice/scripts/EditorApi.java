@@ -12,6 +12,7 @@ import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.model.convertservice.convertrequest.PDF;
 import com.onlyoffice.service.convert.ConvertService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.Util;
@@ -112,7 +113,7 @@ public class EditorApi extends AbstractWebScript {
                 favorite(request, response);
                 break;
             case "from-docx":
-                docxToDocxf(request, response);
+                docxToPdfForm(request, response);
                 break;
             default:
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "API Not Found");
@@ -162,7 +163,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void docxToDocxf(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
+    private void docxToPdfForm(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray docxNode = requestData.getJSONArray("nodes");
@@ -195,7 +196,8 @@ public class EditorApi extends AbstractWebScript {
 
                 try {
                     ConvertRequest convertRequest = ConvertRequest.builder()
-                            .outputtype("docxf")
+                            .outputtype("pdf")
+                            .pdf(new PDF(true))
                             .region(mesService.getLocale().toLanguageTag())
                             .build();
 
@@ -213,11 +215,11 @@ public class EditorApi extends AbstractWebScript {
 
                     String downloadUrl = convertResponse.getFileUrl();
                     String docTitle = documentManager.getBaseName(fileName);
-                    String newNode = createNode(folderNode, docTitle, "docxf", downloadUrl);
+                    String newNode = createNode(folderNode, docTitle, "pdf", downloadUrl);
                     data.put("nodeRef", newNode);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not convert docx file to docxf", e);
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not convert docx file to pdf", e);
                 }
             }
 
