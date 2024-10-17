@@ -120,7 +120,7 @@
 
     function _onCreateFormFromBlank() {
         window.open("onlyoffice-edit?parentNodeRef=" + YAHOO.Bubbling.bubble.ready.scope.docListToolbar.doclistMetadata.parent.nodeRef
-                        + "&new=application/vnd.openxmlformats-officedocument.wordprocessingml.document.docxf");
+                        + "&new=application/pdf");
         setTimeout(function () {
             location.reload();
         }, 1000);
