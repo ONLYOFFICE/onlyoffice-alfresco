@@ -63,7 +63,8 @@ public class OnlyofficeSettingsQuery {
             }
             else
             {
-                throw new AlfrescoRuntimeException("Unable to retrieve editable mimetypes information from Alfresco: " + response.getStatus().getCode());
+                throw new AlfrescoRuntimeException("Unable to retrieve editable mimetypes information from Alfresco: "
+                        + response.getStatus().getCode());
             }
         }
     }
