@@ -15,10 +15,14 @@ public class IsOnlyEditEvaluator extends BaseEvaluator {
     public boolean evaluate(final JSONObject jsonObject) {
         try {
             JSONObject node = (JSONObject) jsonObject.get("node");
-            if (node == null) return false;
+            if (node == null) {
+                return false;
+            }
 
             JSONObject properties = (JSONObject) node.get("properties");
-            if (properties == null) return false;
+            if (properties == null) {
+                return false;
+            }
 
             if (properties.get(":onlyoffice:editing-hash") != null) {
                 return true;

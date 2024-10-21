@@ -17,7 +17,9 @@ public class IsDocxfExtension extends BaseEvaluator {
             if (fileName != null) {
                 String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 
-                if (docExt.equals("docxf")) return true;
+                if (docExt.equals("docxf")) {
+                    return true;
+                }
             }
         } catch (Exception err) {
             throw new AlfrescoRuntimeException("Failed to run action evaluator", err);
