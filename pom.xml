@@ -26,6 +26,9 @@
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+
+        <main.basedir>${project.basedir}</main.basedir>
+        <checkstyle.header.file>${main.basedir}/onlyoffice.header</checkstyle.header.file>
     </properties>
 
     <dependencies>
@@ -150,6 +153,27 @@
                             <nonFilteredFileExtension>docxf</nonFilteredFileExtension>
                         </nonFilteredFileExtensions>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <failsOnError>true</failsOnError>
+                        <failOnViolation>true</failOnViolation>
+                        <logViolationsToConsole>true</logViolationsToConsole>
+                        <violationSeverity>warning</violationSeverity>
+                        <consoleOutput>true</consoleOutput>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
