@@ -32,7 +32,7 @@ public class OnlyofficeSettingsQuery {
     }
 
     private void requestOnlyofficeSettingsFromRepo() {
-        if ((System.nanoTime() - timeLastRequest)/1000000000 > 10) {
+        if ((System.nanoTime() - timeLastRequest) / 1000000000 > 10) {
             Response response = remote.call("/parashift/onlyoffice/onlyoffice-settings");
             if (response.getStatus().getCode() == Status.STATUS_OK) {
                 timeLastRequest = System.nanoTime();

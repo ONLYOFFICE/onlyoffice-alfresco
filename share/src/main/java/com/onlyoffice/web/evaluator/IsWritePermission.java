@@ -14,9 +14,9 @@ public class IsWritePermission extends BaseEvaluator {
     @Override
     public boolean evaluate(final JSONObject jsonObject) {
         try {
-            JSONObject node = (JSONObject)jsonObject.get("node");
-            if (node != null && node.containsKey("permissions")){
-                JSONObject perm = (JSONObject)node.get("permissions");
+            JSONObject node = (JSONObject) jsonObject.get("node");
+            if (node != null && node.containsKey("permissions")) {
+                JSONObject perm = (JSONObject) node.get("permissions");
                 if (perm != null && perm.containsKey("user")) {
                     JSONObject user = (JSONObject) perm.get("user");
                     if (user != null && (boolean) user.getOrDefault("Write", false)) {

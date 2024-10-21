@@ -35,7 +35,7 @@ public class IsCorrectDownloadAs extends BaseEvaluator {
         List<Format> formats = onlyofficeSettings.getSupportedFormats();
         for (Format format : formats) {
            List<String> convert = format.getConvert();
-            if (format.getName().equals(ext) && convert != null && convert.size() > 0){
+            if (format.getName().equals(ext) && convert != null && convert.size() > 0) {
                 return true;
             }
         }
