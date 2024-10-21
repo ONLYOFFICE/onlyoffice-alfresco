@@ -1,6 +1,6 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.scripts;
@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 
 public class OnlyofficeSettingsQuery {
     private static Set<String> editableFormats = new HashSet<String>();

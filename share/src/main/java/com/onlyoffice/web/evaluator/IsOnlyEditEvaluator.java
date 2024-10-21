@@ -1,13 +1,13 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
-
 package com.onlyoffice.web.evaluator;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
 import org.json.simple.JSONObject;
+
 
 public class IsOnlyEditEvaluator extends BaseEvaluator {
 

@@ -1,6 +1,6 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.model;
@@ -9,6 +9,7 @@ import com.onlyoffice.model.common.Format;
 
 import java.util.List;
 import java.util.Map;
+
 
 public class OnlyofficeSettings {
     private Map<String, Boolean> editableFormats;
