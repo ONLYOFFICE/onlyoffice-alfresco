@@ -255,7 +255,7 @@ public class DownloadAs extends AbstractWebScript {
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.ASSOC_CHILDREN,
                 DownloadModel.TYPE_DOWNLOAD,
-                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, title)).getChildRef();
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, title)).getChildRef();
 
         Map<QName, Serializable> aspectProperties = new HashMap<>(2);
         aspectProperties.put(ContentModel.PROP_IS_INDEXED, Boolean.FALSE);

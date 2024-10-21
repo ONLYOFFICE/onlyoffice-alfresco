@@ -266,7 +266,7 @@ public class EditorApi extends AbstractWebScript {
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                 ContentModel.TYPE_CONTENT,
-                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
         try {
             requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
