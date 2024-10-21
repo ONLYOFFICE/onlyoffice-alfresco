@@ -14,10 +14,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.UrlUtil;
+import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.surf.util.URLEncoder;
 
+import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -140,34 +142,32 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     public String getEmbeddedSaveUrl(final String fileId, final String sharedId) {
         String fileName = documentManager.getDocumentName(fileId);
 
-        StringBuilder embeddedSaveUrl = new StringBuilder(8);
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco-noauth/api/internal/shared/node/");
-        embeddedSaveUrl.append(sharedId);
-        embeddedSaveUrl.append("/content/");
-        embeddedSaveUrl.append(URLEncoder.encodeUriComponent(fileName));
-        embeddedSaveUrl.append("?c=force");
-        embeddedSaveUrl.append("&noCache=" + new Date().getTime());
-        embeddedSaveUrl.append("&a=true");
+        UrlBuilder urlBuilder = new UrlBuilder(UrlUtil.getShareUrl(sysAdminParams));
+        urlBuilder.addPath("/proxy/alfresco-noauth/api/internal/shared/node");
+        urlBuilder.addPath(sharedId);
+        urlBuilder.addPath("content");
+        urlBuilder.addPath(URLEncoder.encodeUriComponent(fileName));
+        urlBuilder.addParameter("c", "force");
+        urlBuilder.addParameter("noCache", new Date().getTime());
+        urlBuilder.addParameter("a", "true");
 
-        return embeddedSaveUrl.toString();
+        return urlBuilder.toString();
     }
 
     public String getEmbeddedSaveUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String fileName = documentManager.getDocumentName(fileId);
 
-        StringBuilder embeddedSaveUrl = new StringBuilder(7);
         StoreRef storeRef = nodeRef.getStoreRef();
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco/slingshot/node/content");
-        embeddedSaveUrl.append("/" + storeRef.getProtocol());
-        embeddedSaveUrl.append("/" + storeRef.getIdentifier());
-        embeddedSaveUrl.append("/" + nodeRef.getId());
-        embeddedSaveUrl.append("/" + URLEncoder.encodeUriComponent(fileName));
-        embeddedSaveUrl.append("?a=true");
+        UrlBuilder urlBuilder = new UrlBuilder(UrlUtil.getShareUrl(sysAdminParams));
+        urlBuilder.addPath("/proxy/alfresco/slingshot/node/content");
+        urlBuilder.addPath(storeRef.getProtocol());
+        urlBuilder.addPath(storeRef.getIdentifier());
+        urlBuilder.addPath(nodeRef.getId());
+        urlBuilder.addPath(URLEncoder.encodeUriComponent(fileName));
+        urlBuilder.addParameter("a", true);
 
-        return embeddedSaveUrl.toString();
+        return urlBuilder.toString();
     }
 
     public String getFavoriteUrl(final NodeRef nodeRef) {

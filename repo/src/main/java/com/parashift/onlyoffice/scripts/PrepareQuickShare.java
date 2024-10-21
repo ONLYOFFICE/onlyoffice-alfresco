@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -85,8 +86,8 @@ public class PrepareQuickShare extends AbstractWebScript {
 
                             if (documentType == null) {
                                 responseJson.put("error", "File type is not supported");
-                                response.setStatus(500);
-                                response.getWriter().write(responseJson.toString(3));
+                                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                                response.getWriter().write(responseJson.toString());
                                 return null;
                             }
 
@@ -94,7 +95,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                                 responseJson.put("previewEnabled", true);
                             } else {
                                 responseJson.put("previewEnabled", false);
-                                response.getWriter().write(responseJson.toString(3));
+                                response.getWriter().write(responseJson.toString());
                                 return null;
                             }
 
@@ -113,9 +114,9 @@ public class PrepareQuickShare extends AbstractWebScript {
                             responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
 
                             logger.debug("Sending JSON prepare object");
-                            logger.debug(responseJson.toString(3));
+                            logger.debug(responseJson.toString());
 
-                            response.getWriter().write(responseJson.toString(3));
+                            response.getWriter().write(responseJson.toString());
 
                         } catch (JSONException ex) {
                             throw new WebScriptException("Unable to serialize JSON: " + ex.getMessage());

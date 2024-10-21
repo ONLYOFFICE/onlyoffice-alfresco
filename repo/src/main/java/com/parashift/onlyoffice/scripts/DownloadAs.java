@@ -225,7 +225,7 @@ public class DownloadAs extends AbstractWebScript {
 
             response.setContentType("application/json; charset=utf-8");
             response.setContentEncoding("UTF-8");
-            response.getWriter().write(responseJson.toString(3));
+            response.getWriter().write(responseJson.toString());
 
         } catch (Exception e) {
             throw new WebScriptException(e.getMessage(), e);

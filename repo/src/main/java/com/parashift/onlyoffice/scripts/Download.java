@@ -14,6 +14,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -112,7 +113,7 @@ public class Download extends AbstractWebScript {
                 response.setHeader("Access-Control-Allow-Origin", editorUrl);
                 break;
             default:
-                throw new WebScriptException(404, "Unknown parameter 'type': '" + type + "'!");
+                throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Unknown parameter 'type': '" + type + "'!");
         }
 
         String title = documentManager.getDocumentName(nodeRef.toString());

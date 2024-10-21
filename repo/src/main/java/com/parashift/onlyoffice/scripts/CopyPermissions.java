@@ -7,11 +7,13 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PublicServiceAccessService;
+import org.keycloak.authorization.client.util.Http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -93,6 +95,6 @@ public class CopyPermissions extends AbstractWebScript {
 
         permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
 
-        response.setStatus(200);
+        response.setStatus(HttpStatus.OK.value());
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -108,10 +109,10 @@ public class CallBack extends AbstractWebScript {
             AuthenticationUtil.clearCurrentSecurityContext();
 
         } catch (SecurityException ex) {
-            code = 403;
+            code = HttpStatus.FORBIDDEN.value();
             error = ex;
         } catch (Exception ex) {
-            code = 500;
+            code = HttpStatus.INTERNAL_SERVER_ERROR.value();
             error = ex;
         }
 

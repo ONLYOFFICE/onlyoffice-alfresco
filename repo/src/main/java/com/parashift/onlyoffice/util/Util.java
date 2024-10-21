@@ -57,6 +57,8 @@ public class Util {
     public static final QName EDITING_HASH_ASPECT = QName.createQName("onlyoffice:editing-hash");
     public static final QName FORCESAVE_ASPECT = QName.createQName("onlyoffice:forcesave");
 
+    public static final int EDITING_HASH_ASPECT_LENGTH = 32;
+
     public void ensureVersioningEnabled(final NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();
         versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
@@ -66,7 +68,7 @@ public class Util {
 
     public String generateHash() {
         SecureRandom secureRandom = new SecureRandom();
-        byte[] token = new byte[32];
+        byte[] token = new byte[EDITING_HASH_ASPECT_LENGTH];
         secureRandom.nextBytes(token);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     }

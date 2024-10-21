@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.beans.IntrospectionException;
@@ -70,7 +71,7 @@ public class ConfigCallback extends AbstractWebScript {
 
         response.setContentType("application/json; charset=utf-8");
         response.setContentEncoding("UTF-8");
-        response.setStatus(200);
+        response.setStatus(HttpStatus.OK.value());
     }
 }
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 
@@ -64,7 +65,7 @@ public class History extends AbstractWebScript {
                 String versionLabel = request.getParameter("version");
 
                 if (versionLabel == null || versionLabel.isEmpty()) {
-                    throw new WebScriptException(404, "Not found parameter version!");
+                    throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Not found parameter version!");
                 }
 
                 HistoryData historyData = historyManager.getHistoryData(nodeRef, versionLabel);
@@ -74,7 +75,7 @@ public class History extends AbstractWebScript {
                 response.getWriter().write(objectMapper.writeValueAsString(historyData));
                 break;
             default:
-                throw new WebScriptException(404, "Unknown parameter 'type': '" + type + "'!");
+                throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Unknown parameter 'type': '" + type + "'!");
         }
     }
 }

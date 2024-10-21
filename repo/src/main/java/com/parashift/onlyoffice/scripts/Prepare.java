@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -142,8 +143,8 @@ public class Prepare extends AbstractWebScript {
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
-                    response.setStatus(403);
-                    response.getWriter().write(responseJson.toString(3));
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    response.getWriter().write(responseJson.toString());
                     return;
                 }
 
@@ -153,8 +154,8 @@ public class Prepare extends AbstractWebScript {
 
                 if (documentType == null) {
                     responseJson.put("error", "File type is not supported");
-                    response.setStatus(500);
-                    response.getWriter().write(responseJson.toString(3));
+                    response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    response.getWriter().write(responseJson.toString());
                     return;
                 }
 
@@ -171,7 +172,7 @@ public class Prepare extends AbstractWebScript {
                         mode = Mode.VIEW;
                         responseJson.put("previewEnabled", true);
                     } else {
-                        response.getWriter().write(responseJson.toString(3));
+                        response.getWriter().write(responseJson.toString());
                         return;
                     }
                 }
@@ -214,12 +215,12 @@ public class Prepare extends AbstractWebScript {
                         nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
 
                 logger.debug("Sending JSON prepare object");
-                logger.debug(responseJson.toString(3));
+                logger.debug(responseJson.toString());
             }
 
             response.setContentType("application/json; charset=utf-8");
             response.setContentEncoding("UTF-8");
-            response.getWriter().write(responseJson.toString(3));
+            response.getWriter().write(responseJson.toString());
         } catch (JSONException ex) {
             throw new WebScriptException("Unable to serialize JSON: " + ex.getMessage());
         }
