@@ -262,7 +262,6 @@ public class HistoryManager {
     }
 
     public Map<String, Object> getHistoryInfo(final NodeRef nodeRef) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
         List<Version> versions = (List<Version>) versionService.getVersionHistory(nodeRef).getAllVersions();
         List<com.onlyoffice.model.documenteditor.history.Version> history = new ArrayList<>();
         Version latestVersion = versions.get(0);
