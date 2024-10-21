@@ -1,7 +1,5 @@
 package com.parashift.onlyoffice.scripts;
 
-import java.io.IOException;
-
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +7,8 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /*
     Copyright (c) Ascensio System SIA 2024. All rights reserved.

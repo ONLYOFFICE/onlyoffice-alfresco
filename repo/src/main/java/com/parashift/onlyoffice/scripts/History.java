@@ -3,6 +3,7 @@ package com.parashift.onlyoffice.scripts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.model.documenteditor.HistoryData;
 import com.parashift.onlyoffice.util.HistoryManager;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 
 import java.io.*;
 import java.util.*;
