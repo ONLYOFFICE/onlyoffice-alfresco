@@ -106,8 +106,8 @@ public class DownloadAs extends AbstractWebScript {
                 final String outputType = data.getString("outputType");
 
                 if (permissionService.hasPermission(node, PermissionService.READ) != AccessStatus.ALLOWED) {
-                    throw new AccessDeniedException("Access denied. You do not have the appropriate permissions" +
-                            "to perform this operation. NodeRef= " + node.toString());
+                    throw new AccessDeniedException("Access denied. You do not have the appropriate permissions"
+                            + "to perform this operation. NodeRef= " + node.toString());
                 }
 
                 String docTitle = documentManager.getDocumentName(node.toString());
@@ -169,8 +169,8 @@ public class DownloadAs extends AbstractWebScript {
                         String outputType = data.getString("outputType");
 
                         if (permissionService.hasPermission(node, PermissionService.READ) != AccessStatus.ALLOWED) {
-                            throw new AccessDeniedException("Access denied. You do not have the appropriate" +
-                                    "permissions to perform this operation. NodeRef= " + node.toString());
+                            throw new AccessDeniedException("Access denied. You do not have the appropriate "
+                                    + "permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
                         String docTitle = documentManager.getDocumentName(node.toString());

@@ -81,8 +81,8 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {
         if (nodeService.exists(actionedUponNodeRef)) {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
-                if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
-                        !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
+                if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef)
+                        && !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
                     String fileName = documentManager.getDocumentName(actionedUponNodeRef.toString());
 
                     String title = documentManager.getBaseName(fileName);

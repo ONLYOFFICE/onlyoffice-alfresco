@@ -52,8 +52,8 @@ public class History extends AbstractWebScript {
         NodeRef nodeRef = new NodeRef(nodeRefString);
 
         if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
-            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to" +
-                    "perform this operation");
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to"
+                    + "perform this operation");
         }
 
         switch (type.toLowerCase()) {

@@ -49,14 +49,14 @@ public class CopyPermissions extends AbstractWebScript {
                 "PermissionService",
                 "getAllSetPermissions",
                 sourceNodeRef
-        ) != AccessStatus.ALLOWED ||
-                publicServiceAccessService.hasAccess(
+        ) != AccessStatus.ALLOWED
+                || publicServiceAccessService.hasAccess(
                         "PermissionService",
                         "getInheritParentPermissions",
                         sourceNodeRef
                 ) != AccessStatus.ALLOWED) {
-            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions" +
-                    "to perform this operation");
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions"
+                    + "to perform this operation");
         }
 
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(sourceNodeRef);
@@ -69,15 +69,15 @@ public class CopyPermissions extends AbstractWebScript {
                 "dummyAuth",
                 "dummyPermission",
                 true
-        ) != AccessStatus.ALLOWED ||
-                publicServiceAccessService.hasAccess(
+        ) != AccessStatus.ALLOWED
+                || publicServiceAccessService.hasAccess(
                         "PermissionService",
                         "setInheritParentPermissions",
                         destinationNodeRef,
                         includeInherited
                 ) != AccessStatus.ALLOWED) {
-            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions" +
-                    "to perform this operation");
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions"
+                    + "to perform this operation");
         }
 
         permissionService.deletePermissions(destinationNodeRef);
