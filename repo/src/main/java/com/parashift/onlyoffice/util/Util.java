@@ -92,7 +92,7 @@ public class Util {
         return name;
     }
 
-    public NodeRef getParentNodeRef (final NodeRef node) {
+    public NodeRef getParentNodeRef(final NodeRef node) {
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
         if (parentAssoc == null || parentAssoc.getParentRef() == null) {
             return null;

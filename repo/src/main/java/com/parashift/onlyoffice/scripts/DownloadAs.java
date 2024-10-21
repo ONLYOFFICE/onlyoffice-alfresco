@@ -232,7 +232,7 @@ public class DownloadAs extends AbstractWebScript {
         }
     }
 
-    private String createDownloadNode (final String title, final String mimeType, final InputStream inputStream,
+    private String createDownloadNode(final String title, final String mimeType, final InputStream inputStream,
                                        final long totalSize, final long totalFiles) {
         NodeRef downloadNode = nodeService.createNode(
                 downloadStorage.getOrCreateDowloadContainer(),
@@ -263,7 +263,7 @@ public class DownloadAs extends AbstractWebScript {
         return getDownloadAPIUrl(downloadNode, title);
     }
 
-    private String getDownloadAPIUrl (final NodeRef nodeRef, final String title) {
+    private String getDownloadAPIUrl(final NodeRef nodeRef, final String title) {
         String contentURL = MessageFormat.format(
                 CONTENT_DOWNLOAD_API_URL, new Object[]{
                         nodeRef.getStoreRef().getProtocol(),
