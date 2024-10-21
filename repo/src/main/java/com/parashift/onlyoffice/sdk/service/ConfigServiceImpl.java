@@ -60,7 +60,9 @@ public class ConfigServiceImpl extends DefaultConfigService {
                 return Info.builder()
                         .favorite(favouritesService.isFavourite(userName, nodeRef))
                         .build();
-            } catch (Exception e) { }
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         return null;
