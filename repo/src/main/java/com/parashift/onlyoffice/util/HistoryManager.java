@@ -245,8 +245,8 @@ public class HistoryManager {
         Collections.reverse(versions);
 
         for (Version internalVersion : versions) {
-            if ((internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
-                    || !(Boolean) internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()))
+            if (internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
+                    || !(Boolean) internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())
                     || internalVersion.equals(latestVersion)) {
 
 

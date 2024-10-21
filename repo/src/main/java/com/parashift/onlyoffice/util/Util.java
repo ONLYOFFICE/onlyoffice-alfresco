@@ -132,7 +132,7 @@ public class Util {
         }
 
         SiteInfo siteInfo = siteService.getSite(nodeRef);
-        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+        String siteId = siteInfo != null ? siteInfo.getShortName() : null;
 
         if (siteId == null || siteId.equals("")) {
             return;

@@ -43,16 +43,16 @@ public class CopyPermissions extends AbstractWebScript {
         NodeRef sourceNodeRef = new NodeRef(nodeRefString);
         NodeRef destinationNodeRef = cociService.getWorkingCopy(sourceNodeRef);
 
-        if ((publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", sourceNodeRef) != AccessStatus.ALLOWED) ||
-                (publicServiceAccessService.hasAccess("PermissionService", "getInheritParentPermissions", sourceNodeRef) != AccessStatus.ALLOWED)) {
+        if (publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", sourceNodeRef) != AccessStatus.ALLOWED ||
+                publicServiceAccessService.hasAccess("PermissionService", "getInheritParentPermissions", sourceNodeRef) != AccessStatus.ALLOWED) {
             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
         }
 
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(sourceNodeRef);
         boolean includeInherited = permissionService.getInheritParentPermissions(sourceNodeRef);
 
-        if ((publicServiceAccessService.hasAccess("PermissionService", "setPermission", destinationNodeRef, "dummyAuth", "dummyPermission", true) != AccessStatus.ALLOWED) ||
-                (publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", destinationNodeRef, includeInherited) != AccessStatus.ALLOWED)) {
+        if (publicServiceAccessService.hasAccess("PermissionService", "setPermission", destinationNodeRef, "dummyAuth", "dummyPermission", true) != AccessStatus.ALLOWED ||
+                publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", destinationNodeRef, includeInherited) != AccessStatus.ALLOWED) {
             throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
         }
 

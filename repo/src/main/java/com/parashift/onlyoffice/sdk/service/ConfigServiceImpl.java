@@ -120,7 +120,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
             String templateTitle = super.getDocumentManager().getDocumentName(assoc.getChildRef().toString());
             String templateExt = super.getDocumentManager().getExtension(templateTitle);
             DocumentType templateType = super.getDocumentManager().getDocumentType(templateTitle);
-            if ((docType.equals(templateType) && templateExtList.contains(templateExt))) {
+            if (docType.equals(templateType) && templateExtList.contains(templateExt)) {
                 String image = urlManager.getShareUrl() + "res/components/images/filetypes/" + docType.name().toLowerCase() + ".svg";
                 String url = urlManager.getCreateUrl(fileId) + "&templateNodeRef=" + assoc.getChildRef();
 
