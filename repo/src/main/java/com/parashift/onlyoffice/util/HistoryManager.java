@@ -167,7 +167,7 @@ public class HistoryManager {
                     requestManager.executeGetRequest(data, new RequestManager.Callback<Void>() {
                         public Void doWork(final Object response) throws IOException {
                             writer.setMimetype(mimeType);
-                            writer.putContent(((HttpEntity)response).getContent());
+                            writer.putContent(((HttpEntity) response).getContent());
                             return null;
                         }
                     });

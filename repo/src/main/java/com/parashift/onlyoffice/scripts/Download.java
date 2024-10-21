@@ -121,6 +121,6 @@ public class Download extends AbstractWebScript {
 
         String title = documentManager.getDocumentName(nodeRef.toString());
 
-        contentStreamer.streamContent(request, response, nodeRef, ContentModel.PROP_CONTENT, true, title,null);
+        contentStreamer.streamContent(request, response, nodeRef, ContentModel.PROP_CONTENT, true, title, null);
     }
 }

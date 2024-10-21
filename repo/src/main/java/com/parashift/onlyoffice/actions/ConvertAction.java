@@ -169,7 +169,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                                 convertResponse.getFileUrl(),
                                 new RequestManager.Callback<Void>() {
                                     public Void doWork(final Object response) throws IOException {
-                                        finalWriter.putContent(((HttpEntity)response).getContent());
+                                        finalWriter.putContent(((HttpEntity) response).getContent());
                                         return null;
                                     }
                                 });

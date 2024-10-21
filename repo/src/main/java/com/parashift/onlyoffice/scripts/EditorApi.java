@@ -273,7 +273,7 @@ public class EditorApi extends AbstractWebScript {
                 public Void doWork(final Object response) throws IOException {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.setMimetype(mimetypeService.getMimetype(ext));
-                    writer.putContent(((HttpEntity)response).getContent());
+                    writer.putContent(((HttpEntity) response).getContent());
                     return null;
                 }
             });

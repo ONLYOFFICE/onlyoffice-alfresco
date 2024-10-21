@@ -240,7 +240,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
             public Void doWork(final Object response) throws IOException {
                 contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)
-                        .putContent(((HttpEntity)response).getContent());
+                        .putContent(((HttpEntity) response).getContent());
                 return null;
             }
         });

@@ -43,7 +43,7 @@ public class ConverterTest extends AbstractWebScript {
             }
         }
 
-        char[] array = {'1','2','3'};
+        char[] array = {'1', '2', '3'};
 
         response.setHeader("Content-Disposition", "attachment; filename=test.txt");
         response.setContentType("text/plain");

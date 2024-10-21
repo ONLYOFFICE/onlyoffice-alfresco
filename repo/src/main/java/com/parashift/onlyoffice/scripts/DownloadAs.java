@@ -216,7 +216,7 @@ public class DownloadAs extends AbstractWebScript {
                                     downloadUrl,
                                     new RequestManager.Callback<Long>() {
                                         public Long doWork(final Object response) throws IOException {
-                                            return IOUtils.copyLarge(((HttpEntity)response).getContent(), out);
+                                            return IOUtils.copyLarge(((HttpEntity) response).getContent(), out);
                                         }
                                     });
                         }
