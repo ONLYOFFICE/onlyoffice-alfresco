@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class OnlyofficeSettings {
-    Map<String, Boolean> editableFormats;
-    Boolean convertOriginal;
-    List<Format> supportedFormats;
+    private Map<String, Boolean> editableFormats;
+    private Boolean convertOriginal;
+    private List<Format> supportedFormats;
 
     public OnlyofficeSettings() {
     }
