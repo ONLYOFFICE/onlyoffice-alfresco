@@ -22,10 +22,10 @@ import java.util.Map;
 @Component(value = "webscript.onlyoffice.onlyoffice-config.get")
 public class Config extends DeclarativeWebScript {
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache) {

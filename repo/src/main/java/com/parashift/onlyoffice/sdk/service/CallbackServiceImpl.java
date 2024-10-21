@@ -41,23 +41,23 @@ import java.util.Map;
 public class CallbackServiceImpl extends DefaultCallbackService {
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
     @Autowired
-    HistoryManager historyManager;
+    private HistoryManager historyManager;
     @Autowired
-    Util util;
+    private Util util;
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
     @Autowired
-    VersionService versionService;
+    private VersionService versionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

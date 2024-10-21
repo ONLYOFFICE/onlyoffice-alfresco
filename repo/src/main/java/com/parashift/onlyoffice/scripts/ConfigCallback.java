@@ -24,9 +24,9 @@ import java.util.Map;
 @Component(value = "webscript.onlyoffice.onlyoffice-config.post")
 public class ConfigCallback extends AbstractWebScript {
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

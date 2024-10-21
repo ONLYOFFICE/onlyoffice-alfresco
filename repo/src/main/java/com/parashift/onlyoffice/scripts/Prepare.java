@@ -49,40 +49,40 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
 
     @Autowired
-    OwnableService ownableService;
+    private OwnableService ownableService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    ConfigService configService;
+    private ConfigService configService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

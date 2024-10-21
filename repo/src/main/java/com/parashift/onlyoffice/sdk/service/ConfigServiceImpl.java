@@ -33,17 +33,17 @@ import java.util.List;
 
 public class ConfigServiceImpl extends DefaultConfigService {
     @Autowired
-    PersonService personService;
+    private PersonService personService;
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
     @Autowired
-    FavouritesService favouritesService;
+    private FavouritesService favouritesService;
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
     @Autowired
-    Util util;
+    private Util util;
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
                              final JwtManager jwtManager, final SettingsManager settingsManager) {

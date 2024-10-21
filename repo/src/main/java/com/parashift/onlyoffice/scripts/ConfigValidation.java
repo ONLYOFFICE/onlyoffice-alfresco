@@ -22,10 +22,10 @@ import java.util.Map;
 @Component(value = "webscript.onlyoffice.onlyoffice-config-validation.get")
 public class ConfigValidation extends AbstractWebScript {
     @Autowired
-    SettingsValidationService settingsValidationService;
+    private SettingsValidationService settingsValidationService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

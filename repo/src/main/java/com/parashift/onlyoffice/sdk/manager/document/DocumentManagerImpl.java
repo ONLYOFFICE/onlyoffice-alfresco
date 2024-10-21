@@ -23,10 +23,10 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     public DocumentManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);

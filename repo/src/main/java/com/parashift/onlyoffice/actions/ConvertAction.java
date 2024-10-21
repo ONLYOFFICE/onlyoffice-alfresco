@@ -45,37 +45,37 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    CheckOutCheckInService checkOutCheckInService;
+    private CheckOutCheckInService checkOutCheckInService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {

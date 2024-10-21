@@ -47,34 +47,34 @@ public class DownloadAs extends AbstractWebScript {
     private final static String CONTENT_DOWNLOAD_API_URL = "slingshot/node/content/{0}/{1}/{2}/{3}";
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    DownloadStorage downloadStorage;
+    private DownloadStorage downloadStorage;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    DownloadStatusUpdateService updateService;
+    private DownloadStatusUpdateService updateService;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

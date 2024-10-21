@@ -31,25 +31,25 @@ import java.util.*;
 @Service
 public class Util {
     @Autowired
-    VersionService versionService;
+    private VersionService versionService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    SearchService searchService;
+    private SearchService searchService;
 
     @Autowired
-    NamespaceService namespaceService;
+    private NamespaceService namespaceService;
 
     @Autowired
-    ActivityService activityService;
+    private ActivityService activityService;
 
     @Autowired
-    SiteService siteService;
+    private SiteService siteService;
 
     @Autowired
-    TenantService tenantService;
+    private TenantService tenantService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

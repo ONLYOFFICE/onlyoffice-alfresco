@@ -25,7 +25,7 @@ public class SettingsValidationServiceImpl extends DefaultSettingsValidationServ
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    MessageService messageService;
+    private MessageService messageService;
 
     public SettingsValidationServiceImpl(final RequestManager requestManager, final UrlManager urlManager,
                                          final SettingsManager settingsManager) {

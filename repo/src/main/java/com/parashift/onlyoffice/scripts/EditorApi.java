@@ -48,43 +48,43 @@ import java.util.Map;
 public class EditorApi extends AbstractWebScript {
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    FavouritesService favouritesService;
+    private FavouritesService favouritesService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -26,10 +26,10 @@ public class History extends AbstractWebScript {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    HistoryManager historyManager;
+    private HistoryManager historyManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

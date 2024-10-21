@@ -18,10 +18,10 @@ import org.springframework.stereotype.Component;
 public class ConverterTest extends AbstractWebScript {
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

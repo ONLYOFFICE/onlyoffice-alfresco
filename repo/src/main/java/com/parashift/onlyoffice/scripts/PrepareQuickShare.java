@@ -37,25 +37,25 @@ public class PrepareQuickShare extends AbstractWebScript {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    QuickShareService quickShareService;
+    private QuickShareService quickShareService;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    ConfigService configService;
+    private ConfigService configService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

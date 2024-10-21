@@ -31,17 +31,17 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
     @Autowired
-    AuthenticationService authenticationService;
+    private AuthenticationService authenticationService;
     @Autowired
-    SysAdminParams sysAdminParams;
+    private SysAdminParams sysAdminParams;
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
     @Autowired
-    ImapService imapService;
+    private ImapService imapService;
 
     public UrlManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);

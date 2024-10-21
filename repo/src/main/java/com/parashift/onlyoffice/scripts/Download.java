@@ -27,31 +27,31 @@ import java.io.*;
 public class Download extends AbstractWebScript {
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    HistoryManager historyManager;
+    private HistoryManager historyManager;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    ContentStreamer contentStreamer;
+    private ContentStreamer contentStreamer;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

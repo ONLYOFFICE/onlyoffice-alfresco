@@ -43,41 +43,41 @@ public class HistoryManager {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
     @Qualifier("dbNodeService")
-    NodeService dbNodeService;
+    private NodeService dbNodeService;
 
     @Autowired
-    VersionService versionService;
+    private VersionService versionService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    PersonService personService;
+    private PersonService personService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

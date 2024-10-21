@@ -17,10 +17,10 @@ import java.io.IOException;
 @Component(value = "webscript.onlyoffice.onlyoffice-settings.get")
 public class OnlyofficeSettings extends AbstractWebScript {
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {

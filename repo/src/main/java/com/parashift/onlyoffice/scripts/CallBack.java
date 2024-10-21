@@ -36,21 +36,21 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    TransactionService transactionService;
+    private TransactionService transactionService;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    CallbackService callbackService;
+    private CallbackService callbackService;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 

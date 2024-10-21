@@ -28,13 +28,13 @@ public class CopyPermissions extends AbstractWebScript {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
 
     @Autowired
-    PublicServiceAccessService publicServiceAccessService;
+    private PublicServiceAccessService publicServiceAccessService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) {
