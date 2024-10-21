@@ -86,7 +86,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
         DocumentType documentType = documentManager.getDocumentType(fileName);
 
-        String docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        String docMime;
         switch (documentType) {
             case CELL:
                 docMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -94,6 +94,8 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
             case SLIDE:
                 docMime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
                 break;
+            default:
+                docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         }
         return getShareUrl() + "page/onlyoffice-edit?parentNodeRef=" + folderNodeRef + "&new=" + docMime;
     }
