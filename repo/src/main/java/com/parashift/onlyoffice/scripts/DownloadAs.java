@@ -116,40 +116,25 @@ public class DownloadAs extends AbstractWebScript {
                 if (currentExt.equals(outputType)) {
                     contentURL = getDownloadAPIUrl(node, docTitle);
                 } else {
-                    ConvertRequest convertRequest = ConvertRequest.builder()
-                            .outputtype(outputType)
-                            .region(region)
-                            .build();
-
-                    ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
-
-                    if (convertResponse.getError() != null
-                            && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
-                        throw new SecurityException();
-                    }
-
-                    if (!convertResponse.getEndConvert()
-                            || convertResponse.getFileUrl().isEmpty()) {
-                        throw new Exception("'endConvert' is false or 'fileUrl' is empty");
-                    }
-
-                    String downloadUrl = convertResponse.getFileUrl();
+                    ConvertResponse convertResponse = convertNodeToOutputType(node, outputType, region);
                     final String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
 
-                    contentURL = requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<String>() {
-                        public String doWork(final Object response) throws IOException {
-                            byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
-                            InputStream inputStream = new ByteArrayInputStream(bytes);
+                    contentURL = requestManager.executeGetRequest(
+                            convertResponse.getFileUrl(),
+                            new RequestManager.Callback<String>() {
+                                public String doWork(final Object response) throws IOException {
+                                    byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
+                                    InputStream inputStream = new ByteArrayInputStream(bytes);
 
-                            return createDownloadNode(
-                                    newTitle,
-                                    mimetypeService.getMimetype(convertResponse.getFileType()),
-                                    inputStream,
-                                    bytes.length,
-                                    1
-                            );
-                        }
-                    });
+                                    return createDownloadNode(
+                                            newTitle,
+                                            mimetypeService.getMimetype(convertResponse.getFileType()),
+                                            inputStream,
+                                            bytes.length,
+                                            1
+                                    );
+                                }
+                            });
                 }
             } else {
                 File zip = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ZIP_EXTENSION);
@@ -183,27 +168,7 @@ public class DownloadAs extends AbstractWebScript {
                                 totalSize = totalSize + IOUtils.copyLarge(inputStream, out);
                             }
                         } else {
-                            ConvertRequest convertRequest = ConvertRequest.builder()
-                                    .outputtype(outputType)
-                                    .region(region)
-                                    .build();
-
-                            ConvertResponse convertResponse = convertService.processConvert(
-                                    convertRequest,
-                                    node.toString()
-                            );
-
-                            if (convertResponse.getError() != null
-                                    && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
-                                throw new SecurityException();
-                            }
-
-                            if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
-                                    || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
-                                throw new Exception("'endConvert' is false or 'fileUrl' is empty");
-                            }
-
-                            String downloadUrl = convertResponse.getFileUrl();
+                            ConvertResponse convertResponse = convertNodeToOutputType(node, outputType, region);
                             String newTitle = MessageFormat.format(
                                     "{0}.{1}",
                                     documentManager.getBaseName(docTitle),
@@ -213,7 +178,7 @@ public class DownloadAs extends AbstractWebScript {
                             out.putArchiveEntry(new ZipArchiveEntry(newTitle));
 
                             totalSize += requestManager.executeGetRequest(
-                                    downloadUrl,
+                                    convertResponse.getFileUrl(),
                                     new RequestManager.Callback<Long>() {
                                         public Long doWork(final Object response) throws IOException {
                                             return IOUtils.copyLarge(((HttpEntity) response).getContent(), out);
@@ -246,6 +211,31 @@ public class DownloadAs extends AbstractWebScript {
         } catch (Exception e) {
             throw new WebScriptException(e.getMessage(), e);
         }
+    }
+
+    private ConvertResponse convertNodeToOutputType(final NodeRef node, final String outputType, final String region)
+            throws Exception {
+        ConvertRequest convertRequest = ConvertRequest.builder()
+                .outputtype(outputType)
+                .region(region)
+                .build();
+
+        ConvertResponse convertResponse = convertService.processConvert(
+                convertRequest,
+                node.toString()
+        );
+
+        if (convertResponse.getError() != null
+                && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+            throw new SecurityException();
+        }
+
+        if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
+                || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
+            throw new Exception("'endConvert' is false or 'fileUrl' is empty");
+        }
+
+        return convertResponse;
     }
 
     private String createDownloadNode(final String title, final String mimeType, final InputStream inputStream,
