@@ -112,7 +112,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     }
 
     @Override
-    public String getGobackUrl(String fileId){
+    public String getGobackUrl(String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         String url = imapService.getContentFolderUrl(nodeRef);

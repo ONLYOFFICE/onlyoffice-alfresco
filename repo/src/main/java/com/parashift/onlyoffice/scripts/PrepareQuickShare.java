@@ -127,11 +127,11 @@ public class PrepareQuickShare extends AbstractWebScript {
                 }, tenantDomain);
 
             } catch (InvalidSharedIdException ex) {
-                logger.error("Unable to find: "+sharedId);
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: "+sharedId);
+                logger.error("Unable to find: " + sharedId);
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: " + sharedId);
             } catch (InvalidNodeRefException inre) {
-                logger.error("Unable to find: "+sharedId+" ["+inre.getNodeRef()+"]");
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: "+sharedId);
+                logger.error("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: " + sharedId);
             }
         }
     }

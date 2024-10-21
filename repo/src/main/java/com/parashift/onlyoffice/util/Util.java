@@ -147,7 +147,7 @@ public class Util {
 
             String tenantDomain = getCurrentTenantDomain();
 
-            if (tenantDomain!= null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN)) {
+            if (tenantDomain != null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN)) {
                 json.put("tenantDomain", tenantDomain);
             }
         } catch (JSONException jsonError) {

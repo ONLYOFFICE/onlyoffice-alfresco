@@ -116,7 +116,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
         String title = super.getDocumentManager().getDocumentName(fileId);
         DocumentType docType = super.getDocumentManager().getDocumentType(title);
         List<String> templateExtList = Arrays.asList("docx", "pptx", "xlsx");
-        for(ChildAssociationRef assoc : assocs){
+        for(ChildAssociationRef assoc : assocs) {
             String templateTitle = super.getDocumentManager().getDocumentName(assoc.getChildRef().toString());
             String templateExt = super.getDocumentManager().getExtension(templateTitle);
             DocumentType templateType = super.getDocumentManager().getDocumentType(templateTitle);
