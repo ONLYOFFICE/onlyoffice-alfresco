@@ -37,7 +37,7 @@ public class CopyPermissions extends AbstractWebScript {
     PermissionService permissionService;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) {
         String nodeRefString = request.getParameter("nodeRef");
 
         NodeRef sourceNodeRef = new NodeRef(nodeRefString);

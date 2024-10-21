@@ -54,7 +54,7 @@ public class Download extends AbstractWebScript {
     ContentStreamer contentStreamer;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         String nodeRefString = request.getParameter("nodeRef");
         String type = request.getServiceMatch().getTemplateVars().get("type");
 

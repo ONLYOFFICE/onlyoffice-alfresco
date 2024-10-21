@@ -32,7 +32,7 @@ public class History extends AbstractWebScript {
     HistoryManager historyManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         String type = request.getServiceMatch().getTemplateVars().get("type");
         String nodeRefString = request.getParameter("nodeRef");

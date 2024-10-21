@@ -45,15 +45,13 @@ public class ConfigServiceImpl extends DefaultConfigService {
     @Autowired
     UrlManager urlManager;
 
-    public ConfigServiceImpl(DocumentManager documentManager,
-                             UrlManager urlManager,
-                             JwtManager jwtManager,
-                             SettingsManager settingsManager) {
+    public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
+                             final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(documentManager, urlManager, jwtManager, settingsManager);
     }
 
     @Override
-    public Info getInfo(String fileId) {
+    public Info getInfo(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 
@@ -69,7 +67,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public Permissions getPermissions(String fileId) {
+    public Permissions getPermissions(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String fileName = super.getDocumentManager().getDocumentName(fileId);
 
@@ -108,7 +106,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public List<Template> getTemplates(String fileId) {
+    public List<Template> getTemplates(final String fileId) {
         //Todo: check if user have access create new document in current folder
         List<Template> templates = new ArrayList<>();
         NodeRef templatesNodeRef = util.getNodeByPath("/app:company_home/app:dictionary/app:node_templates");
@@ -137,7 +135,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public Embedded getEmbedded(String fileId) {
+    public Embedded getEmbedded(final String fileId) {
         return Embedded.builder()
                 .saveUrl(urlManager.getEmbeddedSaveUrl(fileId))
                 .build();

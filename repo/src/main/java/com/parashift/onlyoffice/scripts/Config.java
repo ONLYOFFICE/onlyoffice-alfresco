@@ -28,7 +28,7 @@ public class Config extends DeclarativeWebScript {
     DocumentManager documentManager;
 
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+    protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache) {
         Map<String, Object> model = new HashMap<String, Object>();
 
         model.put("demoAvailable", settingsManager.isDemoAvailable());

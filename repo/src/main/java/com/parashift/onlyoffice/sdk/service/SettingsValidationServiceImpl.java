@@ -26,8 +26,8 @@ public class SettingsValidationServiceImpl extends DefaultSettingsValidationServ
     @Autowired
     MessageService messageService;
 
-    public SettingsValidationServiceImpl(RequestManager requestManager, UrlManager urlManager,
-                                         SettingsManager settingsManager) {
+    public SettingsValidationServiceImpl(final RequestManager requestManager, final UrlManager urlManager,
+                                         final SettingsManager settingsManager) {
         super(requestManager, urlManager, settingsManager);
     }
 

@@ -57,7 +57,7 @@ public class Util {
     public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
     public static final QName ForcesaveAspect = QName.createQName("onlyoffice:forcesave");
 
-    public void ensureVersioningEnabled(NodeRef nodeRef) {
+    public void ensureVersioningEnabled(final NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();
         versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
         versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
@@ -71,7 +71,7 @@ public class Util {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     }
 
-    public NodeRef getNodeByPath(String path) {
+    public NodeRef getNodeByPath(final String path) {
         String storePath = "workspace://SpacesStore";
         StoreRef storeRef = new StoreRef(storePath);
         NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
@@ -79,7 +79,7 @@ public class Util {
         return nodeRefs.get(0);
     }
 
-    public String getCorrectName(NodeRef nodeFolder, String title, String ext) {
+    public String getCorrectName(final NodeRef nodeFolder, final String title, final String ext) {
         String name = (title + "." + ext).replaceAll("[*?:\"<>/|\\\\]","_");
         NodeRef node = nodeService.getChildByName(nodeFolder, ContentModel.ASSOC_CONTAINS, name);
 
@@ -92,7 +92,7 @@ public class Util {
         return name;
     }
 
-    public NodeRef getParentNodeRef (NodeRef node) {
+    public NodeRef getParentNodeRef (final NodeRef node) {
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
         if (parentAssoc == null || parentAssoc.getParentRef() == null) {
             return null;
@@ -101,7 +101,7 @@ public class Util {
         }
     }
 
-    public NodeRef getChildNodeByName(NodeRef nodeRef, String name) {
+    public NodeRef getChildNodeByName(final NodeRef nodeRef, final String name) {
         List<ChildAssociationRef> changesNodeRef = nodeService.getChildAssocs(nodeRef);
 
         for (ChildAssociationRef assoc : changesNodeRef) {
@@ -113,7 +113,7 @@ public class Util {
         return null;
     }
 
-    public String getTitle(NodeRef nodeRef) {
+    public String getTitle(final NodeRef nodeRef) {
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
 
@@ -126,7 +126,7 @@ public class Util {
         return tenantDomain;
     }
 
-    public void postActivity(NodeRef nodeRef, boolean isNew) {
+    public void postActivity(final NodeRef nodeRef, final boolean isNew) {
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN)) {
             return;
         }

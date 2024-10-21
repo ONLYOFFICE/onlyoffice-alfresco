@@ -61,8 +61,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CallbackServiceImpl(JwtManager jwtManager,
-                               SettingsManager settingsManager) {
+    public CallbackServiceImpl(final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(jwtManager, settingsManager);
     }
 
@@ -121,7 +120,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     @Override
-    public void handlerSaveCorrupted(Callback callback, String fileId) throws Exception {
+    public void handlerSaveCorrupted(final Callback callback, final String fileId) throws Exception {
         logger.error("ONLYOFFICE has reported that saving the document has failed");
         NodeRef nodeRef = new NodeRef(fileId);
         NodeRef wc = cociService.getWorkingCopy(nodeRef);
@@ -130,7 +129,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     @Override
-    public void handlerClosed(Callback callback, String fileId) throws Exception {
+    public void handlerClosed(final Callback callback, final String fileId) throws Exception {
         logger.debug("No document updates, unlocking node");
         NodeRef nodeRef = new NodeRef(fileId);
         NodeRef wc = cociService.getWorkingCopy(nodeRef);
@@ -139,7 +138,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     }
 
     @Override
-    public void handlerForcesave(Callback callback, String fileId) throws Exception {
+    public void handlerForcesave(final Callback callback, final String fileId) throws Exception {
         if (!super.getSettingsManager().getSettingBoolean("customization.forcesave", false)) {
             logger.debug("Forcesave is disabled, ignoring forcesave request");
             return;
@@ -195,9 +194,10 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         logger.debug("Forcesave complete");
     }
 
-    private void updateNode(final NodeRef nodeRef, String url, String fileType) throws Exception {
+    private void updateNode(final NodeRef nodeRef, final String url, final String fileType) throws Exception {
         logger.debug("Retrieving URL:" + url);
 
+        String fileUrl = url;
         String documentName = documentManager.getDocumentName(nodeRef.toString());
         String currentFileType = documentManager.getExtension(documentName);
         final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -230,14 +230,14 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                     throw new Exception("'endConvert' is false or 'fileUrl' is empty");
                 }
 
-                url = convertResponse.getFileUrl();
+                fileUrl = convertResponse.getFileUrl();
             } catch (Exception e) {
                 throw new Exception("Error while converting document back to original format: " + e.getMessage(), e);
             }
         }
 
-        requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
-            public Void doWork(Object response) throws IOException {
+        requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
+            public Void doWork(final Object response) throws IOException {
                 contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(((HttpEntity)response).getContent());
                 return null;
             }

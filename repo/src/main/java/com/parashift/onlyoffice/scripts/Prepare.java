@@ -85,7 +85,7 @@ public class Prepare extends AbstractWebScript {
     SettingsManager settingsManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         mesService.registerResourceBundle("alfresco/messages/prepare");
         JSONObject responseJson = new JSONObject();
 

@@ -29,12 +29,12 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     @Autowired
     NodeService nodeService;
 
-    public DocumentManagerImpl(SettingsManager settingsManager) {
+    public DocumentManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
     }
 
     @Override
-    public String getDocumentKey(String fileId, boolean embedded) {
+    public String getDocumentKey(final String fileId, final boolean embedded) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         String key = null;
@@ -59,7 +59,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     }
 
     @Override
-    public String getDocumentName(String fileId) {
+    public String getDocumentName(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);

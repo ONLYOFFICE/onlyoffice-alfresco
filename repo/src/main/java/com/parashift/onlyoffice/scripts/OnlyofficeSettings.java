@@ -23,7 +23,7 @@ public class OnlyofficeSettings extends AbstractWebScript {
     DocumentManager documentManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         JSONObject responseJson = new JSONObject();
         try {
             responseJson.put("editableFormats", documentManager.getLossyEditableMap());

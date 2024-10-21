@@ -28,7 +28,7 @@ public class ConfigValidation extends AbstractWebScript {
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         Map<String, ValidationResult> validationResults = settingsValidationService.validateSettings();
 
         Map<String, Object> responseMap = new HashMap<>();

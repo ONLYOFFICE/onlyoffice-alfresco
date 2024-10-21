@@ -77,7 +77,7 @@ public class DownloadAs extends AbstractWebScript {
     DocumentManager documentManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             String contentURL = null;
             JSONArray requestDataJson = new JSONArray(request.getContent().getContent());
@@ -119,7 +119,7 @@ public class DownloadAs extends AbstractWebScript {
                     final String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
 
                     contentURL = requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<String>() {
-                        public String doWork(Object response) throws IOException {
+                        public String doWork(final Object response) throws IOException {
                             byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
                             InputStream inputStream = new ByteArrayInputStream(bytes);
 
@@ -180,7 +180,7 @@ public class DownloadAs extends AbstractWebScript {
                             out.putArchiveEntry(new ZipArchiveEntry(newTitle));
 
                             totalSize += requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<Long>() {
-                                public Long doWork(Object response) throws IOException {
+                                public Long doWork(final Object response) throws IOException {
                                     return IOUtils.copyLarge(((HttpEntity)response).getContent(), out);
                                 }
                             });
@@ -207,7 +207,8 @@ public class DownloadAs extends AbstractWebScript {
         }
     }
 
-    private String createDownloadNode (String title, String mimeType, InputStream inputStream, long totalSize, long totalFiles) {
+    private String createDownloadNode (final String title, final String mimeType, final InputStream inputStream,
+                                       final long totalSize, final long totalFiles) {
         NodeRef downloadNode = nodeService.createNode(
                 downloadStorage.getOrCreateDowloadContainer(),
                 ContentModel.ASSOC_CHILDREN,
@@ -231,7 +232,7 @@ public class DownloadAs extends AbstractWebScript {
         return getDownloadAPIUrl(downloadNode, title);
     }
 
-    private String getDownloadAPIUrl (NodeRef nodeRef, String title) {
+    private String getDownloadAPIUrl (final NodeRef nodeRef, final String title) {
         String contentURL = MessageFormat.format(
                 CONTENT_DOWNLOAD_API_URL, new Object[]{
                         nodeRef.getStoreRef().getProtocol(),

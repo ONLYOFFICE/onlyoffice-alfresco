@@ -90,7 +90,7 @@ public class EditorApi extends AbstractWebScript {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         Map<String, String> templateVars = request.getServiceMatch().getTemplateVars();
         String type = templateVars.get("type");
         switch (type.toLowerCase()) {
@@ -111,7 +111,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void insert(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void insert(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray nodes = requestData.getJSONArray("nodes");
@@ -150,7 +150,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void docxToDocxf(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void docxToDocxf(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray docxNode = requestData.getJSONArray("nodes");
@@ -211,7 +211,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void saveAs(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void saveAs(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
 
@@ -236,9 +236,10 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private String createNode(NodeRef folderNode, String title, final String ext, String url) throws IOException {
+    private String createNode(final NodeRef folderNode, final String title, final String ext, final String url)
+            throws IOException {
         String fileName = util.getCorrectName(folderNode, title, ext);
-        url = urlManager.replaceToInnerDocumentServerUrl(url);
+        String fileUrl = urlManager.replaceToInnerDocumentServerUrl(url);
 
         final NodeRef nodeRef = nodeService.createNode(
                 folderNode,
@@ -248,8 +249,8 @@ public class EditorApi extends AbstractWebScript {
                 Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
         try {
-            requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
-                public Void doWork(Object response) throws IOException {
+            requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
+                public Void doWork(final Object response) throws IOException {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.setMimetype(mimetypeService.getMimetype(ext));
                     writer.putContent(((HttpEntity)response).getContent());
@@ -268,7 +269,7 @@ public class EditorApi extends AbstractWebScript {
         return nodeRef.toString();
     }
 
-    private void favorite(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void favorite(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         if (request.getParameter("nodeRef") != null) {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
             String username = AuthenticationUtil.getFullyAuthenticatedUser();

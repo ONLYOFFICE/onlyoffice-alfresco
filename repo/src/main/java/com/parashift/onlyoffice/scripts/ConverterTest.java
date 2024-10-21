@@ -24,7 +24,7 @@ public class ConverterTest extends AbstractWebScript {
     JwtManager jwtManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         if (settingsManager.isSecurityEnabled() ) {
             String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);

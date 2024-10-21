@@ -78,7 +78,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     RequestManager requestManager;
 
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {
         if (nodeService.exists(actionedUponNodeRef)) {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
                 if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
@@ -158,7 +158,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
 
                         final ContentWriter finalWriter = writer;
                         requestManager.executeGetRequest(convertResponse.getFileUrl(), new RequestManager.Callback<Void>() {
-                            public Void doWork(Object response) throws IOException {
+                            public Void doWork(final Object response) throws IOException {
                                 finalWriter.putContent(((HttpEntity)response).getContent());
                                 return null;
                             }
@@ -199,6 +199,6 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) { }
+    protected void addParameterDefinitions(final List<ParameterDefinition> paramList) { }
 }
 

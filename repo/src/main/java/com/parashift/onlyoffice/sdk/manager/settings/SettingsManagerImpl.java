@@ -22,7 +22,7 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
     private Properties globalProp;
 
     @Override
-    public String getSetting(String name) {
+    public String getSetting(final String name) {
         Object value = attributeService.getAttribute(SETTINGS_PREFIX + name);
 
         if (value == null) {
@@ -33,7 +33,7 @@ public class SettingsManagerImpl extends DefaultSettingsManager {
     }
 
     @Override
-    public void setSetting(String name, String value) {
+    public void setSetting(final String name, final String value) {
         attributeService.setAttribute(value, SETTINGS_PREFIX + name);
     }
 }

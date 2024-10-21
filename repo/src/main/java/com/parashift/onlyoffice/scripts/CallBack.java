@@ -55,7 +55,7 @@ public class CallBack extends AbstractWebScript {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
 
         Integer code = 0;
         Exception error = null;
@@ -129,7 +129,7 @@ public class CallBack extends AbstractWebScript {
         private Callback callback;
         private NodeRef nodeRef;
 
-        public ProccessRequestCallback(Callback callback, NodeRef node) {
+        public ProccessRequestCallback(final Callback callback, final NodeRef node) {
             this.callback = callback;
             this.nodeRef = node;
         }
