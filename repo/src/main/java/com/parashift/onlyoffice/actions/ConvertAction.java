@@ -210,6 +210,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     }
 
     @Override
-    protected void addParameterDefinitions(final List<ParameterDefinition> paramList) { }
+    protected void addParameterDefinitions(final List<ParameterDefinition> paramList) {
+    }
 }
 
