@@ -27,7 +27,7 @@ public class IsConvertible extends BaseEvaluator {
         }
     }
 
-    private boolean hasPermission (final JSONObject jsonObject) {
+    private boolean hasPermission(final JSONObject jsonObject) {
         if (onlyofficeSettings.getConvertOriginal()) {
             JSONObject node = (JSONObject) jsonObject.get("node");
             if (node != null && node.containsKey("permissions")) {
