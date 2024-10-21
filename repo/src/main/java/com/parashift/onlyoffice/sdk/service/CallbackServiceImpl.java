@@ -221,7 +221,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
                 ConvertResponse convertResponse = convertService.processConvert(convert, nodeRef.toString());
 
-                if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                if (convertResponse.getError() != null
+                        && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                     throw new SecurityException();
                 }
 
@@ -238,7 +239,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
             public Void doWork(final Object response) throws IOException {
-                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(((HttpEntity)response).getContent());
+                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)
+                        .putContent(((HttpEntity)response).getContent());
                 return null;
             }
         });

@@ -90,7 +90,8 @@ public class DownloadAs extends AbstractWebScript {
                 final String outputType = data.getString("outputType");
 
                 if (permissionService.hasPermission(node, PermissionService.READ) != AccessStatus.ALLOWED) {
-                    throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
+                    throw new AccessDeniedException("Access denied. You do not have the appropriate permissions" +
+                            "to perform this operation. NodeRef= " + node.toString());
                 }
 
                 String docTitle = documentManager.getDocumentName(node.toString());
@@ -106,7 +107,8 @@ public class DownloadAs extends AbstractWebScript {
 
                     ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
 
-                    if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                    if (convertResponse.getError() != null
+                            && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                         throw new SecurityException();
                     }
 
@@ -123,7 +125,13 @@ public class DownloadAs extends AbstractWebScript {
                             byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
                             InputStream inputStream = new ByteArrayInputStream(bytes);
 
-                            return createDownloadNode(newTitle, mimetypeService.getMimetype(convertResponse.getFileType()), inputStream, bytes.length, 1);
+                            return createDownloadNode(
+                                    newTitle,
+                                    mimetypeService.getMimetype(convertResponse.getFileType()),
+                                    inputStream,
+                                    bytes.length,
+                                    1
+                            );
                         }
                     });
                 }
@@ -145,7 +153,8 @@ public class DownloadAs extends AbstractWebScript {
                         String outputType = data.getString("outputType");
 
                         if (permissionService.hasPermission(node, PermissionService.READ) != AccessStatus.ALLOWED) {
-                            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation. NodeRef= " + node.toString());
+                            throw new AccessDeniedException("Access denied. You do not have the appropriate" +
+                                    "permissions to perform this operation. NodeRef= " + node.toString());
                         }
 
                         String docTitle = documentManager.getDocumentName(node.toString());
@@ -163,9 +172,13 @@ public class DownloadAs extends AbstractWebScript {
                                     .region(region)
                                     .build();
 
-                            ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
+                            ConvertResponse convertResponse = convertService.processConvert(
+                                    convertRequest,
+                                    node.toString()
+                            );
 
-                            if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                            if (convertResponse.getError() != null
+                                    && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                                 throw new SecurityException();
                             }
 
@@ -175,15 +188,21 @@ public class DownloadAs extends AbstractWebScript {
                             }
 
                             String downloadUrl = convertResponse.getFileUrl();
-                            String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
+                            String newTitle = MessageFormat.format(
+                                    "{0}.{1}",
+                                    documentManager.getBaseName(docTitle),
+                                    convertResponse.getFileType()
+                            );
 
                             out.putArchiveEntry(new ZipArchiveEntry(newTitle));
 
-                            totalSize += requestManager.executeGetRequest(downloadUrl, new RequestManager.Callback<Long>() {
-                                public Long doWork(final Object response) throws IOException {
-                                    return IOUtils.copyLarge(((HttpEntity)response).getContent(), out);
-                                }
-                            });
+                            totalSize += requestManager.executeGetRequest(
+                                    downloadUrl,
+                                    new RequestManager.Callback<Long>() {
+                                        public Long doWork(final Object response) throws IOException {
+                                            return IOUtils.copyLarge(((HttpEntity)response).getContent(), out);
+                                        }
+                                    });
                         }
 
                         out.closeArchiveEntry();
@@ -191,7 +210,13 @@ public class DownloadAs extends AbstractWebScript {
                 }
 
                 try (FileInputStream inputStream = new FileInputStream(zip)) {
-                    contentURL = createDownloadNode("Archive.zip", MIMETYPE_ZIP, inputStream, totalSize, requestDataJson.length());
+                    contentURL = createDownloadNode(
+                            "Archive.zip",
+                            MIMETYPE_ZIP,
+                            inputStream,
+                            totalSize,
+                            requestDataJson.length()
+                    );
                 }
             }
 
@@ -225,7 +250,13 @@ public class DownloadAs extends AbstractWebScript {
         writer.setMimetype(mimeType);
         writer.putContent(inputStream);
 
-        DownloadStatus status = new DownloadStatus(DownloadStatus.Status.DONE, totalSize, totalSize, totalFiles, totalFiles);
+        DownloadStatus status = new DownloadStatus(
+                DownloadStatus.Status.DONE,
+                totalSize,
+                totalSize,
+                totalFiles,
+                totalFiles
+        );
         int sequenceNumber = downloadStorage.getSequenceNumber(downloadNode) + 1;
         updateService.update(downloadNode, status, sequenceNumber);
 

@@ -94,14 +94,18 @@ public class Prepare extends AbstractWebScript {
                 String newFileMime = request.getParameter("new");
                 String parentNodeRefString = request.getParameter("parentNodeRef");
 
-                if (newFileMime == null || newFileMime.isEmpty() || parentNodeRefString == null || parentNodeRefString.isEmpty()) {
+                if (newFileMime == null
+                        || newFileMime.isEmpty()
+                        || parentNodeRefString == null
+                        || parentNodeRefString.isEmpty()) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Required query parameters not found");
                 }
 
                 logger.debug("Creating new node");
                 NodeRef parentNodeRef = new NodeRef(parentNodeRefString);
 
-                if (permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
+                if (permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN)
+                        != AccessStatus.ALLOWED) {
                     throw new SecurityException("User don't have the permissions to create child node");
                 }
 
@@ -113,9 +117,13 @@ public class Prepare extends AbstractWebScript {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, newName);
 
-                NodeRef nodeRef = this.nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
-                        .getChildRef();
+                NodeRef nodeRef = this.nodeService.createNode(
+                        parentNodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName),
+                        ContentModel.TYPE_CONTENT,
+                        props
+                ).getChildRef();
 
                 ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(newFileMime);
@@ -129,7 +137,8 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("nodeRef", nodeRef);
             } else {
                 NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-                boolean readonly = request.getParameter("readonly") != null && request.getParameter("readonly").equals("1");
+                boolean readonly = request.getParameter("readonly") != null
+                        && request.getParameter("readonly").equals("1");
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
@@ -174,7 +183,11 @@ public class Prepare extends AbstractWebScript {
                         util.ensureVersioningEnabled(nodeRef);
                         NodeRef copyRef = cociService.checkout(nodeRef);
                         ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
-                        nodeService.setProperty(copyRef, Util.EditingKeyAspect, documentManager.getDocumentKey(nodeRef.toString(), false));
+                        nodeService.setProperty(
+                                copyRef,
+                                Util.EditingKeyAspect,
+                                documentManager.getDocumentKey(nodeRef.toString(), false)
+                        );
                         nodeService.setProperty(copyRef, Util.EditingHashAspect, util.generateHash());
                     }
                 }
@@ -197,7 +210,8 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
                 responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
                 responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));
-                responseJson.put("canManagePermissions", permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+                responseJson.put("canManagePermissions", permissionService.hasPermission(
+                        nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
 
                 logger.debug("Sending JSON prepare object");
                 logger.debug(responseJson.toString(3));

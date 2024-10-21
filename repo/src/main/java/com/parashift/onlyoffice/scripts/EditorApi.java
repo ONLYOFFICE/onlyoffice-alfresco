@@ -135,7 +135,11 @@ public class EditorApi extends AbstractWebScript {
                         try {
                             data.put("token", jwtManager.createToken(data));
                         } catch (Exception e) {
-                            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Token creation error", e);
+                            throw new WebScriptException(
+                                    Status.STATUS_INTERNAL_SERVER_ERROR,
+                                    "Token creation error",
+                                    e
+                            );
                         }
                     }
 
@@ -162,8 +166,12 @@ public class EditorApi extends AbstractWebScript {
 
             NodeRef folderNode = new NodeRef(folder);
 
-            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "User don't have the permissions to create child node");
+            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN)
+                    != AccessStatus.ALLOWED) {
+                throw new WebScriptException(
+                        Status.STATUS_FORBIDDEN,
+                        "User don't have the permissions to create child node"
+                );
             }
 
             NodeRef node = new NodeRef(docxNode.getString(0));
@@ -172,7 +180,8 @@ public class EditorApi extends AbstractWebScript {
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
                 String fileName = documentManager.getDocumentName(node.toString());
                 String fileType = documentManager.getExtension(fileName);
-                if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+                if (!mimetypeService.getMimetype(fileType)
+                        .equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
                 }
 
@@ -184,7 +193,8 @@ public class EditorApi extends AbstractWebScript {
 
                     ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
 
-                    if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                    if (convertResponse.getError() != null
+                            && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                         throw new SecurityException();
                     }
 
@@ -226,8 +236,12 @@ public class EditorApi extends AbstractWebScript {
 
             NodeRef folderNode = new NodeRef(saveNode);
 
-            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "User don't have the permissions to create child node");
+            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN)
+                    != AccessStatus.ALLOWED) {
+                throw new WebScriptException(
+                        Status.STATUS_FORBIDDEN,
+                        "User don't have the permissions to create child node"
+                );
             }
 
             createNode(folderNode, title, ext, url);

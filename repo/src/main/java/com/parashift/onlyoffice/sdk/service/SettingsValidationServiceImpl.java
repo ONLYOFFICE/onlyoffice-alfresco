@@ -20,7 +20,8 @@ import java.util.Map;
     http://www.onlyoffice.com
 */
 
-public class SettingsValidationServiceImpl extends DefaultSettingsValidationService implements SettingsValidationService {
+public class SettingsValidationServiceImpl extends DefaultSettingsValidationService
+        implements SettingsValidationService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired

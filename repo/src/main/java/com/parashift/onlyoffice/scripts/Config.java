@@ -49,7 +49,8 @@ public class Config extends DeclarativeWebScript {
         try {
             Map<String, String> settings = settingsManager.getSettings();
 
-            if (settings.get("customization.review.reviewDisplay") == null || settings.get("customization.review.reviewDisplay").isEmpty()) {
+            if (settings.get("customization.review.reviewDisplay") == null
+                    || settings.get("customization.review.reviewDisplay").isEmpty()) {
                 settings.put("customization.review.reviewDisplay", "ORIGINAL");
             }
 

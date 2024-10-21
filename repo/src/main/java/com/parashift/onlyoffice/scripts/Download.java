@@ -87,7 +87,8 @@ public class Download extends AbstractWebScript {
         NodeRef nodeRef = new NodeRef(nodeRefString);
 
         if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
-            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions" +
+                    "to perform this operation");
         }
 
         switch (type) {
@@ -97,7 +98,10 @@ public class Download extends AbstractWebScript {
                 nodeRef = historyManager.getHistoryNodeByVersionNode(nodeRef, "diff.zip");
 
                 if (nodeRef == null) {
-                    throw new WebScriptException(Status.STATUS_NOT_FOUND, "Not found diff.zip for version: " + nodeRefString);
+                    throw new WebScriptException(
+                            Status.STATUS_NOT_FOUND,
+                            "Not found diff.zip for version: " + nodeRefString
+                    );
                 }
 
                 String editorUrl = urlManager.getDocumentServerUrl();

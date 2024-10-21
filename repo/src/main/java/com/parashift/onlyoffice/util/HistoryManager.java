@@ -85,7 +85,8 @@ public class HistoryManager {
 
     public static final QName ContentVersionUUID = QName.createQName("onlyoffice:content-version-uuid");
 
-    public void saveHistory(final NodeRef nodeRef, final History history, final String changesUrl) throws JsonProcessingException {
+    public void saveHistory(final NodeRef nodeRef, final History history, final String changesUrl)
+            throws JsonProcessingException {
         logger.debug("Saving history for node: " + nodeRef.toString());
 
         saveHistoryData(nodeRef, objectMapper.writeValueAsString(history), "changes.json", true);
@@ -112,7 +113,8 @@ public class HistoryManager {
         }
     }
 
-    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name, final boolean fromString) {
+    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name,
+                                 final boolean fromString) {
         if (data == null || data.isEmpty()) {
             logger.error("Error saving history " + name + "History data is null!");
             return;
@@ -144,7 +146,11 @@ public class HistoryManager {
 
                 String extension = name.substring(name.lastIndexOf(".") + 1).trim().toLowerCase();
                 final String mimeType = mimetypeService.getMimetype(extension);
-                final ContentWriter writer = contentService.getWriter(versionNodeHistory, ContentModel.PROP_CONTENT, true);
+                final ContentWriter writer = contentService.getWriter(
+                        versionNodeHistory,
+                        ContentModel.PROP_CONTENT,
+                        true
+                );
 
                 if (fromString) {
                     writer.setMimetype(mimeType);
@@ -195,9 +201,13 @@ public class HistoryManager {
         NodeRef historyNodeRef = util.getChildNodeByName(version.getVersionedNodeRef(), name);
 
         if (historyNodeRef != null) {
-            List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef).getAllVersions();
+            List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
+                    .getAllVersions();
             for (Version versionHistory : versionsHistory) {
-                String contentVersionUUID = (String) nodeService.getProperty(versionHistory.getFrozenStateNodeRef(), ContentVersionUUID);
+                String contentVersionUUID = (String) nodeService.getProperty(
+                        versionHistory.getFrozenStateNodeRef(),
+                        ContentVersionUUID
+                );
 
                 if (contentVersionUUID.equals(version.getFrozenStateNodeRef().getId())) {
                     return versionHistory;
@@ -217,14 +227,21 @@ public class HistoryManager {
                 versionNodeRef.getId()
         );
 
-        NodeRef nodeRef = (NodeRef) nodeService.getProperty(workspaceVersionNodeRef, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+        NodeRef nodeRef = (NodeRef) nodeService.getProperty(
+                workspaceVersionNodeRef,
+                Version2Model.PROP_QNAME_FROZEN_NODE_REF
+        );
 
         if (nodeRef != null) {
             historyNodeRef = util.getChildNodeByName(nodeRef, name);
             if (historyNodeRef != null) {
-                List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef).getAllVersions();
+                List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
+                        .getAllVersions();
                 for (Version versionHistory : versionsHistory) {
-                    String contentVersionUUID = (String) nodeService.getProperty(versionHistory.getFrozenStateNodeRef(), ContentVersionUUID);
+                    String contentVersionUUID = (String) nodeService.getProperty(
+                            versionHistory.getFrozenStateNodeRef(),
+                            ContentVersionUUID
+                    );
 
                     if (contentVersionUUID.equals(workspaceVersionNodeRef.getId())) {
                         return versionHistory.getFrozenStateNodeRef();
@@ -325,13 +342,19 @@ public class HistoryManager {
 
                 if (diffZipNodeRef != null) {
                     if (previousMajorVersion != null) {
-                        String previousMajorVersionFileName = documentManager.getDocumentName(previousMajorVersion.getFrozenStateNodeRef().toString());
+                        String previousMajorVersionFileName = documentManager.getDocumentName(
+                                previousMajorVersion.getFrozenStateNodeRef().toString()
+                        );
 
                         historyData.setChangesUrl(urlManager.getHistoryDiffUrl(version.getFrozenStateNodeRef()));
                         historyData.setPrevious(
                                 Previous.builder()
-                                        .key(documentManager.getDocumentKey(previousMajorVersion.getFrozenStateNodeRef().toString(), false))
-                                        .url(urlManager.getFileUrl(previousMajorVersion.getFrozenStateNodeRef().toString()))
+                                        .key(documentManager.getDocumentKey(
+                                                previousMajorVersion.getFrozenStateNodeRef().toString(), false
+                                        ))
+                                        .url(urlManager.getFileUrl(
+                                                previousMajorVersion.getFrozenStateNodeRef().toString()
+                                        ))
                                         .fileType(documentManager.getExtension(previousMajorVersionFileName))
                                         .build()
                         );

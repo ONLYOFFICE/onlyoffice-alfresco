@@ -107,9 +107,11 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                     Boolean deleteNode = false;
                     Boolean checkoutNode = false;
 
-                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("pdf")) {
+                    if (settingsManager.getSettingBoolean("convertOriginal", false)
+                            && !targetExt.equals("pdf")) {
                         logger.debug("Updating node");
-                        if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED) {
+                        if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE)
+                                == AccessStatus.ALLOWED) {
                             util.ensureVersioningEnabled(actionedUponNodeRef);
                             checkoutNode = true;
                             writeNode = checkOutCheckInService.checkout(actionedUponNodeRef);
@@ -119,13 +121,18 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         }
                     } else {
                         logger.debug("Creating new node");
-                        if (permissionService.hasPermission(nodeFolder, PermissionService.CREATE_CHILDREN) == AccessStatus.ALLOWED) {
+                        if (permissionService.hasPermission(nodeFolder, PermissionService.CREATE_CHILDREN)
+                                == AccessStatus.ALLOWED) {
                             Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                             props.put(ContentModel.PROP_NAME, newName);
                             deleteNode = true;
-                            writeNode = this.nodeService.createNode(nodeFolder, ContentModel.ASSOC_CONTAINS,
-                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
-                                    .getChildRef();
+                            writeNode = this.nodeService.createNode(
+                                    nodeFolder,
+                                    ContentModel.ASSOC_CONTAINS,
+                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName),
+                                    ContentModel.TYPE_CONTENT,
+                                    props
+                            ).getChildRef();
 
                             util.ensureVersioningEnabled(writeNode);
                         } else {
@@ -147,7 +154,8 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         ConvertResponse convertResponse = convertService.processConvert(convertRequest,
                                 actionedUponNodeRef.toString());
 
-                        if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                        if (convertResponse.getError() != null
+                                && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                             throw new SecurityException();
                         }
 
@@ -157,12 +165,14 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         }
 
                         final ContentWriter finalWriter = writer;
-                        requestManager.executeGetRequest(convertResponse.getFileUrl(), new RequestManager.Callback<Void>() {
-                            public Void doWork(final Object response) throws IOException {
-                                finalWriter.putContent(((HttpEntity)response).getContent());
-                                return null;
-                            }
-                        });
+                        requestManager.executeGetRequest(
+                                convertResponse.getFileUrl(),
+                                new RequestManager.Callback<Void>() {
+                                    public Void doWork(final Object response) throws IOException {
+                                        finalWriter.putContent(((HttpEntity)response).getContent());
+                                        return null;
+                                    }
+                                });
 
                         if (checkoutNode) {
                             logger.debug("Checking in node");
