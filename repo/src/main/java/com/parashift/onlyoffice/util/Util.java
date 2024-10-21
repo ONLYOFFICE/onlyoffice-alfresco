@@ -30,6 +30,11 @@ import java.util.*;
 
 @Service
 public class Util {
+    public static final QName EDITING_KEY_ASPECT = QName.createQName("onlyoffice:editing-key");
+    public static final QName EDITING_HASH_ASPECT = QName.createQName("onlyoffice:editing-hash");
+    public static final QName FORCESAVE_ASPECT = QName.createQName("onlyoffice:forcesave");
+    public static final int EDITING_HASH_ASPECT_LENGTH = 32;
+
     @Autowired
     private VersionService versionService;
 
@@ -52,12 +57,6 @@ public class Util {
     private TenantService tenantService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    public static final QName EDITING_KEY_ASPECT = QName.createQName("onlyoffice:editing-key");
-    public static final QName EDITING_HASH_ASPECT = QName.createQName("onlyoffice:editing-hash");
-    public static final QName FORCESAVE_ASPECT = QName.createQName("onlyoffice:forcesave");
-
-    public static final int EDITING_HASH_ASPECT_LENGTH = 32;
 
     public void ensureVersioningEnabled(final NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();

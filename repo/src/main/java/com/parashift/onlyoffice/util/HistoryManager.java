@@ -39,6 +39,7 @@ import java.util.*;
 */
 @Service
 public class HistoryManager {
+    public static final QName CONTENT_VERSION_UUID = QName.createQName("onlyoffice:content-version-uuid");
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -80,8 +81,6 @@ public class HistoryManager {
     private DocumentManager documentManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public static final QName CONTENT_VERSION_UUID = QName.createQName("onlyoffice:content-version-uuid");
 
     public void saveHistory(final NodeRef nodeRef, final History history, final String changesUrl)
             throws JsonProcessingException {
