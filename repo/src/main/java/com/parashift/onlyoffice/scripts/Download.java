@@ -70,7 +70,7 @@ public class Download extends AbstractWebScript {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not find required 'nodeRef' parameter!");
         }
 
-        if (settingsManager.isSecurityEnabled() ) {
+        if (settingsManager.isSecurityEnabled()) {
             String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);
             String authorizationPrefix = settingsManager.getSecurityPrefix();

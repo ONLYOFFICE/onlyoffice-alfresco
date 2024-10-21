@@ -25,7 +25,7 @@ public class ConverterTest extends AbstractWebScript {
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
-        if (settingsManager.isSecurityEnabled() ) {
+        if (settingsManager.isSecurityEnabled()) {
             String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);
             String authorizationPrefix = settingsManager.getSecurityPrefix();
