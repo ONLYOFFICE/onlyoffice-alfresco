@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -95,6 +95,6 @@ public class CopyPermissions extends AbstractWebScript {
 
         permissionService.setInheritParentPermissions(destinationNodeRef, includeInherited);
 
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(Status.STATUS_OK);
     }
 }

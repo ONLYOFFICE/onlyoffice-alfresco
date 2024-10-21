@@ -19,7 +19,6 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -117,7 +116,7 @@ public class Download extends AbstractWebScript {
                 response.setHeader("Access-Control-Allow-Origin", editorUrl);
                 break;
             default:
-                throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Unknown parameter 'type': '" + type + "'!");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unknown parameter 'type': '" + type + "'!");
         }
 
         String title = documentManager.getDocumentName(nodeRef.toString());

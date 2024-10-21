@@ -35,7 +35,6 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -152,7 +151,7 @@ public class Prepare extends AbstractWebScript {
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
-                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    response.setStatus(Status.STATUS_FORBIDDEN);
                     response.getWriter().write(responseJson.toString());
                     return;
                 }
@@ -163,7 +162,7 @@ public class Prepare extends AbstractWebScript {
 
                 if (documentType == null) {
                     responseJson.put("error", "File type is not supported");
-                    response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    response.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
                     response.getWriter().write(responseJson.toString());
                     return;
                 }

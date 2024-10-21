@@ -15,7 +15,6 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -69,7 +68,7 @@ public class History extends AbstractWebScript {
                 String versionLabel = request.getParameter("version");
 
                 if (versionLabel == null || versionLabel.isEmpty()) {
-                    throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Not found parameter version!");
+                    throw new WebScriptException(Status.STATUS_NOT_FOUND, "Not found parameter version!");
                 }
 
                 HistoryData historyData = historyManager.getHistoryData(nodeRef, versionLabel);
@@ -79,7 +78,7 @@ public class History extends AbstractWebScript {
                 response.getWriter().write(objectMapper.writeValueAsString(historyData));
                 break;
             default:
-                throw new WebScriptException(HttpStatus.NOT_FOUND.value(), "Unknown parameter 'type': '" + type + "'!");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unknown parameter 'type': '" + type + "'!");
         }
     }
 }
