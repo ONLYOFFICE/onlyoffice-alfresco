@@ -27,7 +27,7 @@ public class OnlyofficeSettingsQuery {
     private static long timeLastRequest = 0;
     private ScriptRemote remote;
 
-    public void setRemote(ScriptRemote remote) {
+    public void setRemote(final ScriptRemote remote) {
         this.remote = remote;
     }
 

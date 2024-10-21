@@ -18,8 +18,8 @@ public class OnlyofficeSettings {
     public OnlyofficeSettings() {
     }
 
-    public OnlyofficeSettings(Map<String, Boolean> editableFormats, Boolean convertOriginal,
-                              List<Format> supportedFormats) {
+    public OnlyofficeSettings(final Map<String, Boolean> editableFormats, final Boolean convertOriginal,
+                              final List<Format> supportedFormats) {
         this.editableFormats = editableFormats;
         this.convertOriginal = convertOriginal;
         this.supportedFormats = supportedFormats;
@@ -29,7 +29,7 @@ public class OnlyofficeSettings {
         return editableFormats;
     }
 
-    public void setEditableFormats(Map<String, Boolean> editableFormats) {
+    public void setEditableFormats(final Map<String, Boolean> editableFormats) {
         this.editableFormats = editableFormats;
     }
 
@@ -37,7 +37,7 @@ public class OnlyofficeSettings {
         return convertOriginal;
     }
 
-    public void setConvertOriginal(Boolean convertOriginal) {
+    public void setConvertOriginal(final Boolean convertOriginal) {
         this.convertOriginal = convertOriginal;
     }
 
@@ -45,7 +45,7 @@ public class OnlyofficeSettings {
         return supportedFormats;
     }
 
-    public void setSupportedFormats(List<Format> supportedFormats) {
+    public void setSupportedFormats(final List<Format> supportedFormats) {
         this.supportedFormats = supportedFormats;
     }
 }

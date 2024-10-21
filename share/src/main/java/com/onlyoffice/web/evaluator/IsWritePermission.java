@@ -12,7 +12,7 @@ import org.json.simple.JSONObject;
 public class IsWritePermission extends BaseEvaluator {
 
     @Override
-    public boolean evaluate(JSONObject jsonObject) {
+    public boolean evaluate(final JSONObject jsonObject) {
         try {
             JSONObject node = (JSONObject)jsonObject.get("node");
             if (node != null && node.containsKey("permissions")){

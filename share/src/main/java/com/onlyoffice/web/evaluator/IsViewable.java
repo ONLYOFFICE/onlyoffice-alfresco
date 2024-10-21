@@ -14,12 +14,12 @@ import org.json.simple.JSONObject;
 public class IsViewable extends BaseEvaluator {
     private OnlyofficeSettingsQuery onlyofficeSettings;
 
-    public void setOnlyofficeSettings(OnlyofficeSettingsQuery onlyofficeSettings) {
+    public void setOnlyofficeSettings(final OnlyofficeSettingsQuery onlyofficeSettings) {
         this.onlyofficeSettings = onlyofficeSettings;
     }
 
     @Override
-    public boolean evaluate(JSONObject jsonObject) {
+    public boolean evaluate(final JSONObject jsonObject) {
         try {
             String fileName = (String) jsonObject.get("fileName");
             if (fileName != null) {
