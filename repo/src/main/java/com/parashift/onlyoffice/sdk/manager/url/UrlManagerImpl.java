@@ -64,7 +64,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
         String hash = null;
         if (cociService.isCheckedOut(nodeRef)) {
-            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
+            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
         }
 
         return getAlfrescoUrl()

@@ -94,7 +94,7 @@ public class CallBack extends AbstractWebScript {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
             String hash = null;
             if (cociService.isCheckedOut(nodeRef)) {
-                hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
+                hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
             }
             String queryHash = request.getParameter("cb_key");
 

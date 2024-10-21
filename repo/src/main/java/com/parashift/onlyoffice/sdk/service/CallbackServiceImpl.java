@@ -80,8 +80,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         updateNode(wc, callback.getUrl(), callback.getFiletype());
 
         logger.info("removing prop");
-        nodeService.removeProperty(wc, Util.EditingHashAspect);
-        nodeService.removeProperty(wc, Util.EditingKeyAspect);
+        nodeService.removeProperty(wc, Util.EDITING_HASH_ASPECT);
+        nodeService.removeProperty(wc, Util.EDITING_KEY_ASPECT);
 
         if (getSettingsManager().getSettingBoolean("minorVersion", false)) {
             versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
@@ -105,8 +105,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
 
         // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
-                && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+        if (oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) != null
+                && (Boolean) oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
             try {
                 historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {
@@ -152,19 +152,19 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         logger.debug("Forcesave request (type: " + callback.getForcesavetype() + ")");
         updateNode(wc, callback.getUrl(), callback.getFiletype());
 
-        String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
-        String key = (String) nodeService.getProperty(wc, Util.EditingKeyAspect);
+        String hash = (String) nodeService.getProperty(wc, Util.EDITING_HASH_ASPECT);
+        String key = (String) nodeService.getProperty(wc, Util.EDITING_KEY_ASPECT);
 
-        nodeService.removeProperty(wc, Util.EditingHashAspect);
-        nodeService.removeProperty(wc, Util.EditingKeyAspect);
+        nodeService.removeProperty(wc, Util.EDITING_HASH_ASPECT);
+        nodeService.removeProperty(wc, Util.EDITING_KEY_ASPECT);
 
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
         versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
-        versionProperties.put(Util.ForcesaveAspect.getLocalName(), true);
+        versionProperties.put(Util.FORCESAVE_ASPECT.getLocalName(), true);
         cociService.checkin(wc, versionProperties, null, true);
 
-        nodeService.setProperty(wc, Util.EditingHashAspect, hash);
-        nodeService.setProperty(wc, Util.EditingKeyAspect, key);
+        nodeService.setProperty(wc, Util.EDITING_HASH_ASPECT, hash);
+        nodeService.setProperty(wc, Util.EDITING_KEY_ASPECT, key);
 
         History history = callback.getHistory();
         if (history != null) {
@@ -180,8 +180,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
 
         // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
-                    && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+        if (oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) != null
+                    && (Boolean) oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
             try {
                 historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {

@@ -10,7 +10,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
 
         String key = null;
         if (cociService.isCheckedOut(nodeRef)) {
-            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
+            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
         }
 
         if (key == null) {

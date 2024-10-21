@@ -185,10 +185,10 @@ public class Prepare extends AbstractWebScript {
                         ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
                         nodeService.setProperty(
                                 copyRef,
-                                Util.EditingKeyAspect,
+                                Util.EDITING_KEY_ASPECT,
                                 documentManager.getDocumentKey(nodeRef.toString(), false)
                         );
-                        nodeService.setProperty(copyRef, Util.EditingHashAspect, util.generateHash());
+                        nodeService.setProperty(copyRef, Util.EDITING_HASH_ASPECT, util.generateHash());
                     }
                 }
 

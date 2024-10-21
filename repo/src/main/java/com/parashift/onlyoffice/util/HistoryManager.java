@@ -15,12 +15,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
@@ -83,7 +81,7 @@ public class HistoryManager {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final QName ContentVersionUUID = QName.createQName("onlyoffice:content-version-uuid");
+    public static final QName CONTENT_VERSION_UUID = QName.createQName("onlyoffice:content-version-uuid");
 
     public void saveHistory(final NodeRef nodeRef, final History history, final String changesUrl)
             throws JsonProcessingException {
@@ -142,7 +140,7 @@ public class HistoryManager {
                         historyVersion.getFrozenStateNodeRef().getId()
                 );
 
-                dbNodeService.setProperty(versionNodeHistory, ContentVersionUUID, versionNode.getId());
+                dbNodeService.setProperty(versionNodeHistory, CONTENT_VERSION_UUID, versionNode.getId());
 
                 String extension = name.substring(name.lastIndexOf(".") + 1).trim().toLowerCase();
                 final String mimeType = mimetypeService.getMimetype(extension);
@@ -206,7 +204,7 @@ public class HistoryManager {
             for (Version versionHistory : versionsHistory) {
                 String contentVersionUUID = (String) nodeService.getProperty(
                         versionHistory.getFrozenStateNodeRef(),
-                        ContentVersionUUID
+                        CONTENT_VERSION_UUID
                 );
 
                 if (contentVersionUUID.equals(version.getFrozenStateNodeRef().getId())) {
@@ -240,7 +238,7 @@ public class HistoryManager {
                 for (Version versionHistory : versionsHistory) {
                     String contentVersionUUID = (String) nodeService.getProperty(
                             versionHistory.getFrozenStateNodeRef(),
-                            ContentVersionUUID
+                            CONTENT_VERSION_UUID
                     );
 
                     if (contentVersionUUID.equals(workspaceVersionNodeRef.getId())) {
@@ -262,8 +260,8 @@ public class HistoryManager {
         Collections.reverse(versions);
 
         for (Version internalVersion : versions) {
-            if (internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
-                    || !(Boolean) internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())
+            if (internalVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) == null
+                    || !(Boolean) internalVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())
                     || internalVersion.equals(latestVersion)) {
 
 
@@ -362,8 +360,8 @@ public class HistoryManager {
                 }
             }
 
-            if (version.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
-                || !(Boolean) version.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+            if (version.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) == null
+                || !(Boolean) version.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
                 previousMajorVersion = version;
             }
         }
