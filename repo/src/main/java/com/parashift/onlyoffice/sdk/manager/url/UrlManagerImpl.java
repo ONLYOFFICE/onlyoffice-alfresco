@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.surf.util.URLEncoder;
 
-import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
