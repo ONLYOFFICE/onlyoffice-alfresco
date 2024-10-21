@@ -14,6 +14,7 @@ import org.springframework.extensions.webscripts.ScriptRemote;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.connector.Response;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 
 public class OnlyofficeSettingsQuery {
+    private static final long SETTINGS_REQUEST_TIMEOUT = 10;
     private static Set<String> editableFormats = new HashSet<String>();
     private static Boolean convertOriginal = false;
     private static List<Format> supportedFormats = new ArrayList<>();
@@ -33,7 +35,7 @@ public class OnlyofficeSettingsQuery {
     }
 
     private void requestOnlyofficeSettingsFromRepo() {
-        if ((System.nanoTime() - timeLastRequest) / 1000000000 > 10) {
+        if (Duration.ofNanos(System.nanoTime() - timeLastRequest).getSeconds() > SETTINGS_REQUEST_TIMEOUT) {
             Response response = remote.call("/parashift/onlyoffice/onlyoffice-settings");
             if (response.getStatus().getCode() == Status.STATUS_OK) {
                 timeLastRequest = System.nanoTime();
