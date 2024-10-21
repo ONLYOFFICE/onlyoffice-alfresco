@@ -13,7 +13,12 @@ import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.*;
+
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -25,7 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 

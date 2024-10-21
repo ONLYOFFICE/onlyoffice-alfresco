@@ -4,18 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.model.documenteditor.HistoryData;
 import com.parashift.onlyoffice.util.HistoryManager;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Map;
 
 /*
     Copyright (c) Ascensio System SIA 2024. All rights reserved.

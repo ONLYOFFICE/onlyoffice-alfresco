@@ -5,7 +5,10 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

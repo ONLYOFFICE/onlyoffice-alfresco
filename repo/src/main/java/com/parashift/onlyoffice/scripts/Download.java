@@ -8,15 +8,21 @@ import com.parashift.onlyoffice.util.HistoryManager;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.IOException;
 
 /*
     Copyright (c) Ascensio System SIA 2024. All rights reserved.

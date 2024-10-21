@@ -5,7 +5,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -21,7 +24,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
    Copyright (c) Ascensio System SIA 2024. All rights reserved.

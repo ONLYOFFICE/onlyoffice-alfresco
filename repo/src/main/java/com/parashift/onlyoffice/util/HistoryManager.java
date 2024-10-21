@@ -15,7 +15,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
@@ -31,7 +37,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
     Copyright (c) Ascensio System SIA 2024. All rights reserved.
