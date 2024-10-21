@@ -131,7 +131,7 @@ public class CallBack extends AbstractWebScript {
         private Callback callback;
         private NodeRef nodeRef;
 
-        public ProccessRequestCallback(final Callback callback, final NodeRef node) {
+        ProccessRequestCallback(final Callback callback, final NodeRef node) {
             this.callback = callback;
             this.nodeRef = node;
         }
