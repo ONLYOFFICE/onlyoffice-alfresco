@@ -1,3 +1,12 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+/**
+ * Created by cetra on 20/10/15.
+ * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
+ */
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,14 +51,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by cetra on 20/10/15.
- * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
- */
- /*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.prepare.get")
 public class Prepare extends AbstractWebScript {
 

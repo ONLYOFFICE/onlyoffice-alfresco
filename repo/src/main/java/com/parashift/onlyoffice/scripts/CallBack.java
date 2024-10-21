@@ -1,3 +1,12 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+/**
+ * Created by cetra on 20/10/15.
+ */
+
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,13 +35,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Created by cetra on 20/10/15.
- */
- /*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.callback.post")
 public class CallBack extends AbstractWebScript {
 

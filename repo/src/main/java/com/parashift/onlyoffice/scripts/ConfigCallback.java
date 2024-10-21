@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,10 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config.post")
 public class ConfigCallback extends AbstractWebScript {
     @Autowired

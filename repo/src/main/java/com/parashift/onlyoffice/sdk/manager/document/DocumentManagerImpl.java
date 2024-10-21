@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
@@ -14,10 +19,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.io.Serializable;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
 

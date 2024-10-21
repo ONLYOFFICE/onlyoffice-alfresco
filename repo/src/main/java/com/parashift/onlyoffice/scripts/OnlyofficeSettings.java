@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -13,10 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-settings.get")
 public class OnlyofficeSettings extends AbstractWebScript {
     @Autowired

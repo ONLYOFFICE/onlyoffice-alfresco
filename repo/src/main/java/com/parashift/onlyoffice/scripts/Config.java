@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -15,10 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config.get")
 public class Config extends DeclarativeWebScript {
     @Autowired

@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,10 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config-validation.get")
 public class ConfigValidation extends AbstractWebScript {
     @Autowired

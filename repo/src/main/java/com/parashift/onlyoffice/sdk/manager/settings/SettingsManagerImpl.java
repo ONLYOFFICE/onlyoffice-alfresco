@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.settings;
 
 import com.onlyoffice.manager.settings.DefaultSettingsManager;
@@ -7,10 +12,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Properties;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 public class SettingsManagerImpl extends DefaultSettingsManager {
     private static final String SETTINGS_PREFIX = "onlyoffice.";

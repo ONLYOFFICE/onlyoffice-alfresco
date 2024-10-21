@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.actions;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -35,10 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
 
 public class ConvertAction extends ActionExecuterAbstractBase {
 

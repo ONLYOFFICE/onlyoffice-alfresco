@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.url;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -23,10 +28,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 

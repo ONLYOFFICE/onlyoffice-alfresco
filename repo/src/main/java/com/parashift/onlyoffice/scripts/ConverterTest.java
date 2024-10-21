@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.security.JwtManager;
@@ -10,10 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.convertertest.get")
 public class ConverterTest extends AbstractWebScript {
 

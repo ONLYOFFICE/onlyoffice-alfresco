@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.util;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -29,10 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 @Service
 public class Util {

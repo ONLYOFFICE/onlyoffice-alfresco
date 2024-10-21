@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,10 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.editor-api.post")
 public class EditorApi extends AbstractWebScript {
 

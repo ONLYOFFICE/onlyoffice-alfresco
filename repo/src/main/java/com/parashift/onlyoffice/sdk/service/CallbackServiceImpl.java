@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.service;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -33,10 +38,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
 
 public class CallbackServiceImpl extends DefaultCallbackService {
     @Autowired

@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -19,10 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-/*
-    Copyright (c) Ascensio System SIA 2022. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.copy-permissions.get")
 public class CopyPermissions extends AbstractWebScript {
 

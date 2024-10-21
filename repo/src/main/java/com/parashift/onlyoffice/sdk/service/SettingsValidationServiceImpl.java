@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.service;
 
 import com.onlyoffice.manager.request.RequestManager;
@@ -15,10 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
 
 public class SettingsValidationServiceImpl extends DefaultSettingsValidationService
         implements SettingsValidationService {

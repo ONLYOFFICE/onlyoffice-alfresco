@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -44,10 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Service
 public class HistoryManager {
     public static final QName CONTENT_VERSION_UUID = QName.createQName("onlyoffice:content-version-uuid");
