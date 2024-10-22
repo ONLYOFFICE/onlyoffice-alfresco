@@ -62,7 +62,7 @@ public class DownloadAs extends AbstractWebScript {
     private static final String MIMETYPE_ZIP = "application/zip";
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String ZIP_EXTENSION = ".zip";
-    private final static String CONTENT_DOWNLOAD_API_URL = "slingshot/node/content/{0}/{1}/{2}/{3}";
+    private static final String CONTENT_DOWNLOAD_API_URL = "slingshot/node/content/{0}/{1}/{2}/{3}";
 
     @Autowired
     private PermissionService permissionService;
