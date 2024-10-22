@@ -1,5 +1,11 @@
 # Change Log
 
+## Added
+- editing pdf
+
+## Changed
+- creating pdf form
+
 ## 7.0.0
 ## Added
 - core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)
