@@ -1,9 +1,0 @@
-<alfresco-config area="mimetype-map">
-    <config evaluator="string-compare" condition="Mimetype Map">
-        <mimetypes>
-            <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document.docxf" display="ONLYOFFICE docxf">
-                <extension>docxf</extension>
-            </mimetype>
-        </mimetypes>
-    </config>
-</alfresco-config>

@@ -2,16 +2,6 @@
 
     <config evaluator="string-compare" condition="DocLibActions">
         <actions>
-            <action id="document-onlyoffice-fillforms" type="link" label="actions.document.onlyoffice-fillforms">
-                <param name="href">onlyoffice-edit?nodeRef={node.nodeRef}</param>
-                <param name="target">_blank</param>
-                <evaluator>evaluator.doclib.action.displayFillForm</evaluator>
-            </action>
-            <action id="document-onlyoffice-join-fillforms" type="link" label="actions.document.onlyoffice-fillforms">
-                <param name="href">onlyoffice-edit?nodeRef={workingCopy.sourceNodeRef}</param>
-                <param name="target">_blank</param>
-                <evaluator>evaluator.doclib.action.displayJoinFillForm</evaluator>
-            </action>
             <action id="document-onlyoffice-edit" type="link" label="actions.document.onlyoffice-edit">
                 <param name="href">onlyoffice-edit?nodeRef={node.nodeRef}</param>
                 <param name="target">_blank</param>
@@ -31,15 +21,11 @@
         <actionGroups>
             <actionGroup id="document-browse">
                 <action index="90" id="document-onlyoffice-edit" />
-                <action index="90" id="document-onlyoffice-fillforms" />
-                <action index="90" id="document-onlyoffice-join-fillforms" />
                 <action index="90" id="document-onlyoffice-join-edit" />
                 <action index="91" id="document-onlyoffice-read" />
             </actionGroup>
             <actionGroup id="document-details">
                 <action index="90" id="document-onlyoffice-edit" />
-                <action index="90" id="document-onlyoffice-fillforms" />
-                <action index="90" id="document-onlyoffice-join-fillforms" />
                 <action index="90" id="document-onlyoffice-join-edit" />
                 <action index="91" id="document-onlyoffice-read" />
             </actionGroup>
@@ -56,8 +42,8 @@
 
     <config evaluator="string-compare" condition="DocumentLibrary">
         <create-content>
-            <content id="document-onlyoffice-create-docxf" type="javascript"
-                     label="actions.document.onlyoffice-create-docxf"/>
+            <content id="document-onlyoffice-create-pdf" type="javascript"
+                     label="actions.document.onlyoffice-create-pdf"/>
         </create-content>
     </config>
 
@@ -88,27 +74,13 @@
                 <evaluator>evaluator.doclib.action.IsConvertible</evaluator>
                 <evaluator>evaluator.doclib.action.isNotWorkingCopy</evaluator>
                 <evaluator>evaluator.doclib.action.notLocked</evaluator>
-                <evaluator>evaluator.doclib.action.isNotOnlyofficeDocxfExtension</evaluator>
-            </action>
-            <action id="document-onlyoffice-docxf-to-pdf" type="javascript" label="actions.document.onlyoffice-create-pdf-from-docxf">
-                <param name="function">onOnlyofficeConvert</param>
-                <param name="action">onlyoffice-convert</param>
-                <param name="waitingMessage">alfresco.document.onlyoffice.action.convert.msg.waiting</param>
-                <param name="successMessage">alfresco.document.onlyoffice.action.convert.msg.success</param>
-                <param name="failureMessage">alfresco.document.onlyoffice.action.convert.msg.failure</param>
-                <evaluator>evaluator.doclib.action.isOnlyofficeDocxfExtension</evaluator>
-                <evaluator>evaluator.doclib.action.IsConvertible</evaluator>
-                <evaluator>evaluator.doclib.action.isNotWorkingCopy</evaluator>
-                <evaluator>evaluator.doclib.action.notLocked</evaluator>
             </action>
         </actions>
         <actionGroups>
             <actionGroup id="document-browse">
-                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
             <actionGroup id="document-details">
-                <action index="90" id="document-onlyoffice-docxf-to-pdf" />
                 <action index="91" id="document-onlyoffice-convert" />
             </actionGroup>
         </actionGroups>

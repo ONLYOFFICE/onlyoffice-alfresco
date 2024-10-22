@@ -64,9 +64,6 @@ public class IsConvertible extends BaseEvaluator {
             if (format.getName().equals(docExt) && format.getType() != null) {
                 switch (format.getType()) {
                     case WORD:
-                        if (format.getName().equals("docxf") && format.getConvert().contains("pdf")) {
-                            return true;
-                        }
                         if (format.getConvert().contains("docx")) {
                             return true;
                         }
