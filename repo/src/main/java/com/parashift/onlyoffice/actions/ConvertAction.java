@@ -1,10 +1,9 @@
-package com.parashift.onlyoffice.actions;
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package com.parashift.onlyoffice.actions;
 
 import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.request.RequestManager;
@@ -21,8 +20,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -35,54 +34,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class ConvertAction extends ActionExecuterAbstractBase {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    CheckOutCheckInService checkOutCheckInService;
+    private CheckOutCheckInService checkOutCheckInService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {
         if (nodeService.exists(actionedUponNodeRef)) {
             if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ) == AccessStatus.ALLOWED) {
-                if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef) &&
-                        !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
+                if (!checkOutCheckInService.isCheckedOut(actionedUponNodeRef)
+                        && !checkOutCheckInService.isWorkingCopy(actionedUponNodeRef)) {
                     String fileName = documentManager.getDocumentName(actionedUponNodeRef.toString());
 
                     String title = documentManager.getBaseName(fileName);
@@ -107,9 +108,11 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                     Boolean deleteNode = false;
                     Boolean checkoutNode = false;
 
-                    if (settingsManager.getSettingBoolean("convertOriginal", false) && !targetExt.equals("pdf")) {
+                    if (settingsManager.getSettingBoolean("convertOriginal", false)
+                            && !targetExt.equals("pdf")) {
                         logger.debug("Updating node");
-                        if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED) {
+                        if (permissionService.hasPermission(actionedUponNodeRef, PermissionService.WRITE)
+                                == AccessStatus.ALLOWED) {
                             util.ensureVersioningEnabled(actionedUponNodeRef);
                             checkoutNode = true;
                             writeNode = checkOutCheckInService.checkout(actionedUponNodeRef);
@@ -119,13 +122,18 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         }
                     } else {
                         logger.debug("Creating new node");
-                        if (permissionService.hasPermission(nodeFolder, PermissionService.CREATE_CHILDREN) == AccessStatus.ALLOWED) {
+                        if (permissionService.hasPermission(nodeFolder, PermissionService.CREATE_CHILDREN)
+                                == AccessStatus.ALLOWED) {
                             Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                             props.put(ContentModel.PROP_NAME, newName);
                             deleteNode = true;
-                            writeNode = this.nodeService.createNode(nodeFolder, ContentModel.ASSOC_CONTAINS,
-                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
-                                    .getChildRef();
+                            writeNode = this.nodeService.createNode(
+                                    nodeFolder,
+                                    ContentModel.ASSOC_CONTAINS,
+                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName),
+                                    ContentModel.TYPE_CONTENT,
+                                    props
+                            ).getChildRef();
 
                             util.ensureVersioningEnabled(writeNode);
                         } else {
@@ -147,7 +155,8 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         ConvertResponse convertResponse = convertService.processConvert(convertRequest,
                                 actionedUponNodeRef.toString());
 
-                        if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                        if (convertResponse.getError() != null
+                                && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                             throw new SecurityException();
                         }
 
@@ -157,12 +166,14 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         }
 
                         final ContentWriter finalWriter = writer;
-                        requestManager.executeGetRequest(convertResponse.getFileUrl(), new RequestManager.Callback<Void>() {
-                            public Void doWork(Object response) throws IOException {
-                                finalWriter.putContent(((HttpEntity)response).getContent());
-                                return null;
-                            }
-                        });
+                        requestManager.executeGetRequest(
+                                convertResponse.getFileUrl(),
+                                new RequestManager.Callback<Void>() {
+                                    public Void doWork(final Object response) throws IOException {
+                                        finalWriter.putContent(((HttpEntity) response).getContent());
+                                        return null;
+                                    }
+                                });
 
                         if (checkoutNode) {
                             logger.debug("Checking in node");
@@ -199,6 +210,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) { }
+    protected void addParameterDefinitions(final List<ParameterDefinition> paramList) {
+    }
 }
 

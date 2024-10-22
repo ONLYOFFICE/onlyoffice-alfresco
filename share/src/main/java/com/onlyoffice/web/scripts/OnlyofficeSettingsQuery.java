@@ -1,6 +1,6 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.scripts;
@@ -8,35 +8,34 @@ package com.onlyoffice.web.scripts;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.model.common.Format;
-import com.onlyoffice.model.settings.Settings;
 import com.onlyoffice.web.model.OnlyofficeSettings;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.extensions.webscripts.ScriptRemote;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.connector.Response;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 public class OnlyofficeSettingsQuery {
+    private static final long SETTINGS_REQUEST_TIMEOUT = 10;
     private static Set<String> editableFormats = new HashSet<String>();
     private static Boolean convertOriginal = false;
     private static List<Format> supportedFormats = new ArrayList<>();
     private static long timeLastRequest = 0;
     private ScriptRemote remote;
 
-    public void setRemote(ScriptRemote remote) {
+    public void setRemote(final ScriptRemote remote) {
         this.remote = remote;
     }
 
     private void requestOnlyofficeSettingsFromRepo() {
-        if ((System.nanoTime() - timeLastRequest)/1000000000 > 10) {
+        if (Duration.ofNanos(System.nanoTime() - timeLastRequest).getSeconds() > SETTINGS_REQUEST_TIMEOUT) {
             Response response = remote.call("/parashift/onlyoffice/onlyoffice-settings");
             if (response.getStatus().getCode() == Status.STATUS_OK) {
                 timeLastRequest = System.nanoTime();
@@ -64,10 +63,9 @@ public class OnlyofficeSettingsQuery {
                 } catch (Exception err) {
                     throw new AlfrescoRuntimeException("Failed to parse response from Alfresco: " + err.getMessage());
                 }
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Unable to retrieve editable mimetypes information from Alfresco: " + response.getStatus().getCode());
+            } else {
+                throw new AlfrescoRuntimeException("Unable to retrieve editable mimetypes information from Alfresco: "
+                        + response.getStatus().getCode());
             }
         }
     }

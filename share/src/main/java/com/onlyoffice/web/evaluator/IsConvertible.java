@@ -1,8 +1,7 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
-
 package com.onlyoffice.web.evaluator;
 
 import com.onlyoffice.model.common.Format;
@@ -11,15 +10,16 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
 import org.json.simple.JSONObject;
 
+
 public class IsConvertible extends BaseEvaluator {
     private OnlyofficeSettingsQuery onlyofficeSettings;
 
-    public void setOnlyofficeSettings(OnlyofficeSettingsQuery onlyofficeSettings) {
+    public void setOnlyofficeSettings(final OnlyofficeSettingsQuery onlyofficeSettings) {
         this.onlyofficeSettings = onlyofficeSettings;
     }
 
     @Override
-    public boolean evaluate(JSONObject jsonObject) {
+    public boolean evaluate(final JSONObject jsonObject) {
         try {
             return hasPermission(jsonObject) && isConvertibleFormat(jsonObject);
         } catch (Exception err) {
@@ -27,7 +27,7 @@ public class IsConvertible extends BaseEvaluator {
         }
     }
 
-    private boolean hasPermission (JSONObject jsonObject) {
+    private boolean hasPermission(final JSONObject jsonObject) {
         if (onlyofficeSettings.getConvertOriginal()) {
             JSONObject node = (JSONObject) jsonObject.get("node");
             if (node != null && node.containsKey("permissions")) {
@@ -56,7 +56,7 @@ public class IsConvertible extends BaseEvaluator {
     }
 
 
-    private boolean isConvertibleFormat(JSONObject jsonObject) {
+    private boolean isConvertibleFormat(final JSONObject jsonObject) {
         String fileName = (String) jsonObject.get("fileName");
         String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 

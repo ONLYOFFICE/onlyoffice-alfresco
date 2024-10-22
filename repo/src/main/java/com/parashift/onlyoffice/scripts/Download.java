@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -8,53 +13,54 @@ import com.parashift.onlyoffice.util.HistoryManager;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.extensions.surf.util.URLEncoder;
 
-import java.io.*;
+import java.io.IOException;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.download.get")
 public class Download extends AbstractWebScript {
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    HistoryManager historyManager;
+    private HistoryManager historyManager;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    ContentStreamer contentStreamer;
+    private ContentStreamer contentStreamer;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         String nodeRefString = request.getParameter("nodeRef");
         String type = request.getServiceMatch().getTemplateVars().get("type");
 
@@ -66,7 +72,7 @@ public class Download extends AbstractWebScript {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not find required 'nodeRef' parameter!");
         }
 
-        if (settingsManager.isSecurityEnabled() ) {
+        if (settingsManager.isSecurityEnabled()) {
             String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);
             String authorizationPrefix = settingsManager.getSecurityPrefix();
@@ -87,7 +93,8 @@ public class Download extends AbstractWebScript {
         NodeRef nodeRef = new NodeRef(nodeRefString);
 
         if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
-            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions to perform this operation");
+            throw new AccessDeniedException("Access denied. You do not have the appropriate permissions"
+                    + "to perform this operation");
         }
 
         switch (type) {
@@ -97,7 +104,10 @@ public class Download extends AbstractWebScript {
                 nodeRef = historyManager.getHistoryNodeByVersionNode(nodeRef, "diff.zip");
 
                 if (nodeRef == null) {
-                    throw new WebScriptException(Status.STATUS_NOT_FOUND, "Not found diff.zip for version: " + nodeRefString);
+                    throw new WebScriptException(
+                            Status.STATUS_NOT_FOUND,
+                            "Not found diff.zip for version: " + nodeRefString
+                    );
                 }
 
                 String editorUrl = urlManager.getDocumentServerUrl();
@@ -108,11 +118,11 @@ public class Download extends AbstractWebScript {
                 response.setHeader("Access-Control-Allow-Origin", editorUrl);
                 break;
             default:
-                throw new WebScriptException(404, "Unknown parameter 'type': '" + type + "'!");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unknown parameter 'type': '" + type + "'!");
         }
 
         String title = documentManager.getDocumentName(nodeRef.toString());
 
-        contentStreamer.streamContent(request, response, nodeRef, ContentModel.PROP_CONTENT, true, title,null);
+        contentStreamer.streamContent(request, response, nodeRef, ContentModel.PROP_CONTENT, true, title, null);
     }
 }

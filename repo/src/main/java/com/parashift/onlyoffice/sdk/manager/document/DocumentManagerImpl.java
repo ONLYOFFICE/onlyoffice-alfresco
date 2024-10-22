@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
@@ -10,36 +15,31 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
-    public DocumentManagerImpl(SettingsManager settingsManager) {
+    public DocumentManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
     }
 
     @Override
-    public String getDocumentKey(String fileId, boolean embedded) {
+    public String getDocumentKey(final String fileId, final boolean embedded) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         String key = null;
         if (cociService.isCheckedOut(nodeRef)) {
-            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
+            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
         }
 
         if (key == null) {
@@ -59,7 +59,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     }
 
     @Override
-    public String getDocumentName(String fileId) {
+    public String getDocumentName(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);

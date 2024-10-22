@@ -1,6 +1,6 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.model;
@@ -10,16 +10,17 @@ import com.onlyoffice.model.common.Format;
 import java.util.List;
 import java.util.Map;
 
+
 public class OnlyofficeSettings {
-    Map<String, Boolean> editableFormats;
-    Boolean convertOriginal;
-    List<Format> supportedFormats;
+    private Map<String, Boolean> editableFormats;
+    private Boolean convertOriginal;
+    private List<Format> supportedFormats;
 
     public OnlyofficeSettings() {
     }
 
-    public OnlyofficeSettings(Map<String, Boolean> editableFormats, Boolean convertOriginal,
-                              List<Format> supportedFormats) {
+    public OnlyofficeSettings(final Map<String, Boolean> editableFormats, final Boolean convertOriginal,
+                              final List<Format> supportedFormats) {
         this.editableFormats = editableFormats;
         this.convertOriginal = convertOriginal;
         this.supportedFormats = supportedFormats;
@@ -29,7 +30,7 @@ public class OnlyofficeSettings {
         return editableFormats;
     }
 
-    public void setEditableFormats(Map<String, Boolean> editableFormats) {
+    public void setEditableFormats(final Map<String, Boolean> editableFormats) {
         this.editableFormats = editableFormats;
     }
 
@@ -37,7 +38,7 @@ public class OnlyofficeSettings {
         return convertOriginal;
     }
 
-    public void setConvertOriginal(Boolean convertOriginal) {
+    public void setConvertOriginal(final Boolean convertOriginal) {
         this.convertOriginal = convertOriginal;
     }
 
@@ -45,7 +46,7 @@ public class OnlyofficeSettings {
         return supportedFormats;
     }
 
-    public void setSupportedFormats(List<Format> supportedFormats) {
+    public void setSupportedFormats(final List<Format> supportedFormats) {
         this.supportedFormats = supportedFormats;
     }
 }

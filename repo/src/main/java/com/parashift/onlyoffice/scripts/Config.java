@@ -1,13 +1,18 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.settings.SettingsConstants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.stereotype.Component;
 
 import java.beans.IntrospectionException;
@@ -15,20 +20,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config.get")
 public class Config extends DeclarativeWebScript {
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
+    protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache) {
         Map<String, Object> model = new HashMap<String, Object>();
 
         model.put("demoAvailable", settingsManager.isDemoAvailable());
@@ -49,7 +51,8 @@ public class Config extends DeclarativeWebScript {
         try {
             Map<String, String> settings = settingsManager.getSettings();
 
-            if (settings.get("customization.review.reviewDisplay") == null || settings.get("customization.review.reviewDisplay").isEmpty()) {
+            if (settings.get("customization.review.reviewDisplay") == null
+                    || settings.get("customization.review.reviewDisplay").isEmpty()) {
                 settings.put("customization.review.reviewDisplay", "ORIGINAL");
             }
 

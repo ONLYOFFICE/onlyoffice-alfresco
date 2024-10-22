@@ -1,6 +1,9 @@
-package com.parashift.onlyoffice.scripts;
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
 
-import java.io.IOException;
+package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
@@ -10,22 +13,21 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+import java.io.IOException;
+
+
 @Component(value = "webscript.onlyoffice.convertertest.get")
 public class ConverterTest extends AbstractWebScript {
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
-        if (settingsManager.isSecurityEnabled() ) {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
+        if (settingsManager.isSecurityEnabled()) {
             String jwth = settingsManager.getSecurityHeader();
             String header = request.getHeader(jwth);
             String authorizationPrefix = settingsManager.getSecurityPrefix();
@@ -43,7 +45,7 @@ public class ConverterTest extends AbstractWebScript {
             }
         }
 
-        char[] array = {'1','2','3'};
+        char[] array = {'1', '2', '3'};
 
         response.setHeader("Content-Disposition", "attachment; filename=test.txt");
         response.setContentType("text/plain");

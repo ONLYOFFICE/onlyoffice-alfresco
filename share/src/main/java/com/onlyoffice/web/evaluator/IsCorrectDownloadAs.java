@@ -1,6 +1,6 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.evaluator;
@@ -13,15 +13,16 @@ import org.json.simple.JSONObject;
 
 import java.util.List;
 
+
 public class IsCorrectDownloadAs extends BaseEvaluator {
     private OnlyofficeSettingsQuery onlyofficeSettings;
 
-    public void setOnlyofficeSettings(OnlyofficeSettingsQuery onlyofficeSettings) {
+    public void setOnlyofficeSettings(final OnlyofficeSettingsQuery onlyofficeSettings) {
         this.onlyofficeSettings = onlyofficeSettings;
     }
 
     @Override
-    public boolean evaluate(JSONObject jsonObject) {
+    public boolean evaluate(final JSONObject jsonObject) {
         try {
             String docName = jsonObject.get("displayName").toString();
             String docExt = docName.substring(docName.lastIndexOf(".") + 1);
@@ -31,11 +32,11 @@ public class IsCorrectDownloadAs extends BaseEvaluator {
         }
     }
 
-    private boolean isSuppotredFormats(String ext) {
+    private boolean isSuppotredFormats(final String ext) {
         List<Format> formats = onlyofficeSettings.getSupportedFormats();
         for (Format format : formats) {
            List<String> convert = format.getConvert();
-            if (format.getName().equals(ext) && convert != null && convert.size() > 0){
+            if (format.getName().equals(ext) && convert != null && convert.size() > 0) {
                 return true;
             }
         }

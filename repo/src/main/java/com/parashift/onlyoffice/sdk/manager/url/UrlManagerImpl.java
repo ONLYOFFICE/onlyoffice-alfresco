@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.url;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -14,6 +19,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.UrlUtil;
+import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -22,33 +28,29 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
     @Autowired
     @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private CheckOutCheckInService cociService;
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
     @Autowired
-    AuthenticationService authenticationService;
+    private AuthenticationService authenticationService;
     @Autowired
-    SysAdminParams sysAdminParams;
+    private SysAdminParams sysAdminParams;
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
     @Autowired
-    ImapService imapService;
+    private ImapService imapService;
 
-    public UrlManagerImpl(SettingsManager settingsManager) {
+    public UrlManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
     }
 
     @Override
-    public String getFileUrl(String fileId) {
+    public String getFileUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         return getAlfrescoUrl()
@@ -59,12 +61,12 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     }
 
     @Override
-    public String getCallbackUrl(String fileId) {
+    public String getCallbackUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         String hash = null;
         if (cociService.isCheckedOut(nodeRef)) {
-            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
+            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
         }
 
         return getAlfrescoUrl()
@@ -75,7 +77,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     }
 
     @Override
-    public String getCreateUrl(String fileId) {
+    public String getCreateUrl(final String fileId) {
         //Todo: check if user have access create new document in current folder
         NodeRef nodeRef = new NodeRef(fileId);
 
@@ -84,22 +86,22 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
         DocumentType documentType = documentManager.getDocumentType(fileName);
 
-        String docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        String docMime;
         switch (documentType) {
-            case CELL: {
+            case CELL:
                 docMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 break;
-            }
-            case SLIDE: {
+            case SLIDE:
                 docMime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
                 break;
-            }
+            default:
+                docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         }
         return getShareUrl() + "page/onlyoffice-edit?parentNodeRef=" + folderNodeRef + "&new=" + docMime;
     }
 
     @Override
-    public String getTestConvertUrl(String productUrl) {
+    public String getTestConvertUrl(final String productUrl) {
         if (productUrl != null && !productUrl.isEmpty()) {
             return sanitizeUrl(productUrl)
                     + "alfresco/s/parashift/onlyoffice/convertertest?alf_ticket="
@@ -112,7 +114,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     }
 
     @Override
-    public String getGobackUrl(String fileId){
+    public String getGobackUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         String url = imapService.getContentFolderUrl(nodeRef);
@@ -125,7 +127,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
         return url;
     }
 
-    public String getHistoryDiffUrl(NodeRef nodeRef) {
+    public String getHistoryDiffUrl(final NodeRef nodeRef) {
         return getAlfrescoUrl()
                 + "s/parashift/onlyoffice/download/diff?nodeRef="
                 + nodeRef.toString()
@@ -137,50 +139,48 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
         return UrlUtil.getShareUrl(sysAdminParams) + "/";
     }
 
-    public String getEmbeddedSaveUrl(String fileId, String sharedId) {
+    public String getEmbeddedSaveUrl(final String fileId, final String sharedId) {
         String fileName = documentManager.getDocumentName(fileId);
 
-        StringBuilder embeddedSaveUrl = new StringBuilder(8);
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco-noauth/api/internal/shared/node/");
-        embeddedSaveUrl.append(sharedId);
-        embeddedSaveUrl.append("/content/");
-        embeddedSaveUrl.append(URLEncoder.encodeUriComponent(fileName));
-        embeddedSaveUrl.append("?c=force");
-        embeddedSaveUrl.append("&noCache=" + new Date().getTime());
-        embeddedSaveUrl.append("&a=true");
+        UrlBuilder urlBuilder = new UrlBuilder(UrlUtil.getShareUrl(sysAdminParams));
+        urlBuilder.addPath("/proxy/alfresco-noauth/api/internal/shared/node");
+        urlBuilder.addPath(sharedId);
+        urlBuilder.addPath("content");
+        urlBuilder.addPath(URLEncoder.encodeUriComponent(fileName));
+        urlBuilder.addParameter("c", "force");
+        urlBuilder.addParameter("noCache", new Date().getTime());
+        urlBuilder.addParameter("a", "true");
 
-        return embeddedSaveUrl.toString();
+        return urlBuilder.toString();
     }
 
-    public String getEmbeddedSaveUrl(String fileId) {
+    public String getEmbeddedSaveUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String fileName = documentManager.getDocumentName(fileId);
 
-        StringBuilder embeddedSaveUrl = new StringBuilder(7);
         StoreRef storeRef = nodeRef.getStoreRef();
-        embeddedSaveUrl.append(UrlUtil.getShareUrl(sysAdminParams));
-        embeddedSaveUrl.append("/proxy/alfresco/slingshot/node/content");
-        embeddedSaveUrl.append("/" + storeRef.getProtocol());
-        embeddedSaveUrl.append("/" + storeRef.getIdentifier());
-        embeddedSaveUrl.append("/" + nodeRef.getId());
-        embeddedSaveUrl.append("/" + URLEncoder.encodeUriComponent(fileName));
-        embeddedSaveUrl.append("?a=true");
+        UrlBuilder urlBuilder = new UrlBuilder(UrlUtil.getShareUrl(sysAdminParams));
+        urlBuilder.addPath("/proxy/alfresco/slingshot/node/content");
+        urlBuilder.addPath(storeRef.getProtocol());
+        urlBuilder.addPath(storeRef.getIdentifier());
+        urlBuilder.addPath(nodeRef.getId());
+        urlBuilder.addPath(URLEncoder.encodeUriComponent(fileName));
+        urlBuilder.addParameter("a", true);
 
-        return embeddedSaveUrl.toString();
+        return urlBuilder.toString();
     }
 
-    public String getFavoriteUrl(NodeRef nodeRef) {
+    public String getFavoriteUrl(final NodeRef nodeRef) {
         return "parashift/onlyoffice/editor-api/favorite?nodeRef="
                 + nodeRef.toString();
     }
 
-    public String getHistoryInfoUrl(NodeRef nodeRef) {
+    public String getHistoryInfoUrl(final NodeRef nodeRef) {
         return "parashift/onlyoffice/history/info?nodeRef="
                 + nodeRef.toString();
     }
 
-    public String getHistoryDataUrl(NodeRef nodeRef) {
+    public String getHistoryDataUrl(final NodeRef nodeRef) {
         return "parashift/onlyoffice/history/data?nodeRef="
                 + nodeRef.toString();
     }
