@@ -61,6 +61,11 @@
         <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
     </bean>
 
+    <bean id="onlyoffice-sdk-command-service"
+          class="com.onlyoffice.service.command.DefaultCommandService">
+        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
+    </bean>
+
     <bean id="onlyoffice-sdk-settings-validation-service"
           class="com.parashift.onlyoffice.sdk.service.SettingsValidationServiceImpl">
         <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
@@ -82,6 +87,12 @@
             <list>
                 <value>alfresco/models/onlyoffice-docs-model.xml</value>
             </list>
+        </property>
+    </bean>
+
+    <bean id="node-event-handler" class="com.parashift.onlyoffice.events.NodeEventHandler" init-method="registerEventHandlers">
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
         </property>
     </bean>
 

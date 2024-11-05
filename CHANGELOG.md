@@ -2,6 +2,7 @@
 
 ## Added
 - editing pdf
+- drop users from editor on unlock document
 
 ## Changed
 - lock document without create working copy
