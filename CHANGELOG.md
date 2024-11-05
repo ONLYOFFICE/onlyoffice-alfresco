@@ -4,6 +4,7 @@
 - editing pdf
 
 ## Changed
+- lock document without create working copy
 - creating pdf form
 
 ## 7.0.0
