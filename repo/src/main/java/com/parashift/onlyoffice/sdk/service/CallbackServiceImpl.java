@@ -6,7 +6,6 @@
 package com.parashift.onlyoffice.sdk.service;
 
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
@@ -16,49 +15,40 @@ import com.onlyoffice.model.documenteditor.callback.History;
 import com.onlyoffice.service.convert.ConvertService;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
 import com.parashift.onlyoffice.util.HistoryManager;
+import com.parashift.onlyoffice.util.NodeManager;
 import com.parashift.onlyoffice.util.Util;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.apache.http.HttpEntity;
+import org.alfresco.service.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.ASPECT_EDITING_IN_ONLYOFFICE_DOCS;
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
+
 
 public class CallbackServiceImpl extends DefaultCallbackService {
-    @Autowired
-    @Qualifier("checkOutCheckInService")
-    private CheckOutCheckInService cociService;
-    @Autowired
-    private ContentService contentService;
-    @Autowired
-    private NodeService nodeService;
     @Autowired
     private HistoryManager historyManager;
     @Autowired
     private Util util;
-    @Autowired
-    private RequestManager requestManager;
     @Autowired
     private ConvertService convertService;
     @Autowired
     private DocumentManager documentManager;
     @Autowired
     private VersionService versionService;
+    @Autowired
+    private NodeManager nodeManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -72,25 +62,22 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
     @Override
     public void handlerSave(final Callback callback, final String fileId) throws Exception {
+        logger.debug("Document Updated, changing content");
+
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        String documentName = documentManager.getDocumentName(nodeRef.toString());
+        String currentFileType = documentManager.getExtension(documentName);
+        String fileUrl = callback.getUrl();
+
         Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        logger.debug("Document Updated, changing content");
-        updateNode(wc, callback.getUrl(), callback.getFiletype());
+        nodeManager.unlock(nodeRef);
 
-        logger.info("removing prop");
-        nodeService.removeProperty(wc, Util.EDITING_HASH_ASPECT);
-        nodeService.removeProperty(wc, Util.EDITING_KEY_ASPECT);
-
-        if (getSettingsManager().getSettingBoolean("minorVersion", false)) {
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-        } else {
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        if (!currentFileType.equals(callback.getFiletype())) {
+            fileUrl = convert(fileUrl, currentFileType);
         }
 
-        cociService.checkin(wc, versionProperties, null);
+        nodeManager.createNewVersion(nodeRef, fileUrl);
 
         History history = callback.getHistory();
         if (history != null) {
@@ -105,9 +92,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             }
         }
 
-        // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) != null
-                && (Boolean) oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
+        if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+                && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
             try {
                 historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {
@@ -124,18 +110,14 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     public void handlerSaveCorrupted(final Callback callback, final String fileId) throws Exception {
         logger.error("ONLYOFFICE has reported that saving the document has failed");
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        cociService.cancelCheckout(wc);
+        nodeManager.unlock(nodeRef);
     }
 
     @Override
     public void handlerClosed(final Callback callback, final String fileId) throws Exception {
         logger.debug("No document updates, unlocking node");
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        cociService.cancelCheckout(wc);
+        nodeManager.unlock(nodeRef);
     }
 
     @Override
@@ -144,28 +126,32 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             logger.debug("Forcesave is disabled, ignoring forcesave request");
             return;
         }
-
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        String documentName = documentManager.getDocumentName(nodeRef.toString());
+        String currentFileType = documentManager.getExtension(documentName);
+        String fileUrl = callback.getUrl();
+
+        Map<QName, Serializable> aspectEditingProperties = nodeManager.getPropertiesByAspect(
+                nodeRef,
+                ASPECT_EDITING_IN_ONLYOFFICE_DOCS
+        );
+
         Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        logger.debug("Forcesave request (type: " + callback.getForcesavetype() + ")");
-        updateNode(wc, callback.getUrl(), callback.getFiletype());
+        nodeManager.unlock(nodeRef);
 
-        String hash = (String) nodeService.getProperty(wc, Util.EDITING_HASH_ASPECT);
-        String key = (String) nodeService.getProperty(wc, Util.EDITING_KEY_ASPECT);
+        if (!currentFileType.equals(callback.getFiletype())) {
+            fileUrl = convert(fileUrl, currentFileType);
+        }
 
-        nodeService.removeProperty(wc, Util.EDITING_HASH_ASPECT);
-        nodeService.removeProperty(wc, Util.EDITING_KEY_ASPECT);
-
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
         versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
-        versionProperties.put(Util.FORCESAVE_ASPECT.getLocalName(), true);
-        cociService.checkin(wc, versionProperties, null, true);
+        versionProperties.put(FORCESAVE_ASPECT.getLocalName(), true);
 
-        nodeService.setProperty(wc, Util.EDITING_HASH_ASPECT, hash);
-        nodeService.setProperty(wc, Util.EDITING_KEY_ASPECT, key);
+        nodeManager.createNewVersion(nodeRef, fileUrl, versionProperties);
+
+        nodeManager.lock(nodeRef, aspectEditingProperties);
 
         History history = callback.getHistory();
         if (history != null) {
@@ -181,8 +167,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
 
         // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) != null
-                    && (Boolean) oldVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
+        if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+                && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
             try {
                 historyManager.deleteHistory(nodeRef, oldVersion);
             } catch (Exception e) {
@@ -195,55 +181,21 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         logger.debug("Forcesave complete");
     }
 
-    private void updateNode(final NodeRef nodeRef, final String url, final String fileType) throws Exception {
-        logger.debug("Retrieving URL:" + url);
+    private String convert(final String fileUrl, final String outputType) {
+        try {
+            ConvertRequest convert = ConvertRequest.builder()
+                    .outputtype(outputType)
+                    .url(fileUrl)
+                    .build();
 
-        String fileUrl = url;
-        String documentName = documentManager.getDocumentName(nodeRef.toString());
-        String currentFileType = documentManager.getExtension(documentName);
-        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            ConvertResponse convertResponse = convertService.processConvert(convert, null);
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-            public Void doWork() {
-                NodeRef sourcesNodeRef = cociService.getCheckedOut(nodeRef);
-                nodeService.setProperty(sourcesNodeRef, ContentModel.PROP_LOCK_OWNER, currentUser);
-                nodeService.setProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER, currentUser);
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        if (!currentFileType.equals(fileType)) {
-            try {
-                logger.debug("Should convert back");
-                ConvertRequest convert = ConvertRequest.builder()
-                        .outputtype(currentFileType)
-                        .url(url)
-                        .build();
-
-                ConvertResponse convertResponse = convertService.processConvert(convert, nodeRef.toString());
-
-                if (convertResponse.getError() != null
-                        && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
-                    throw new SecurityException();
-                }
-
-                if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
-                        || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
-                    throw new Exception("'endConvert' is false or 'fileUrl' is empty");
-                }
-
-                fileUrl = convertResponse.getFileUrl();
-            } catch (Exception e) {
-                throw new Exception("Error while converting document back to original format: " + e.getMessage(), e);
-            }
+            return convertResponse.getFileUrl();
+        } catch (Exception e) {
+            throw new AlfrescoRuntimeException(
+                    "Error while converting document back to original format: " + e.getMessage(),
+                    e
+            );
         }
-
-        requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
-            public Void doWork(final Object response) throws IOException {
-                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)
-                        .putContent(((HttpEntity) response).getContent());
-                return null;
-            }
-        });
     }
 }

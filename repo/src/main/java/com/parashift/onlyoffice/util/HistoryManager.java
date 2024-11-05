@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
+
 
 @Service
 public class HistoryManager {
@@ -271,8 +273,8 @@ public class HistoryManager {
         Collections.reverse(versions);
 
         for (Version internalVersion : versions) {
-            if (internalVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) == null
-                    || !(Boolean) internalVersion.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())
+            if (internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) == null
+                    || !(Boolean) internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())
                     || internalVersion.equals(latestVersion)) {
 
 
@@ -371,8 +373,8 @@ public class HistoryManager {
                 }
             }
 
-            if (version.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName()) == null
-                || !(Boolean) version.getVersionProperty(Util.FORCESAVE_ASPECT.getLocalName())) {
+            if (version.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) == null
+                || !(Boolean) version.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 previousMajorVersion = version;
             }
         }

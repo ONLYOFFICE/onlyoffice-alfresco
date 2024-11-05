@@ -28,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +35,6 @@ import java.util.Map;
 
 @Service
 public class Util {
-    public static final QName EDITING_KEY_ASPECT = QName.createQName("onlyoffice:editing-key");
-    public static final QName EDITING_HASH_ASPECT = QName.createQName("onlyoffice:editing-hash");
-    public static final QName FORCESAVE_ASPECT = QName.createQName("onlyoffice:forcesave");
-    public static final int EDITING_HASH_ASPECT_LENGTH = 32;
 
     @Autowired
     private VersionService versionService;
@@ -70,13 +64,6 @@ public class Util {
         versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
         versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
-    }
-
-    public String generateHash() {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] token = new byte[EDITING_HASH_ASPECT_LENGTH];
-        secureRandom.nextBytes(token);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
     }
 
     public NodeRef getNodeByPath(final String path) {

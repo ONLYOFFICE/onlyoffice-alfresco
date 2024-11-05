@@ -12,20 +12,18 @@ package com.parashift.onlyoffice.scripts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.documenteditor.Callback;
-import com.onlyoffice.model.documenteditor.callback.Action;
 import com.onlyoffice.service.documenteditor.callback.CallbackService;;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.NodeManager;
+import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -33,18 +31,14 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.List;
+import java.text.MessageFormat;
 
 
 @Component(value = "webscript.onlyoffice.callback.post")
 public class CallBack extends AbstractWebScript {
 
     @Autowired
-    @Qualifier("checkOutCheckInService")
-    private CheckOutCheckInService cociService;
-
-    @Autowired
-    private NodeService nodeService;
+    private LockService lockService;
 
     @Autowired
     private TransactionService transactionService;
@@ -54,6 +48,9 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     private CallbackService callbackService;
+
+    @Autowired
+    private NodeManager nodeManager;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -67,51 +64,31 @@ public class CallBack extends AbstractWebScript {
 
         logger.debug("Received JSON Callback");
         try {
+            NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
             Callback callback = objectMapper.readValue(request.getContent().getContent(), Callback.class);
             String authorizationHeader = request.getHeader(settingsManager.getSecurityHeader());
 
             callback = callbackService.verifyCallback(callback, authorizationHeader);
 
-            String username = null;
-
-            if (callback.getUsers() != null) {
-                List<String> users = callback.getUsers();
-                if (users.size() > 0) {
-                    username = users.get(0);
-                }
+            if (!nodeManager.isLocked(nodeRef)) {
+                throw new SecurityException(MessageFormat.format(
+                        "Node with ID: {0} not locked in ONLYOFFICE Docs.",
+                        nodeRef.toString())
+                );
             }
 
-            if (username == null && callback.getActions() != null) {
-                List<Action> actions = callback.getActions();
-                if (actions.size() > 0) {
-                    username = actions.get(0).getUserid();
-                }
-            }
+            LockState lockState = lockService.getLockState(nodeRef);
+            String lockOwner = lockState.getOwner();
 
-            if (username != null) {
-                AuthenticationUtil.clearCurrentSecurityContext();
-                TenantContextHolder.setTenantDomain(AuthenticationUtil.getUserTenant(username).getSecond());
-                AuthenticationUtil.setRunAsUser(username);
-            } else {
-                throw new SecurityException("No user information");
-            }
-
-            NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-            String hash = null;
-            if (cociService.isCheckedOut(nodeRef)) {
-                hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
-            }
-            String queryHash = request.getParameter("cb_key");
-
-            if (hash == null || queryHash == null || !hash.equals(queryHash)) {
-                throw new SecurityException("Security hash verification failed");
-            }
+            AuthenticationUtil.clearCurrentSecurityContext();
+            TenantContextHolder.setTenantDomain(AuthenticationUtil.getUserTenant(lockOwner).getSecond());
+            AuthenticationUtil.setRunAsUser(lockOwner);
 
             Boolean reqNew = transactionService.isReadOnly();
             transactionService.getRetryingTransactionHelper()
                 .doInTransaction(new ProccessRequestCallback(callback, nodeRef), reqNew, reqNew);
-            AuthenticationUtil.clearCurrentSecurityContext();
 
+            AuthenticationUtil.clearCurrentSecurityContext();
         } catch (SecurityException ex) {
             code = Status.STATUS_FORBIDDEN;
             error = ex;

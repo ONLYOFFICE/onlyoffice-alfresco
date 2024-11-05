@@ -10,10 +10,8 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.manager.url.DefaultUrlManager;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.settings.SettingsConstants;
-import com.parashift.onlyoffice.util.Util;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.imap.ImapService;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -21,7 +19,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.UrlUtil;
 import org.apache.chemistry.opencmis.commons.impl.UrlBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.surf.util.URLEncoder;
 
 import java.util.Arrays;
@@ -31,9 +28,6 @@ import java.util.List;
 
 public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
-    @Autowired
-    @Qualifier("checkOutCheckInService")
-    private CheckOutCheckInService cociService;
     @Autowired
     private NodeService nodeService;
     @Autowired
@@ -64,16 +58,9 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     public String getCallbackUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
-        String hash = null;
-        if (cociService.isCheckedOut(nodeRef)) {
-            hash = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
-        }
-
         return getAlfrescoUrl()
                 + "s/parashift/onlyoffice/callback?nodeRef="
-                + nodeRef.toString()
-                + "&cb_key="
-                + hash;
+                + nodeRef.toString();
     }
 
     @Override
