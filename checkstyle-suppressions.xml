@@ -8,4 +8,5 @@
     <suppress files=".*java" checks="JavadocVariable"/>
     <suppress files=".*java" checks="MissingJavadocMethod"/>
     <suppress files=".*java" checks="DesignForExtension"/>
+    <suppress files="src[\\/]main[\\/]java[\\/]com[\\/]parashift[\\/]onlyoffice[\\/]model[\\/].*" checks="InterfaceIsType"/>
 </suppressions>

@@ -18,17 +18,16 @@ import com.onlyoffice.model.documenteditor.config.document.Type;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
 import com.onlyoffice.service.documenteditor.config.ConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
+import com.parashift.onlyoffice.util.NodeManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -37,7 +36,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -56,13 +54,6 @@ import java.util.Map;
 public class Prepare extends AbstractWebScript {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    @Qualifier("checkOutCheckInService")
-    private CheckOutCheckInService cociService;
-
-    @Autowired
-    private OwnableService ownableService;
 
     @Autowired
     private NodeService nodeService;
@@ -93,6 +84,8 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     private SettingsManager settingsManager;
+    @Autowired
+    private NodeManager nodeManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
@@ -189,16 +182,8 @@ public class Prepare extends AbstractWebScript {
                 if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
                         && mode.equals(Mode.EDIT)) {
-                    if (!cociService.isCheckedOut(nodeRef)) {
-                        util.ensureVersioningEnabled(nodeRef);
-                        NodeRef copyRef = cociService.checkout(nodeRef);
-                        ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
-                        nodeService.setProperty(
-                                copyRef,
-                                Util.EDITING_KEY_ASPECT,
-                                documentManager.getDocumentKey(nodeRef.toString(), false)
-                        );
-                        nodeService.setProperty(copyRef, Util.EDITING_HASH_ASPECT, util.generateHash());
+                    if (!nodeManager.isLocked(nodeRef)) {
+                        nodeManager.lock(nodeRef);
                     }
                 }
 

@@ -7,27 +7,25 @@ package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.NodeManager;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.Serializable;
 import java.util.Map;
 
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.PROP_DOCUMENT_KEY;
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
 
     @Autowired
-    @Qualifier("checkOutCheckInService")
-    private CheckOutCheckInService cociService;
-
-    @Autowired
     private NodeService nodeService;
+    @Autowired
+    private NodeManager nodeManager;
+
 
     public DocumentManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
@@ -37,25 +35,21 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     public String getDocumentKey(final String fileId, final boolean embedded) {
         NodeRef nodeRef = new NodeRef(fileId);
 
-        String key = null;
-        if (cociService.isCheckedOut(nodeRef)) {
-            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EDITING_HASH_ASPECT);
-        }
-
-        if (key == null) {
+        if (embedded || !nodeManager.isLocked(nodeRef)) {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             String version = (String) properties.get(ContentModel.PROP_VERSION_LABEL);
 
+            String key;
             if (version == null || version.isEmpty()) {
                 key = nodeRef.getId() + "_1.0";
             } else {
                 key = nodeRef.getId() + "_" + version;
             }
 
-            key = embedded ? key + "_embedded" : key;
+            return embedded ? key + "_embedded" : key;
+        } else {
+            return (String) nodeService.getProperty(nodeRef, PROP_DOCUMENT_KEY);
         }
-
-        return key;
     }
 
     @Override

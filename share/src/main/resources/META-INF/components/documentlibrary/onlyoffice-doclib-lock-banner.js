@@ -6,7 +6,7 @@
 (function() {
     if (Alfresco.DocumentList) {
         YAHOO.Bubbling.fire("registerRenderer", {
-            propertyName: "onlyofficeLocked",
+            propertyName: "onlyofficeLockBanner",
             renderer: function showMetadataDescription(record, label) {
                 var properties = record.jsNode.properties,
                     bannerUser = properties.lockOwner || properties.workingCopyOwner,
