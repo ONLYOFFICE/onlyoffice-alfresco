@@ -2,10 +2,17 @@
 
 ## Added
 - editing pdf
+- shardkey parameter
+- fi, he, no, sl empty file templates
 
 ## Changed
 - lock document without create working copy
 - creating pdf form
+- com.onlyofficce:docs-integration-sdk:1.3.0
+- address of the command service, /command instead /coauthoring/CommandService.ashx
+- default token lifetime is 5 minutes
+- default empty file templates
+- demo server address changed
 
 ## 7.0.0
 ## Added
