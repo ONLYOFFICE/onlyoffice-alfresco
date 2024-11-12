@@ -1,5 +1,6 @@
 # Change Log
 
+## 8.0.0
 ## Added
 - editing pdf
 - drop users from editor on unlock document
