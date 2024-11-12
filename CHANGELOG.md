@@ -2,6 +2,7 @@
 
 ## Added
 - editing pdf
+- drop users from editor on unlock document
 - shardkey parameter
 - fi, he, no, sl empty file templates
 - the list of image formats available for insertion into the editor has been expanded (tiff)
