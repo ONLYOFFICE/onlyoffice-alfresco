@@ -13,6 +13,7 @@
 - creating pdf form
 - com.onlyofficce:docs-integration-sdk:1.3.0
 - address of the command service, /command instead /coauthoring/CommandService.ashx
+- address of the convert service, /converter instead /ConvertService.ashx
 - default token lifetime is 5 minutes
 - default empty file templates
 - demo server address changed
