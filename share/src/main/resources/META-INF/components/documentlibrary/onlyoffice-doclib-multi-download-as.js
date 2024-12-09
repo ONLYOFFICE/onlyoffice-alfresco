@@ -105,7 +105,8 @@
                     "<input type='checkbox' class='download-as-checkbox " + showCheckbox + "' checked='true' value='" + node.nodeRef + "'>",
                     "<p class='download-as-filename'>" + node.displayName + "</p>",
                     "<p class='download-as-convert-label'>" + Alfresco.util.message("alfresco.document-onlyoffice-download-as.form.field.p.convert-into") + "</p>",
-                    "<select class='download-as-select'>"
+                    "<div style='width: 80px;'>",
+                    "<select class='download-as-select' onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();'>"
                 );
 
                 for (var type of outputTypes) {
@@ -114,6 +115,7 @@
 
                 body.push(
                     "</select>",
+                    "</div>",
                     "</div>"
                 );
             }
