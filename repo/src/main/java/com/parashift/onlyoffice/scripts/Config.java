@@ -65,6 +65,7 @@ public class Config extends DeclarativeWebScript {
             }
 
             model.put("settings", settings);
+            model.put("pathApiUrl", settingsManager.getDocsIntegrationSdkProperties().getDocumentServer().getApiUrl());
 
         } catch (IntrospectionException e) {
             throw new RuntimeException(e);

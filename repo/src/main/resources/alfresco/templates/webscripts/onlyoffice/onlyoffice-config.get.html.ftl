@@ -415,10 +415,10 @@
 
           var docServiceUrlApi = obj.url;
 
-          if (!docServiceUrlApi.endsWith("/")) {
-              docServiceUrlApi += "/";
+          if (docServiceUrlApi.endsWith("/")) {
+              docServiceUrlApi = docServiceUrlApi.slice(0, -1);
           }
-          docServiceUrlApi += "web-apps/apps/api/documents/api.js";
+          docServiceUrlApi += "${pathApiUrl}";
 
           scriptAddress.src = docServiceUrlApi;
       };
