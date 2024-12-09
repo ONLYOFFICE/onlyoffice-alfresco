@@ -17,7 +17,7 @@
     <link href="${url.context}/res/components/onlyoffice/onlyoffice.css" type="text/css" rel="stylesheet">
 
     <!--Change the address on installed ONLYOFFICE™ Online Editors-->
-    <script id="scriptApi" type="text/javascript" src="${onlyofficeUrl!}web-apps/apps/api/documents/api.js"></script>
+    <script id="scriptApi" type="text/javascript" src="${documentServerApiUrl!}"></script>
     <link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${documentType!}.ico" type="image/vnd.microsoft.icon" />
     <link rel="icon" href="${url.context}/res/components/images/filetypes/${documentType!}.ico" type="image/vnd.microsoft.icon" />
 

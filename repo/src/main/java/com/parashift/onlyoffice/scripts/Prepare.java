@@ -195,10 +195,12 @@ public class Prepare extends AbstractWebScript {
 
                 config.getEditorConfig().setLang(mesService.getLocale().toLanguageTag());
 
+                String shardKey = config.getDocument().getKey();
+
                 ObjectMapper mapper = new ObjectMapper();
 
                 responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
-                responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                responseJson.put("documentServerApiUrl", urlManager.getDocumentServerApiUrl(shardKey));
                 responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
                 responseJson.put("folderNode", util.getParentNodeRef(nodeRef));
                 responseJson.put("demo", settingsManager.isDemoActive());

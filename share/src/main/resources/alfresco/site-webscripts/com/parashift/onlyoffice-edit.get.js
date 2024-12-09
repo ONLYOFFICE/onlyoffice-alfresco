@@ -11,7 +11,7 @@ if (url.args.sample) query +="&sample=" + url.args.sample;
     pObj = eval('(' + remote.call("/parashift/onlyoffice/prepare?" + query) + ')');
 
     model.doRedirect = false;
-    model.onlyofficeUrl = pObj.onlyofficeUrl;
+    model.documentServerApiUrl = pObj.documentServerApiUrl;
     model.editorConfig = JSON.stringify(pObj.editorConfig);
     model.docTitle = pObj.editorConfig.document.title;
     model.documentType = pObj.editorConfig.documentType;

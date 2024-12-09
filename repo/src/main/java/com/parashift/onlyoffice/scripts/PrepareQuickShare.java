@@ -113,10 +113,12 @@ public class PrepareQuickShare extends AbstractWebScript {
 
                             config.getEditorConfig().getCustomization().setGoback(null);
 
+                            String shardKey = config.getDocument().getKey();
+
                             ObjectMapper mapper = new ObjectMapper();
 
                             responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
-                            responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                            responseJson.put("documentServerApiUrl", urlManager.getDocumentServerApiUrl(shardKey));
                             responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
 
                             logger.debug("Sending JSON prepare object");

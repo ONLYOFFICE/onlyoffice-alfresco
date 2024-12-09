@@ -16,8 +16,8 @@ if (model.widgets) {
                 pObj = eval('(' + remote.call("/parashift/onlyoffice/prepare-quick-share?sharedId=" + model.nodeRef ) + ')');
             }
 
-            if (pObj && pObj.previewEnabled && pObj.onlyofficeUrl && pObj.mime) {
-                model.onlyofficeUrl = pObj.onlyofficeUrl;
+            if (pObj && pObj.previewEnabled && pObj.documentServerApiUrl && pObj.mime) {
+                model.documentServerApiUrl = pObj.documentServerApiUrl;
                 model.editorConfig = JSON.stringify(pObj.editorConfig);
 
                 widget.options.pluginConditions = jsonUtils.toJSONString([{
