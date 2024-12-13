@@ -15,6 +15,7 @@ import com.onlyoffice.model.documenteditor.callback.History;
 import com.onlyoffice.service.convert.ConvertService;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
 import com.parashift.onlyoffice.util.HistoryManager;
+import com.parashift.onlyoffice.util.LockManager;
 import com.parashift.onlyoffice.util.NodeManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -48,6 +49,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     @Autowired
     private VersionService versionService;
     @Autowired
+    private LockManager lockManager;
+    @Autowired
     private NodeManager nodeManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -71,7 +74,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        nodeManager.unlock(nodeRef);
+        lockManager.unlock(nodeRef);
 
         if (!currentFileType.equals(callback.getFiletype())) {
             fileUrl = convert(fileUrl, currentFileType);
@@ -110,14 +113,14 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     public void handlerSaveCorrupted(final Callback callback, final String fileId) throws Exception {
         logger.error("ONLYOFFICE has reported that saving the document has failed");
         NodeRef nodeRef = new NodeRef(fileId);
-        nodeManager.unlock(nodeRef);
+        lockManager.unlock(nodeRef);
     }
 
     @Override
     public void handlerClosed(final Callback callback, final String fileId) throws Exception {
         logger.debug("No document updates, unlocking node");
         NodeRef nodeRef = new NodeRef(fileId);
-        nodeManager.unlock(nodeRef);
+        lockManager.unlock(nodeRef);
     }
 
     @Override
@@ -138,7 +141,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        nodeManager.unlock(nodeRef);
+        lockManager.unlock(nodeRef);
 
         if (!currentFileType.equals(callback.getFiletype())) {
             fileUrl = convert(fileUrl, currentFileType);
@@ -151,7 +154,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         nodeManager.createNewVersion(nodeRef, fileUrl, versionProperties);
 
-        nodeManager.lock(nodeRef, aspectEditingProperties);
+        lockManager.lock(nodeRef, aspectEditingProperties);
 
         History history = callback.getHistory();
         if (history != null) {

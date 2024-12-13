@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.documenteditor.Callback;
 import com.onlyoffice.service.documenteditor.callback.CallbackService;;
-import com.parashift.onlyoffice.util.NodeManager;
+import com.parashift.onlyoffice.util.LockManager;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantContextHolder;
@@ -50,7 +50,7 @@ public class CallBack extends AbstractWebScript {
     private CallbackService callbackService;
 
     @Autowired
-    private NodeManager nodeManager;
+    private LockManager lockManager;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -70,7 +70,7 @@ public class CallBack extends AbstractWebScript {
 
             callback = callbackService.verifyCallback(callback, authorizationHeader);
 
-            if (!nodeManager.isLocked(nodeRef)) {
+            if (!lockManager.isLocked(nodeRef)) {
                 throw new SecurityException(MessageFormat.format(
                         "Node with ID: {0} not locked in ONLYOFFICE Docs.",
                         nodeRef.toString())
