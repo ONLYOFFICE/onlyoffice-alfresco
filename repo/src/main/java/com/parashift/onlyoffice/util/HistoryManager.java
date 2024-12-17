@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
 
@@ -141,20 +142,19 @@ public class HistoryManager {
                 if (historyNode == null) {
                     historyNode = createHistoryNode(nodeRef, name);
                     logger.debug("History node was created: " + historyNode.toString());
-
-                    historyVersion = versionService.getCurrentVersion(historyNode);
                 } else {
                     logger.debug("History node already exists: " + historyNode.toString());
-                    historyVersion = versionService.createVersion(historyNode, null);
                 }
+
+                Map<String, Serializable> versionProperties = new HashMap<>();
+                versionProperties.put(CONTENT_VERSION_UUID.getLocalName(), versionNode.getId());
+                historyVersion = versionService.createVersion(historyNode, versionProperties);
 
                 NodeRef versionNodeHistory = new NodeRef(
                         StoreRef.PROTOCOL_WORKSPACE,
                         historyVersion.getFrozenStateNodeRef().getStoreRef().getIdentifier(),
                         historyVersion.getFrozenStateNodeRef().getId()
                 );
-
-                dbNodeService.setProperty(versionNodeHistory, CONTENT_VERSION_UUID, versionNode.getId());
 
                 String extension = name.substring(name.lastIndexOf(".") + 1).trim().toLowerCase();
                 final String mimeType = mimetypeService.getMimetype(extension);
@@ -216,10 +216,15 @@ public class HistoryManager {
             List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
                     .getAllVersions();
             for (Version versionHistory : versionsHistory) {
-                String contentVersionUUID = (String) nodeService.getProperty(
-                        versionHistory.getFrozenStateNodeRef(),
-                        CONTENT_VERSION_UUID
-                );
+                String contentVersionUUID = (String) Optional.ofNullable(versionHistory.getVersionProperty(
+                        CONTENT_VERSION_UUID.getLocalName())).orElse("");
+
+                if (contentVersionUUID.isEmpty()) {
+                    contentVersionUUID = (String) Optional.ofNullable(nodeService.getProperty(
+                            versionHistory.getFrozenStateNodeRef(),
+                            CONTENT_VERSION_UUID
+                    )).orElse("");
+                }
 
                 if (contentVersionUUID.equals(version.getFrozenStateNodeRef().getId())) {
                     return versionHistory;
@@ -250,10 +255,16 @@ public class HistoryManager {
                 List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
                         .getAllVersions();
                 for (Version versionHistory : versionsHistory) {
-                    String contentVersionUUID = (String) nodeService.getProperty(
-                            versionHistory.getFrozenStateNodeRef(),
-                            CONTENT_VERSION_UUID
-                    );
+
+                    String contentVersionUUID = (String) Optional.ofNullable(versionHistory.getVersionProperty(
+                            CONTENT_VERSION_UUID.getLocalName())).orElse("");
+
+                    if (contentVersionUUID.isEmpty()) {
+                        contentVersionUUID = (String) Optional.ofNullable(nodeService.getProperty(
+                                versionHistory.getFrozenStateNodeRef(),
+                                CONTENT_VERSION_UUID
+                        )).orElse("");
+                    }
 
                     if (contentVersionUUID.equals(workspaceVersionNodeRef.getId())) {
                         return versionHistory.getFrozenStateNodeRef();
