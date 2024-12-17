@@ -112,7 +112,7 @@ public class Util {
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
 
-    private String getCurrentTenantDomain() {
+    public String getCurrentTenantDomain() {
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain == null) {
             return TenantService.DEFAULT_DOMAIN;

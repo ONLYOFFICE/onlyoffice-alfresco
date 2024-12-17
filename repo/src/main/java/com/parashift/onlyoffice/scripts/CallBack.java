@@ -65,6 +65,11 @@ public class CallBack extends AbstractWebScript {
         logger.debug("Received JSON Callback");
         try {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
+            String tenant = request.getParameter("tenant");
+
+            AuthenticationUtil.clearCurrentSecurityContext();
+            TenantContextHolder.setTenantDomain(tenant);
+
             Callback callback = objectMapper.readValue(request.getContent().getContent(), Callback.class);
             String authorizationHeader = request.getHeader(settingsManager.getSecurityHeader());
 
@@ -80,9 +85,7 @@ public class CallBack extends AbstractWebScript {
             LockState lockState = lockService.getLockState(nodeRef);
             String lockOwner = lockState.getOwner();
 
-            AuthenticationUtil.clearCurrentSecurityContext();
-            TenantContextHolder.setTenantDomain(AuthenticationUtil.getUserTenant(lockOwner).getSecond());
-            AuthenticationUtil.setRunAsUser(lockOwner);
+            AuthenticationUtil.setFullyAuthenticatedUser(lockOwner);
 
             Boolean reqNew = transactionService.isReadOnly();
             transactionService.getRetryingTransactionHelper()

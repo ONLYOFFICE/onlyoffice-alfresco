@@ -10,8 +10,10 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.manager.url.DefaultUrlManager;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.settings.SettingsConstants;
+import com.parashift.onlyoffice.util.Util;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.imap.ImapService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -38,6 +40,8 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     private DocumentManager documentManager;
     @Autowired
     private ImapService imapService;
+    @Autowired
+    private Util util;
 
     public UrlManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
@@ -60,7 +64,9 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
         return getAlfrescoUrl()
                 + "s/parashift/onlyoffice/callback?nodeRef="
-                + nodeRef.toString();
+                + nodeRef.toString()
+                + "&tenant="
+                + util.getCurrentTenantDomain();
     }
 
     @Override
