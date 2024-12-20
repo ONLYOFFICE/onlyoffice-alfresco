@@ -16,10 +16,6 @@
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
 
-    <bean id="evaluator.doclib.action.isNotOnlyofficeEditable" parent="evaluator.doclib.action.onlyofficeIsEditable">
-        <property name="negateOutput" value="true" />
-    </bean>
-
     <bean id="evaluator.doclib.action.onlyofficeIsViewable" class="com.onlyoffice.web.evaluator.IsViewable">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
@@ -27,24 +23,6 @@
     <bean id="evaluator.doclib.action.notLocked" parent="evaluator.doclib.metadata.isLocked">
         <property name="negateOutput" value="true" />
     </bean>
-
-     <bean id="evaluator.doclib.action.readAvailable" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-           <list>
-              <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
-              <ref bean="evaluator.doclib.action.IsReadPermission" />
-           </list>
-        </property>
-     </bean>
-
-     <bean id="evaluator.doclib.action.displayRead" parent="evaluator.doclib.action.chainedMatchOne">
-        <property name="evaluators">
-           <list>
-              <ref bean="evaluator.doclib.action.onlyofficeIsViewable"/>
-              <ref bean="evaluator.doclib.action.readAvailable"/>
-           </list>
-        </property>
-     </bean>
 
     <bean id="onlyoffice.custom.config" class="org.springframework.extensions.config.ConfigBootstrap" init-method="register">
         <property name="configService" ref="web.config" />
@@ -79,8 +57,14 @@
     <bean id="evaluator.doclib.action.IsConvertible" class="com.onlyoffice.web.evaluator.IsConvertible">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
-    <bean id="evaluator.doclib.action.IsReadPermission" parent="evaluator.doclib.action.IsWritePermission">
-        <property name="negateOutput" value="true" />
+
+    <bean id="evaluator.doclib.action.displayRead" parent="evaluator.doclib.action.chainedMatchAll">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.action.onlyofficeIsViewable"/>
+                <ref bean="evaluator.doclib.action.isNotDisplayEdit"/>
+            </list>
+        </property>
     </bean>
 
     <bean id="evaluator.doclib.action.displayEdit" parent="evaluator.doclib.action.chainedMatchOne">
@@ -90,6 +74,10 @@
                 <ref bean="evaluator.doclib.action.displayJoinEdit" />
             </list>
         </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.isNotDisplayEdit" parent="evaluator.doclib.action.displayEdit" >
+        <property name="negateOutput" value="true" />
     </bean>
 
     <bean id="evaluator.doclib.action.displayStartEdit" parent="evaluator.doclib.action.chainedMatchAll">
