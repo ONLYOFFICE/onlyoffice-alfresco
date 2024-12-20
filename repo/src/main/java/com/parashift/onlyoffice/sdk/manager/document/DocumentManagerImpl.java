@@ -7,7 +7,7 @@ package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
-import com.parashift.onlyoffice.util.LockManager;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -24,7 +24,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     @Autowired
     private NodeService nodeService;
     @Autowired
-    private LockManager lockManager;
+    private EditorLockManager editorLockManager;
 
 
     public DocumentManagerImpl(final SettingsManager settingsManager) {
@@ -35,7 +35,7 @@ public class DocumentManagerImpl extends DefaultDocumentManager {
     public String getDocumentKey(final String fileId, final boolean embedded) {
         NodeRef nodeRef = new NodeRef(fileId);
 
-        if (embedded || !lockManager.isLocked(nodeRef)) {
+        if (embedded || !editorLockManager.isLockedInEditor(nodeRef)) {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             String version = (String) properties.get(ContentModel.PROP_VERSION_LABEL);
 

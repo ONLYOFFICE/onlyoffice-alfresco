@@ -18,7 +18,7 @@ import com.onlyoffice.model.documenteditor.config.document.Type;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
 import com.onlyoffice.service.documenteditor.config.ConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
-import com.parashift.onlyoffice.util.LockManager;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
@@ -85,7 +85,7 @@ public class Prepare extends AbstractWebScript {
     @Autowired
     private SettingsManager settingsManager;
     @Autowired
-    private LockManager lockManager;
+    private EditorLockManager editorLockManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
@@ -182,8 +182,8 @@ public class Prepare extends AbstractWebScript {
                 if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
                         && mode.equals(Mode.EDIT)) {
-                    if (!lockManager.isLocked(nodeRef)) {
-                        lockManager.lock(nodeRef);
+                    if (!editorLockManager.isLockedInEditor(nodeRef)) {
+                        editorLockManager.lockInEditor(nodeRef, EditorLockManager.TIMEOUT_CONNECTING_EDITOR);
                     }
                 }
 
