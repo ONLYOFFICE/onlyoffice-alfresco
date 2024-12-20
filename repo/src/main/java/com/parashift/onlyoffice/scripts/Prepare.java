@@ -22,6 +22,7 @@ import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -84,6 +85,10 @@ public class Prepare extends AbstractWebScript {
 
     @Autowired
     private SettingsManager settingsManager;
+
+    @Autowired
+    private LockService lockService;
+
     @Autowired
     private EditorLockManager editorLockManager;
 
@@ -181,10 +186,10 @@ public class Prepare extends AbstractWebScript {
 
                 if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
-                        && mode.equals(Mode.EDIT)) {
-                    if (!editorLockManager.isLockedInEditor(nodeRef)) {
-                        editorLockManager.lockInEditor(nodeRef, EditorLockManager.TIMEOUT_CONNECTING_EDITOR);
-                    }
+                        && mode.equals(Mode.EDIT)
+                        && !lockService.isLocked(nodeRef)
+                ) {
+                    editorLockManager.lockInEditor(nodeRef, EditorLockManager.TIMEOUT_CONNECTING_EDITOR);
                 }
 
                 Config config = configService.createConfig(
