@@ -16,6 +16,7 @@ import com.onlyoffice.model.documenteditor.config.editorconfig.Embedded;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Template;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService;
@@ -45,6 +46,8 @@ public class ConfigServiceImpl extends DefaultConfigService {
     private Util util;
     @Autowired
     private UrlManager urlManager;
+    @Autowired
+    private EditorLockManager editorLockManager;
 
     public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
                              final JwtManager jwtManager, final SettingsManager settingsManager) {
@@ -74,14 +77,15 @@ public class ConfigServiceImpl extends DefaultConfigService {
         NodeRef nodeRef = new NodeRef(fileId);
         String fileName = super.getDocumentManager().getDocumentName(fileId);
 
-        Boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
+        boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
                 == AccessStatus.ALLOWED;
-        Boolean isEditable = super.getDocumentManager().isEditable(fileName);
-        Boolean isFillable =  super.getDocumentManager().isFillable(fileName);
+        boolean isLockedNotInEditor = editorLockManager.isLockedNotInEditor(nodeRef);
+        boolean isEditable = super.getDocumentManager().isEditable(fileName);
+        boolean isFillable =  super.getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()
-                .edit(editPermission && isEditable)
-                .fillForms(editPermission && isFillable)
+                .edit(editPermission && isEditable && !isLockedNotInEditor)
+                .fillForms(editPermission && isFillable && !isLockedNotInEditor)
                 .build();
     }
 
