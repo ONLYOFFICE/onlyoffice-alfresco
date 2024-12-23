@@ -12,13 +12,8 @@ package com.parashift.onlyoffice.scripts;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.documenteditor.Callback;
-import com.onlyoffice.service.documenteditor.callback.CallbackService;;
-import com.parashift.onlyoffice.util.LockManager;
-import org.alfresco.repo.lock.mem.LockState;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantContextHolder;
+import com.onlyoffice.service.documenteditor.callback.CallbackService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.slf4j.Logger;
@@ -31,14 +26,10 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 
 
 @Component(value = "webscript.onlyoffice.callback.post")
 public class CallBack extends AbstractWebScript {
-
-    @Autowired
-    private LockService lockService;
 
     @Autowired
     private TransactionService transactionService;
@@ -48,9 +39,6 @@ public class CallBack extends AbstractWebScript {
 
     @Autowired
     private CallbackService callbackService;
-
-    @Autowired
-    private LockManager lockManager;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -65,33 +53,15 @@ public class CallBack extends AbstractWebScript {
         logger.debug("Received JSON Callback");
         try {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-            String tenant = request.getParameter("tenant");
-
-            AuthenticationUtil.clearCurrentSecurityContext();
-            TenantContextHolder.setTenantDomain(tenant);
 
             Callback callback = objectMapper.readValue(request.getContent().getContent(), Callback.class);
             String authorizationHeader = request.getHeader(settingsManager.getSecurityHeader());
 
             callback = callbackService.verifyCallback(callback, authorizationHeader);
 
-            if (!lockManager.isLocked(nodeRef)) {
-                throw new SecurityException(MessageFormat.format(
-                        "Node with ID: {0} not locked in ONLYOFFICE Docs.",
-                        nodeRef.toString())
-                );
-            }
-
-            LockState lockState = lockService.getLockState(nodeRef);
-            String lockOwner = lockState.getOwner();
-
-            AuthenticationUtil.setFullyAuthenticatedUser(lockOwner);
-
             Boolean reqNew = transactionService.isReadOnly();
             transactionService.getRetryingTransactionHelper()
-                .doInTransaction(new ProccessRequestCallback(callback, nodeRef), reqNew, reqNew);
-
-            AuthenticationUtil.clearCurrentSecurityContext();
+                .doInTransaction(new ProcessRequestCallback(callback, nodeRef), reqNew, reqNew);
         } catch (SecurityException ex) {
             code = Status.STATUS_FORBIDDEN;
             error = ex;
@@ -102,7 +72,7 @@ public class CallBack extends AbstractWebScript {
 
         if (error != null) {
             response.setStatus(code);
-            logger.error("Error execution script Callback", error);
+            logger.error(error.getMessage(), error);
 
             response.getWriter().write("{\"error\":1, \"message\":\"" + error.getMessage() + "\"}");
         } else {
@@ -110,11 +80,11 @@ public class CallBack extends AbstractWebScript {
         }
     }
 
-    private class ProccessRequestCallback implements RetryingTransactionCallback<Object> {
+    private class ProcessRequestCallback implements RetryingTransactionCallback<Object> {
         private Callback callback;
         private NodeRef nodeRef;
 
-        ProccessRequestCallback(final Callback callback, final NodeRef node) {
+        ProcessRequestCallback(final Callback callback, final NodeRef node) {
             this.callback = callback;
             this.nodeRef = node;
         }
