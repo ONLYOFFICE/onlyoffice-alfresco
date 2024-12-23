@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.ASPECT_EDITING_IN_ONLYOFFICE_DOCS;
 import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.PROP_DOCUMENT_KEY;
@@ -37,8 +38,6 @@ public class EditorLockManager {
 
     @Autowired
     private NodeService nodeService;
-    @Autowired
-    private NodeManager nodeManager;
     @Autowired
     private LockService lockService;
     @Autowired
@@ -71,10 +70,7 @@ public class EditorLockManager {
     public void changeLockOwner(final NodeRef nodeRef, final String newLockOwner) {
         Authentication currentAuthentication = AuthenticationUtil.getFullAuthentication();
 
-        Map<QName, Serializable> aspectEditingProperties = nodeManager.getPropertiesByAspect(
-                nodeRef,
-                ASPECT_EDITING_IN_ONLYOFFICE_DOCS
-        );
+        Map<QName, Serializable> aspectEditingProperties = getEditorLockProperties(nodeRef);
 
         unlockFromEditor(nodeRef);
 
@@ -90,10 +86,7 @@ public class EditorLockManager {
     }
 
     public void refreshTimeToExpireLock(final NodeRef nodeRef, final int timeToExpire) {
-        Map<QName, Serializable> aspectEditingProperties = nodeManager.getPropertiesByAspect(
-                nodeRef,
-                ASPECT_EDITING_IN_ONLYOFFICE_DOCS
-        );
+        Map<QName, Serializable> aspectEditingProperties = getEditorLockProperties(nodeRef);
 
         unlockFromEditor(nodeRef);
 
@@ -135,6 +128,21 @@ public class EditorLockManager {
        }
 
        return currentKey.equals(key);
+    }
+
+    public Map<QName, Serializable> getEditorLockProperties(final NodeRef nodeRef) {
+        if (nodeService.hasAspect(nodeRef, ASPECT_EDITING_IN_ONLYOFFICE_DOCS)) {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+
+            return properties.entrySet().stream()
+                    .filter(entry -> entry.getKey()
+                            .getNamespaceURI()
+                            .equals(ASPECT_EDITING_IN_ONLYOFFICE_DOCS.getNamespaceURI()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        }
+
+        return null;
     }
 
     private String generateHash() {

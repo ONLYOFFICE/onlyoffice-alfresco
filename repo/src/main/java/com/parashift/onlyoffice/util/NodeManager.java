@@ -11,10 +11,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.QName;
 import org.apache.hc.core5.http.HttpEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,13 +21,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
 public class NodeManager {
-    @Autowired
-    private NodeService nodeService;
     @Autowired
     private ContentService contentService;
     @Autowired
@@ -61,21 +56,6 @@ public class NodeManager {
         });
 
         versionService.createVersion(nodeRef, versionProperties);
-    }
-
-    public Map<QName, Serializable> getPropertiesByAspect(final NodeRef nodeRef, final QName aspect) {
-        if (nodeService.hasAspect(nodeRef, aspect)) {
-            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-
-            return properties.entrySet().stream()
-                    .filter(entry -> entry.getKey()
-                            .getNamespaceURI()
-                            .equals(aspect.getNamespaceURI()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        }
-
-        return null;
     }
 
 }

@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.ASPECT_EDITING_IN_ONLYOFFICE_DOCS;
 import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
 import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.PROP_DOCUMENT_KEY;
 
@@ -312,10 +311,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 fileUrl = convert(callback.getUrl(), currentFileType);
             }
 
-            Map<QName, Serializable> aspectEditingProperties = nodeManager.getPropertiesByAspect(
-                    nodeRef,
-                    ASPECT_EDITING_IN_ONLYOFFICE_DOCS
-            );
+            Map<QName, Serializable> aspectEditingProperties = editorLockManager.getEditorLockProperties(nodeRef);
 
             Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
             versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
