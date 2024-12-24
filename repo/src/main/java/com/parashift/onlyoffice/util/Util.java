@@ -8,6 +8,7 @@ package com.parashift.onlyoffice.util;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -126,7 +127,13 @@ public class Util {
             return;
         }
 
-        SiteInfo siteInfo = siteService.getSite(nodeRef);
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>() {
+            @Override
+            public SiteInfo doWork() throws Exception {
+                return siteService.getSite(nodeRef);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
         String siteId = siteInfo != null ? siteInfo.getShortName() : null;
 
         if (siteId == null || siteId.equals("")) {
