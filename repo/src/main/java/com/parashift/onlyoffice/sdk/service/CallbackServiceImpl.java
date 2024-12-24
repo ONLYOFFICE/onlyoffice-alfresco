@@ -25,6 +25,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
@@ -62,6 +64,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     private NodeManager nodeManager;
     @Autowired
     private LockService lockService;
+    @Autowired
+    private PermissionService permissionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -157,8 +161,31 @@ public class CallbackServiceImpl extends DefaultCallbackService {
 
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        if (!users.contains(currentUser) && lockOwner.equals(currentUser)) {
-            editorLockManager.changeLockOwner(nodeRef, users.get(0));
+        if (users.contains(currentUser) || !lockOwner.equals(currentUser)) {
+            return;
+        }
+
+        boolean lockOwnerIsChanged = false;
+        for (String user : users) {
+            AccessStatus hasWritePermission = AuthenticationUtil.runAs(() -> {
+                return permissionService.hasPermission(nodeRef, PermissionService.WRITE);
+            }, user);
+
+            if (AccessStatus.ALLOWED.equals(hasWritePermission)) {
+                editorLockManager.changeLockOwner(nodeRef, user);
+                lockOwnerIsChanged = true;
+                break;
+            }
+        }
+
+        if (!lockOwnerIsChanged) {
+            throw new RuntimeException(
+                    MessageFormat.format(
+                            "Can not change lock owner for Node with ID ({0}), " +
+                                    "no user has access to the write",
+                            nodeRef.toString()
+                    )
+            );
         }
     }
 
