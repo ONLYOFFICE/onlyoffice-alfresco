@@ -181,8 +181,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         if (!lockOwnerIsChanged) {
             throw new RuntimeException(
                     MessageFormat.format(
-                            "Can not change lock owner for Node with ID ({0}), " +
-                                    "no user has access to the write",
+                            "Can not change lock owner for Node with ID ({0}), "
+                                    + "no user has access to the write",
                             nodeRef.toString()
                     )
             );
