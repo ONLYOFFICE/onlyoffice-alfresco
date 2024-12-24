@@ -148,6 +148,12 @@ public class Prepare extends AbstractWebScript {
                 boolean readonly = request.getParameter("readonly") != null
                         && request.getParameter("readonly").equals("1");
 
+                if (!nodeService.exists(nodeRef)) {
+                    response.setStatus(Status.STATUS_NOT_FOUND);
+                    response.getWriter().write(responseJson.toString());
+                    return;
+                }
+
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
                     response.setStatus(Status.STATUS_FORBIDDEN);
