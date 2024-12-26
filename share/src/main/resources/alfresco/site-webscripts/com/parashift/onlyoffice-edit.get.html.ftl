@@ -509,6 +509,32 @@
             });
         };
 
+        const onRequestOpen = (event) => {
+            const data = event.data;
+
+            requestReferenceData(
+                data,
+                (response) => {
+                    window.open(response.json.link, data.windowName);
+                },
+                (response) => {
+                    const requestOpenWindow = window.open("", data.windowName);
+                    requestOpenWindow.close();
+
+                    const status = response.serverResponse.status;
+                    if (status == 403 || status == 404) {
+                        errorMessage = "${msg('onlyoffice.editor.error.not-found')}";
+                    } else {
+                        errorMessage = "${msg('onlyoffice.editor.error.unknown')}";
+                    }
+
+                    Alfresco.util.PopupManager.displayMessage({
+                        text: errorMessage
+                    });
+                }
+            );
+        }
+
         if (${(error!false)?c}) {
             Alfresco.util.PopupManager.displayMessage({
                 text: Alfresco.util.message("onlyoffice.editor.error.not-found"),
@@ -530,7 +556,8 @@
                 "onRequestCompareFile": onRequestCompareFile,
                 "onRequestSaveAs": onRequestSaveAs,
                 "onRequestReferenceData": onRequestReferenceData,
-                "onRequestReferenceSource": onRequestReferenceSource
+                "onRequestReferenceSource": onRequestReferenceSource,
+                "onRequestOpen": onRequestOpen
             };
             if (${(canManagePermissions!false)?c}) {
                 editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;

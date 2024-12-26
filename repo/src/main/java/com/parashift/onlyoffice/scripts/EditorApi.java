@@ -378,12 +378,14 @@ public class EditorApi extends AbstractWebScript {
         String path = MessageFormat.format("{0}/{1}", getPath(nodeRef), documentName);
         String documentKey = documentManager.getDocumentKey(nodeRef.toString(), false);
         String fileUrl = urlManager.getFileUrl(nodeRef.toString());
+        String editorUrl = urlManager.getEditorUrl(nodeRef);
 
         ReferenceDataResponse referenceDataResponse = ReferenceDataResponse.builder()
                 .fileType(extension)
                 .path(path)
                 .key(documentKey)
                 .url(fileUrl)
+                .link(editorUrl)
                 .referenceData(referenceData)
                 .build();
 

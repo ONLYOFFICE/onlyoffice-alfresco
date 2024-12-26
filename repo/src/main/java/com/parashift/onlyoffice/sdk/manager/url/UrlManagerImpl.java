@@ -172,6 +172,10 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
                 + nodeRef.toString();
     }
 
+    public String getEditorUrl(final NodeRef nodeRef) {
+        return getShareUrl() + "page/onlyoffice-edit?nodeRef=" + nodeRef.toString();
+    }
+
     private String getAlfrescoUrl() {
         String alfUrl = getSettingsManager().getSetting(SettingsConstants.PRODUCT_INNER_URL);
         if (alfUrl == null || alfUrl.isEmpty()) {

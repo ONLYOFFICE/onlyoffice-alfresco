@@ -20,6 +20,7 @@ public class ReferenceDataResponse {
     private String path;
     private String key;
     private String url;
+    private String link;
     private ReferenceData referenceData;
     private String token;
 }
