@@ -336,8 +336,13 @@ public class EditorApi extends AbstractWebScript {
         NodeRef nodeRef = null;
         ReferenceData referenceData = referenceDataRequest.getReferenceData();
         if (referenceData != null) {
-            String instanceId = referenceData.getInstanceId();
             String currentInstanceId = util.getCurrentInstanceId();
+            String instanceId = referenceData.getInstanceId();
+
+            if (instanceId == null || instanceId.isEmpty()) {
+                instanceId = currentInstanceId;
+                referenceData.setInstanceId(instanceId);
+            }
 
             if (instanceId.equals(currentInstanceId)) {
                 nodeRef = new NodeRef(referenceData.getFileKey());
