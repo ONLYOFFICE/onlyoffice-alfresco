@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,12 +54,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Component(value = "webscript.onlyoffice.editor-api.post")
@@ -354,6 +358,23 @@ public class EditorApi extends AbstractWebScript {
 
             if (path != null && !path.isEmpty()) {
                 nodeRef = findNodeByPath(path);
+            }
+        }
+
+        if (nodeRef == null || !nodeService.exists(nodeRef)) {
+            String link = referenceDataRequest.getLink();
+            if (link != null && link.startsWith(urlManager.getShareUrl())) {
+                try {
+                    URIBuilder uri = new URIBuilder(link);
+                    NameValuePair nodeRefQueryParam = uri.getFirstQueryParam("nodeRef");
+                    String nodeRefFromQueryParam = Optional.ofNullable(nodeRefQueryParam.getValue()).orElse("");
+
+                    if (!nodeRefFromQueryParam.isEmpty()) {
+                        nodeRef = new NodeRef(nodeRefFromQueryParam);
+                    }
+                } catch (URISyntaxException e) {
+                    //Do nothing if link could not be parsed as a URI reference
+                }
             }
         }
 
