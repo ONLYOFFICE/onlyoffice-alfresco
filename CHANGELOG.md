@@ -1,5 +1,9 @@
 # Change Log
 
+## 
+## Added
+- support events in editor: onRequestReferenceData, onRequestReferenceSource, onRequestOpen 
+
 ## 8.0.0
 ## Added
 - editing pdf
