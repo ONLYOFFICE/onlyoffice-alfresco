@@ -1,6 +1,6 @@
 # Change Log
 
-## 
+## 8.1.0
 ## Added
 - support events in editor: onRequestReferenceData, onRequestReferenceSource, onRequestOpen 
 
