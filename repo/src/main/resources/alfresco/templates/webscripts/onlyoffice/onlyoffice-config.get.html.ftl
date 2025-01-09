@@ -1,7 +1,7 @@
 <#include "/org/alfresco/repository/admin/admin-template.ftl" />
 
 <!--
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
     http://www.onlyoffice.com
 -->
 
@@ -415,10 +415,10 @@
 
           var docServiceUrlApi = obj.url;
 
-          if (!docServiceUrlApi.endsWith("/")) {
-              docServiceUrlApi += "/";
+          if (docServiceUrlApi.endsWith("/")) {
+              docServiceUrlApi = docServiceUrlApi.slice(0, -1);
           }
-          docServiceUrlApi += "web-apps/apps/api/documents/api.js";
+          docServiceUrlApi += "${pathApiUrl}";
 
           scriptAddress.src = docServiceUrlApi;
       };

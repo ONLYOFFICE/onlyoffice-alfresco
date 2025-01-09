@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.service;
 
 import com.onlyoffice.manager.document.DocumentManager;
@@ -11,6 +16,7 @@ import com.onlyoffice.model.documenteditor.config.editorconfig.Embedded;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Template;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService;
@@ -26,34 +32,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
 
 public class ConfigServiceImpl extends DefaultConfigService {
     @Autowired
-    PersonService personService;
+    private PersonService personService;
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
     @Autowired
-    FavouritesService favouritesService;
+    private FavouritesService favouritesService;
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
     @Autowired
-    Util util;
+    private Util util;
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
+    @Autowired
+    private EditorLockManager editorLockManager;
 
-    public ConfigServiceImpl(DocumentManager documentManager,
-                             UrlManager urlManager,
-                             JwtManager jwtManager,
-                             SettingsManager settingsManager) {
+    public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
+                             final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(documentManager, urlManager, jwtManager, settingsManager);
     }
 
     @Override
-    public Info getInfo(String fileId) {
+    public Info getInfo(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 
@@ -62,25 +64,28 @@ public class ConfigServiceImpl extends DefaultConfigService {
                 return Info.builder()
                         .favorite(favouritesService.isFavourite(userName, nodeRef))
                         .build();
-            } catch (Exception e) { }
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         return null;
     }
 
     @Override
-    public Permissions getPermissions(String fileId) {
+    public Permissions getPermissions(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
         String fileName = super.getDocumentManager().getDocumentName(fileId);
 
-        Boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
+        boolean editPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE)
                 == AccessStatus.ALLOWED;
-        Boolean isEditable = super.getDocumentManager().isEditable(fileName);
-        Boolean isFillable =  super.getDocumentManager().isFillable(fileName);
+        boolean isLockedNotInEditor = editorLockManager.isLockedNotInEditor(nodeRef);
+        boolean isEditable = super.getDocumentManager().isEditable(fileName);
+        boolean isFillable =  super.getDocumentManager().isFillable(fileName);
 
         return Permissions.builder()
-                .edit(editPermission && isEditable)
-                .fillForms(editPermission && isFillable)
+                .edit(editPermission && isEditable && !isLockedNotInEditor)
+                .fillForms(editPermission && isFillable && !isLockedNotInEditor)
                 .build();
     }
 
@@ -108,7 +113,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public List<Template> getTemplates(String fileId) {
+    public List<Template> getTemplates(final String fileId) {
         //Todo: check if user have access create new document in current folder
         List<Template> templates = new ArrayList<>();
         NodeRef templatesNodeRef = util.getNodeByPath("/app:company_home/app:dictionary/app:node_templates");
@@ -116,12 +121,13 @@ public class ConfigServiceImpl extends DefaultConfigService {
         String title = super.getDocumentManager().getDocumentName(fileId);
         DocumentType docType = super.getDocumentManager().getDocumentType(title);
         List<String> templateExtList = Arrays.asList("docx", "pptx", "xlsx");
-        for(ChildAssociationRef assoc : assocs){
+        for (ChildAssociationRef assoc : assocs) {
             String templateTitle = super.getDocumentManager().getDocumentName(assoc.getChildRef().toString());
             String templateExt = super.getDocumentManager().getExtension(templateTitle);
             DocumentType templateType = super.getDocumentManager().getDocumentType(templateTitle);
-            if ((docType.equals(templateType) && templateExtList.contains(templateExt))) {
-                String image = urlManager.getShareUrl() + "res/components/images/filetypes/" + docType.name().toLowerCase() + ".svg";
+            if (docType.equals(templateType) && templateExtList.contains(templateExt)) {
+                String image = urlManager.getShareUrl() + "res/components/images/filetypes/"
+                        + docType.name().toLowerCase() + ".svg";
                 String url = urlManager.getCreateUrl(fileId) + "&templateNodeRef=" + assoc.getChildRef();
 
                 Template template = Template.builder()
@@ -137,7 +143,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public Embedded getEmbedded(String fileId) {
+    public Embedded getEmbedded(final String fileId) {
         return Embedded.builder()
                 .saveUrl(urlManager.getEmbeddedSaveUrl(fileId))
                 .build();

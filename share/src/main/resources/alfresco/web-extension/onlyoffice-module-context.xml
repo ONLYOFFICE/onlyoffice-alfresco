@@ -16,19 +16,6 @@
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
 
-    <bean id="evaluator.doclib.action.onlyofficeFillForm" class="com.onlyoffice.web.evaluator.IsFillForm">
-        <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
-    </bean>
-
-    <bean id="evaluator.doclib.action.isNotOnlyofficeFillForm" class="com.onlyoffice.web.evaluator.IsFillForm">
-        <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
-        <property name="negateOutput" value="true" />
-    </bean>
-
-    <bean id="evaluator.doclib.action.isNotOnlyofficeEditable" parent="evaluator.doclib.action.onlyofficeIsEditable">
-        <property name="negateOutput" value="true" />
-    </bean>
-
     <bean id="evaluator.doclib.action.onlyofficeIsViewable" class="com.onlyoffice.web.evaluator.IsViewable">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
@@ -36,68 +23,6 @@
     <bean id="evaluator.doclib.action.notLocked" parent="evaluator.doclib.metadata.isLocked">
         <property name="negateOutput" value="true" />
     </bean>
-
-    <bean id="evaluator.doclib.action.displayFillForm" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-            <list>
-                <ref bean="evaluator.doclib.action.onlyofficeFillForm" />
-                <ref bean="evaluator.doclib.action.IsWritePermission" />
-                <ref bean="evaluator.doclib.action.isNotWorkingCopy" />
-                <ref bean="evaluator.doclib.action.notLocked" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="evaluator.doclib.action.displayJoinFillForm" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-            <list>
-                <ref bean="evaluator.doclib.action.onlyofficeFillForm" />
-                <ref bean="evaluator.doclib.action.isOnlyEdit" />
-                <ref bean="evaluator.doclib.action.IsWritePermission" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="evaluator.doclib.action.displayEdit" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-            <list>
-                <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
-                <ref bean="evaluator.doclib.action.IsWritePermission" />
-                <ref bean="evaluator.doclib.action.isNotWorkingCopy" />
-                <ref bean="evaluator.doclib.action.notLocked" />
-                <ref bean="evaluator.doclib.action.isNotOnlyofficeFillForm" />
-            </list>
-        </property>
-     </bean>
-
-     <bean id="evaluator.doclib.action.displayJoinEdit" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-            <list>
-                <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
-                <ref bean="evaluator.doclib.action.isOnlyEdit" />
-                <ref bean="evaluator.doclib.action.IsWritePermission" />
-                <ref bean="evaluator.doclib.action.isNotOnlyofficeFillForm" />
-            </list>
-        </property>
-     </bean>
-
-     <bean id="evaluator.doclib.action.readAvailable" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-           <list>
-              <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
-              <ref bean="evaluator.doclib.action.IsReadPermission" />
-           </list>
-        </property>
-     </bean>
-
-     <bean id="evaluator.doclib.action.displayRead" parent="evaluator.doclib.action.chainedMatchOne">
-        <property name="evaluators">
-           <list>
-              <ref bean="evaluator.doclib.action.onlyofficeIsViewable"/>
-              <ref bean="evaluator.doclib.action.readAvailable"/>
-           </list>
-        </property>
-     </bean>
 
     <bean id="onlyoffice.custom.config" class="org.springframework.extensions.config.ConfigBootstrap" init-method="register">
         <property name="configService" ref="web.config" />
@@ -116,40 +41,90 @@
         </property>
     </bean>
 
-    <bean id="evaluator.doclib.action.hasOfflineLockBanner" parent="evaluator.doclib.action.chainedMatchAll">
+    <bean id="evaluator.doclib.action.hasLockBanner" parent="evaluator.doclib.action.chainedMatchAll">
         <property name="evaluators">
             <list>
-                <ref bean="evaluator.doclib.action.isNotOnlyEdit" />
                 <ref bean="evaluator.doclib.metadata.hasLockBanner" />
+                <ref bean="evaluator.doclib.action.isNotLockedInOnlyoffice" />
             </list>
         </property>
     </bean>
 
-    <bean id="evaluator.doclib.action.hasOnlyofficeLockBanner" parent="evaluator.doclib.action.chainedMatchAll">
-        <property name="evaluators">
-            <list>
-                <ref bean="evaluator.doclib.action.isOnlyEdit" />
-                <ref bean="evaluator.doclib.metadata.hasLockBanner" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="evaluator.doclib.action.isOnlyofficeDocxfExtension" class="com.onlyoffice.web.evaluator.IsDocxfExtension" />
-    <bean id="evaluator.doclib.action.isNotOnlyofficeDocxfExtension" class="com.onlyoffice.web.evaluator.IsDocxfExtension" >
-        <property name="negateOutput" value="true"/>
-    </bean>
     <bean id="evaluator.doclib.action.IsCorrectDownloadAs" class="com.onlyoffice.web.evaluator.IsCorrectDownloadAs">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
-    </bean>
-    <bean id="evaluator.doclib.action.isOnlyEdit" class="com.onlyoffice.web.evaluator.IsOnlyEditEvaluator" />
-    <bean id="evaluator.doclib.action.isNotOnlyEdit" parent="evaluator.doclib.action.isOnlyEdit">
-        <property name="negateOutput" value="true" />
     </bean>
     <bean id="evaluator.doclib.action.IsWritePermission" class="com.onlyoffice.web.evaluator.IsWritePermission" />
     <bean id="evaluator.doclib.action.IsConvertible" class="com.onlyoffice.web.evaluator.IsConvertible">
         <property name="onlyofficeSettings" ref="slingshot.scriptprocessor.OnlyofficeSettingsQuery" />
     </bean>
-    <bean id="evaluator.doclib.action.IsReadPermission" parent="evaluator.doclib.action.IsWritePermission">
+
+    <bean id="evaluator.doclib.action.displayRead" parent="evaluator.doclib.action.chainedMatchAll">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.action.onlyofficeIsViewable"/>
+                <ref bean="evaluator.doclib.action.isNotDisplayEdit"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.displayEdit" parent="evaluator.doclib.action.chainedMatchOne">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.action.displayStartEdit" />
+                <ref bean="evaluator.doclib.action.displayJoinEdit" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.isNotDisplayEdit" parent="evaluator.doclib.action.displayEdit" >
         <property name="negateOutput" value="true" />
     </bean>
+
+    <bean id="evaluator.doclib.action.displayStartEdit" parent="evaluator.doclib.action.chainedMatchAll">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
+                <ref bean="evaluator.doclib.action.IsWritePermission" />
+                <ref bean="evaluator.doclib.action.isNotWorkingCopy" />
+                <ref bean="evaluator.doclib.metadata.isNotLocked" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.displayJoinEdit" parent="evaluator.doclib.action.chainedMatchAll">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.action.onlyofficeIsEditable" />
+                <ref bean="evaluator.doclib.action.IsWritePermission" />
+                <ref bean="evaluator.doclib.action.isNotWorkingCopy" />
+                <ref bean="evaluator.doclib.action.isLockedInOnlyoffice" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.isLockedInOnlyoffice" parent="evaluator.doclib.action.chainedMatchAll">
+        <property name="evaluators">
+            <list>
+                <ref bean="evaluator.doclib.onlyoffice-docs.editing.aspect" />
+                <ref bean="evaluator.doclib.metadata.isLocked" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.action.isNotLockedInOnlyoffice" parent="evaluator.doclib.action.isLockedInOnlyoffice">
+        <property name="negateOutput" value="true" />
+    </bean>
+
+    <bean id="evaluator.doclib.onlyoffice-docs.editing.aspect" class="org.alfresco.web.evaluator.HasAspectEvaluator">
+        <property name="aspects">
+            <list>
+                <value>od:editingInOnlyofficeDocs</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="evaluator.doclib.metadata.isNotLocked" parent="evaluator.doclib.metadata.isLocked">
+        <property name="negateOutput" value="true" />
+    </bean>
+
 </beans>

@@ -1,13 +1,22 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.util;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -20,58 +29,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
 
 @Service
 public class Util {
-    @Autowired
-    VersionService versionService;
 
     @Autowired
-    NodeService nodeService;
+    private VersionService versionService;
 
     @Autowired
-    SearchService searchService;
+    private NodeService nodeService;
 
     @Autowired
-    NamespaceService namespaceService;
+    private SearchService searchService;
 
     @Autowired
-    ActivityService activityService;
+    private NamespaceService namespaceService;
 
     @Autowired
-    SiteService siteService;
+    private ActivityService activityService;
 
     @Autowired
-    TenantService tenantService;
+    private SiteService siteService;
+
+    @Autowired
+    private TenantService tenantService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public static final QName EditingKeyAspect = QName.createQName("onlyoffice:editing-key");
-    public static final QName EditingHashAspect = QName.createQName("onlyoffice:editing-hash");
-    public static final QName ForcesaveAspect = QName.createQName("onlyoffice:forcesave");
-
-    public void ensureVersioningEnabled(NodeRef nodeRef) {
+    public void ensureVersioningEnabled(final NodeRef nodeRef) {
         Map<QName, Serializable> versionProps = new HashMap<>();
         versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
         versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
         versionService.ensureVersioningEnabled(nodeRef, versionProps);
     }
 
-    public String generateHash() {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] token = new byte[32];
-        secureRandom.nextBytes(token);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(token);
-    }
-
-    public NodeRef getNodeByPath(String path) {
+    public NodeRef getNodeByPath(final String path) {
         String storePath = "workspace://SpacesStore";
         StoreRef storeRef = new StoreRef(storePath);
         NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
@@ -79,8 +75,8 @@ public class Util {
         return nodeRefs.get(0);
     }
 
-    public String getCorrectName(NodeRef nodeFolder, String title, String ext) {
-        String name = (title + "." + ext).replaceAll("[*?:\"<>/|\\\\]","_");
+    public String getCorrectName(final NodeRef nodeFolder, final String title, final String ext) {
+        String name = (title + "." + ext).replaceAll("[*?:\"<>/|\\\\]", "_");
         NodeRef node = nodeService.getChildByName(nodeFolder, ContentModel.ASSOC_CONTAINS, name);
 
         Integer i = 0;
@@ -92,7 +88,7 @@ public class Util {
         return name;
     }
 
-    public NodeRef getParentNodeRef (NodeRef node) {
+    public NodeRef getParentNodeRef(final NodeRef node) {
         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(node);
         if (parentAssoc == null || parentAssoc.getParentRef() == null) {
             return null;
@@ -101,7 +97,7 @@ public class Util {
         }
     }
 
-    public NodeRef getChildNodeByName(NodeRef nodeRef, String name) {
+    public NodeRef getChildNodeByName(final NodeRef nodeRef, final String name) {
         List<ChildAssociationRef> changesNodeRef = nodeService.getChildAssocs(nodeRef);
 
         for (ChildAssociationRef assoc : changesNodeRef) {
@@ -113,11 +109,11 @@ public class Util {
         return null;
     }
 
-    public String getTitle(NodeRef nodeRef) {
+    public String getTitle(final NodeRef nodeRef) {
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
 
-    private String getCurrentTenantDomain() {
+    public String getCurrentTenantDomain() {
         String tenantDomain = tenantService.getCurrentUserDomain();
         if (tenantDomain == null) {
             return TenantService.DEFAULT_DOMAIN;
@@ -126,13 +122,19 @@ public class Util {
         return tenantDomain;
     }
 
-    public void postActivity(NodeRef nodeRef, boolean isNew) {
+    public void postActivity(final NodeRef nodeRef, final boolean isNew) {
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN)) {
             return;
         }
 
-        SiteInfo siteInfo = siteService.getSite(nodeRef);
-        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>() {
+            @Override
+            public SiteInfo doWork() throws Exception {
+                return siteService.getSite(nodeRef);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        String siteId = siteInfo != null ? siteInfo.getShortName() : null;
 
         if (siteId == null || siteId.equals("")) {
             return;
@@ -147,7 +149,7 @@ public class Util {
 
             String tenantDomain = getCurrentTenantDomain();
 
-            if (tenantDomain!= null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN)) {
+            if (tenantDomain != null && !tenantDomain.equals(TenantService.DEFAULT_DOMAIN)) {
                 json.put("tenantDomain", tenantDomain);
             }
         } catch (JSONException jsonError) {

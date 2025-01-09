@@ -1,41 +1,39 @@
 /*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
 */
 
 package com.onlyoffice.web.evaluator;
 
-import com.onlyoffice.model.common.Format;
 import com.onlyoffice.web.scripts.OnlyofficeSettingsQuery;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.web.evaluator.BaseEvaluator;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class IsViewable extends BaseEvaluator {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private OnlyofficeSettingsQuery onlyofficeSettings;
 
-    public void setOnlyofficeSettings(OnlyofficeSettingsQuery onlyofficeSettings) {
+    public void setOnlyofficeSettings(final OnlyofficeSettingsQuery onlyofficeSettings) {
         this.onlyofficeSettings = onlyofficeSettings;
     }
 
     @Override
-    public boolean evaluate(JSONObject jsonObject) {
+    public boolean evaluate(final JSONObject jsonObject) {
+        logger.error("IsViewable");
         try {
             String fileName = (String) jsonObject.get("fileName");
             if (fileName != null) {
                 String docExt = fileName.substring(fileName.lastIndexOf(".") + 1).trim().toLowerCase();
 
-                boolean canView = false;
-
-                for (Format format : onlyofficeSettings.getSupportedFormats()) {
-                    if (format.getName().equals(docExt)
-                            && format.getActions().contains("view")
-                            && !onlyofficeSettings.getEditableFormats().contains(docExt)) {
-                        canView = true;
-                    }
-                }
-
-                return canView && !onlyofficeSettings.getEditableFormats().contains(docExt);
+                 return onlyofficeSettings.getSupportedFormats().stream()
+                        .anyMatch(format -> {
+                           return format.getName().equals(docExt) && format.getActions().contains("view");
+                        });
             }
         } catch (Exception err) {
             throw new AlfrescoRuntimeException("Failed to run action evaluator", err);

@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,20 +20,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config-validation.get")
 public class ConfigValidation extends AbstractWebScript {
     @Autowired
-    SettingsValidationService settingsValidationService;
+    private SettingsValidationService settingsValidationService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         Map<String, ValidationResult> validationResults = settingsValidationService.validateSettings();
 
         Map<String, Object> responseMap = new HashMap<>();

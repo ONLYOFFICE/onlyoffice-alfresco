@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,29 +12,36 @@ import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
+import com.onlyoffice.model.convertservice.convertrequest.PDF;
 import com.onlyoffice.service.convert.ConvertService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
-import com.parashift.onlyoffice.util.*;
-
+import com.parashift.onlyoffice.util.Util;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.http.HttpEntity;
+import org.apache.hc.core5.http.HttpEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -40,57 +52,54 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.editor-api.post")
 public class EditorApi extends AbstractWebScript {
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    PermissionService permissionService;
+    private PermissionService permissionService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    FavouritesService favouritesService;
+    private FavouritesService favouritesService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    MessageService mesService;
+    private MessageService mesService;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Autowired
-    ConvertService convertService;
+    private ConvertService convertService;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         Map<String, String> templateVars = request.getServiceMatch().getTemplateVars();
         String type = templateVars.get("type");
         switch (type.toLowerCase()) {
@@ -104,14 +113,14 @@ public class EditorApi extends AbstractWebScript {
                 favorite(request, response);
                 break;
             case "from-docx":
-                docxToDocxf(request, response);
+                docxToPdfForm(request, response);
                 break;
             default:
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "API Not Found");
         }
     }
 
-    private void insert(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void insert(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray nodes = requestData.getJSONArray("nodes");
@@ -135,7 +144,11 @@ public class EditorApi extends AbstractWebScript {
                         try {
                             data.put("token", jwtManager.createToken(data));
                         } catch (Exception e) {
-                            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Token creation error", e);
+                            throw new WebScriptException(
+                                    Status.STATUS_INTERNAL_SERVER_ERROR,
+                                    "Token creation error",
+                                    e
+                            );
                         }
                     }
 
@@ -150,7 +163,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void docxToDocxf(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void docxToPdfForm(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
             JSONArray docxNode = requestData.getJSONArray("nodes");
@@ -162,8 +175,12 @@ public class EditorApi extends AbstractWebScript {
 
             NodeRef folderNode = new NodeRef(folder);
 
-            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "User don't have the permissions to create child node");
+            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN)
+                    != AccessStatus.ALLOWED) {
+                throw new WebScriptException(
+                        Status.STATUS_FORBIDDEN,
+                        "User don't have the permissions to create child node"
+                );
             }
 
             NodeRef node = new NodeRef(docxNode.getString(0));
@@ -172,19 +189,22 @@ public class EditorApi extends AbstractWebScript {
             if (permissionService.hasPermission(node, PermissionService.READ) == AccessStatus.ALLOWED) {
                 String fileName = documentManager.getDocumentName(node.toString());
                 String fileType = documentManager.getExtension(fileName);
-                if (!mimetypeService.getMimetype(fileType).equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+                if (!mimetypeService.getMimetype(fileType)
+                        .equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Selected file is not docx extension");
                 }
 
                 try {
                     ConvertRequest convertRequest = ConvertRequest.builder()
-                            .outputtype("docxf")
+                            .outputtype("pdf")
+                            .pdf(new PDF(true))
                             .region(mesService.getLocale().toLanguageTag())
                             .build();
 
                     ConvertResponse convertResponse = convertService.processConvert(convertRequest, node.toString());
 
-                    if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
+                    if (convertResponse.getError() != null
+                            && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
                         throw new SecurityException();
                     }
 
@@ -195,11 +215,11 @@ public class EditorApi extends AbstractWebScript {
 
                     String downloadUrl = convertResponse.getFileUrl();
                     String docTitle = documentManager.getBaseName(fileName);
-                    String newNode = createNode(folderNode, docTitle, "docxf", downloadUrl);
+                    String newNode = createNode(folderNode, docTitle, "pdf", downloadUrl);
                     data.put("nodeRef", newNode);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not convert docx file to docxf", e);
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not convert docx file to pdf", e);
                 }
             }
 
@@ -211,7 +231,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private void saveAs(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void saveAs(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         try {
             JSONObject requestData = new JSONObject(request.getContent().getContent());
 
@@ -226,8 +246,12 @@ public class EditorApi extends AbstractWebScript {
 
             NodeRef folderNode = new NodeRef(saveNode);
 
-            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "User don't have the permissions to create child node");
+            if (permissionService.hasPermission(folderNode, PermissionService.CREATE_CHILDREN)
+                    != AccessStatus.ALLOWED) {
+                throw new WebScriptException(
+                        Status.STATUS_FORBIDDEN,
+                        "User don't have the permissions to create child node"
+                );
             }
 
             createNode(folderNode, title, ext, url);
@@ -236,23 +260,24 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private String createNode(NodeRef folderNode, String title, final String ext, String url) throws IOException {
+    private String createNode(final NodeRef folderNode, final String title, final String ext, final String url)
+            throws IOException {
         String fileName = util.getCorrectName(folderNode, title, ext);
-        url = urlManager.replaceToInnerDocumentServerUrl(url);
+        String fileUrl = urlManager.replaceToInnerDocumentServerUrl(url);
 
         final NodeRef nodeRef = nodeService.createNode(
                 folderNode,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                 ContentModel.TYPE_CONTENT,
-                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
+                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
         try {
-            requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
-                public Void doWork(Object response) throws IOException {
+            requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
+                public Void doWork(final Object response) throws IOException {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.setMimetype(mimetypeService.getMimetype(ext));
-                    writer.putContent(((HttpEntity)response).getContent());
+                    writer.putContent(((HttpEntity) response).getContent());
                     return null;
                 }
             });
@@ -268,7 +293,7 @@ public class EditorApi extends AbstractWebScript {
         return nodeRef.toString();
     }
 
-    private void favorite(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    private void favorite(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         if (request.getParameter("nodeRef") != null) {
             NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
             String username = AuthenticationUtil.getFullyAuthenticatedUser();

@@ -1,65 +1,59 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.manager.document;
 
 import com.onlyoffice.manager.document.DefaultDocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
-import com.parashift.onlyoffice.util.Util;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Map;
 
-/*
-   Copyright (c) Ascensio System SIA 2024. All rights reserved.
-   http://www.onlyoffice.com
-*/
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.PROP_DOCUMENT_KEY;
 
 public class DocumentManagerImpl extends DefaultDocumentManager {
 
     @Autowired
-    @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
-
+    private NodeService nodeService;
     @Autowired
-    NodeService nodeService;
+    private EditorLockManager editorLockManager;
 
-    public DocumentManagerImpl(SettingsManager settingsManager) {
+
+    public DocumentManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
     }
 
     @Override
-    public String getDocumentKey(String fileId, boolean embedded) {
+    public String getDocumentKey(final String fileId, final boolean embedded) {
         NodeRef nodeRef = new NodeRef(fileId);
 
-        String key = null;
-        if (cociService.isCheckedOut(nodeRef)) {
-            key = (String) nodeService.getProperty(cociService.getWorkingCopy(nodeRef), Util.EditingHashAspect);
-        }
-
-        if (key == null) {
+        if (embedded || !editorLockManager.isLockedInEditor(nodeRef)) {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             String version = (String) properties.get(ContentModel.PROP_VERSION_LABEL);
 
+            String key;
             if (version == null || version.isEmpty()) {
                 key = nodeRef.getId() + "_1.0";
             } else {
                 key = nodeRef.getId() + "_" + version;
             }
 
-            key = embedded ? key + "_embedded" : key;
+            return embedded ? key + "_embedded" : key;
+        } else {
+            return (String) nodeService.getProperty(nodeRef, PROP_DOCUMENT_KEY);
         }
-
-        return key;
     }
 
     @Override
-    public String getDocumentName(String fileId) {
+    public String getDocumentName(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
         return (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);

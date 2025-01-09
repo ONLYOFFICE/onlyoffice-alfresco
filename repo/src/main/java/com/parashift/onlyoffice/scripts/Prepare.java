@@ -1,3 +1,12 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+/**
+ * Created by cetra on 20/10/15.
+ * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
+ */
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,13 +18,17 @@ import com.onlyoffice.model.documenteditor.config.document.Type;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
 import com.onlyoffice.service.documenteditor.config.ConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -24,8 +37,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -34,58 +50,50 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by cetra on 20/10/15.
- * Sends Alfresco Share the necessaries to build up what information is needed for the OnlyOffice server
- */
- /*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.prepare.get")
 public class Prepare extends AbstractWebScript {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private NodeService nodeService;
 
     @Autowired
-    OwnableService ownableService;
+    private ContentService contentService;
 
     @Autowired
-    NodeService nodeService;
+    private MessageService mesService;
 
     @Autowired
-    ContentService contentService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    MessageService mesService;
+    private PermissionService permissionService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private Util util;
 
     @Autowired
-    PermissionService permissionService;
+    private UrlManager urlManager;
 
     @Autowired
-    Util util;
+    private ConfigService configService;
 
     @Autowired
-    UrlManager urlManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    ConfigService configService;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private LockService lockService;
 
     @Autowired
-    SettingsManager settingsManager;
+    private EditorLockManager editorLockManager;
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
         mesService.registerResourceBundle("alfresco/messages/prepare");
         JSONObject responseJson = new JSONObject();
 
@@ -94,14 +102,18 @@ public class Prepare extends AbstractWebScript {
                 String newFileMime = request.getParameter("new");
                 String parentNodeRefString = request.getParameter("parentNodeRef");
 
-                if (newFileMime == null || newFileMime.isEmpty() || parentNodeRefString == null || parentNodeRefString.isEmpty()) {
+                if (newFileMime == null
+                        || newFileMime.isEmpty()
+                        || parentNodeRefString == null
+                        || parentNodeRefString.isEmpty()) {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Required query parameters not found");
                 }
 
                 logger.debug("Creating new node");
                 NodeRef parentNodeRef = new NodeRef(parentNodeRefString);
 
-                if (permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN) != AccessStatus.ALLOWED) {
+                if (permissionService.hasPermission(parentNodeRef, PermissionService.CREATE_CHILDREN)
+                        != AccessStatus.ALLOWED) {
                     throw new SecurityException("User don't have the permissions to create child node");
                 }
 
@@ -113,9 +125,13 @@ public class Prepare extends AbstractWebScript {
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_NAME, newName);
 
-                NodeRef nodeRef = this.nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName), ContentModel.TYPE_CONTENT, props)
-                        .getChildRef();
+                NodeRef nodeRef = this.nodeService.createNode(
+                        parentNodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName),
+                        ContentModel.TYPE_CONTENT,
+                        props
+                ).getChildRef();
 
                 ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(newFileMime);
@@ -129,12 +145,19 @@ public class Prepare extends AbstractWebScript {
                 responseJson.put("nodeRef", nodeRef);
             } else {
                 NodeRef nodeRef = new NodeRef(request.getParameter("nodeRef"));
-                boolean readonly = request.getParameter("readonly") != null && request.getParameter("readonly").equals("1");
+                boolean readonly = request.getParameter("readonly") != null
+                        && request.getParameter("readonly").equals("1");
+
+                if (!nodeService.exists(nodeRef)) {
+                    response.setStatus(Status.STATUS_NOT_FOUND);
+                    response.getWriter().write(responseJson.toString());
+                    return;
+                }
 
                 if (permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
                     responseJson.put("error", "User have no read access");
-                    response.setStatus(403);
-                    response.getWriter().write(responseJson.toString(3));
+                    response.setStatus(Status.STATUS_FORBIDDEN);
+                    response.getWriter().write(responseJson.toString());
                     return;
                 }
 
@@ -144,8 +167,8 @@ public class Prepare extends AbstractWebScript {
 
                 if (documentType == null) {
                     responseJson.put("error", "File type is not supported");
-                    response.setStatus(500);
-                    response.getWriter().write(responseJson.toString(3));
+                    response.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write(responseJson.toString());
                     return;
                 }
 
@@ -162,21 +185,17 @@ public class Prepare extends AbstractWebScript {
                         mode = Mode.VIEW;
                         responseJson.put("previewEnabled", true);
                     } else {
-                        response.getWriter().write(responseJson.toString(3));
+                        response.getWriter().write(responseJson.toString());
                         return;
                     }
                 }
 
                 if ((documentManager.isEditable(fileName) || documentManager.isFillable(fileName))
                         && permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED
-                        && mode.equals(Mode.EDIT)) {
-                    if (!cociService.isCheckedOut(nodeRef)) {
-                        util.ensureVersioningEnabled(nodeRef);
-                        NodeRef copyRef = cociService.checkout(nodeRef);
-                        ownableService.setOwner(copyRef, ownableService.getOwner(nodeRef));
-                        nodeService.setProperty(copyRef, Util.EditingKeyAspect, documentManager.getDocumentKey(nodeRef.toString(), false));
-                        nodeService.setProperty(copyRef, Util.EditingHashAspect, util.generateHash());
-                    }
+                        && mode.equals(Mode.EDIT)
+                        && !lockService.isLocked(nodeRef)
+                ) {
+                    editorLockManager.lockInEditor(nodeRef, EditorLockManager.TIMEOUT_CONNECTING_EDITOR);
                 }
 
                 Config config = configService.createConfig(
@@ -187,25 +206,28 @@ public class Prepare extends AbstractWebScript {
 
                 config.getEditorConfig().setLang(mesService.getLocale().toLanguageTag());
 
+                String shardKey = config.getDocument().getKey();
+
                 ObjectMapper mapper = new ObjectMapper();
 
                 responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
-                responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                responseJson.put("documentServerApiUrl", urlManager.getDocumentServerApiUrl(shardKey));
                 responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
                 responseJson.put("folderNode", util.getParentNodeRef(nodeRef));
                 responseJson.put("demo", settingsManager.isDemoActive());
                 responseJson.put("historyInfoUrl", urlManager.getHistoryInfoUrl(nodeRef));
                 responseJson.put("historyDataUrl", urlManager.getHistoryDataUrl(nodeRef));
                 responseJson.put("favorite", urlManager.getFavoriteUrl(nodeRef));
-                responseJson.put("canManagePermissions", permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
+                responseJson.put("canManagePermissions", permissionService.hasPermission(
+                        nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED);
 
                 logger.debug("Sending JSON prepare object");
-                logger.debug(responseJson.toString(3));
+                logger.debug(responseJson.toString());
             }
 
             response.setContentType("application/json; charset=utf-8");
             response.setContentEncoding("UTF-8");
-            response.getWriter().write(responseJson.toString(3));
+            response.getWriter().write(responseJson.toString());
         } catch (JSONException ex) {
             throw new WebScriptException("Unable to serialize JSON: " + ex.getMessage());
         }

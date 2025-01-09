@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="od:onlyoffice-docs" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>ONLYOFFICE Docs</description>
+    <author>Aleksandr Fedorov</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+    </imports>
+
+    <namespaces>
+        <namespace prefix="od" uri="http://www.alfresco.org/model/onlyoffice-docs/1.0" />
+    </namespaces>
+
+    <aspects>
+        <aspect name="od:editingInOnlyofficeDocs">
+            <title>ONLYOFFICE Docs</title>
+            <properties>
+                <property name="od:documentKey">
+                    <type>d:text</type>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+
+</model>

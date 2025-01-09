@@ -1,9 +1,13 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.settings.SettingsManager;
-
 import com.onlyoffice.model.documenteditor.Config;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.documenteditor.config.document.Type;
@@ -14,22 +18,25 @@ import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
- /*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
 
 @Component(value = "webscript.onlyoffice.prepareQuickShare.get")
 public class PrepareQuickShare extends AbstractWebScript {
@@ -37,25 +44,25 @@ public class PrepareQuickShare extends AbstractWebScript {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    QuickShareService quickShareService;
+    private QuickShareService quickShareService;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    ConfigService configService;
+    private ConfigService configService;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
@@ -85,8 +92,8 @@ public class PrepareQuickShare extends AbstractWebScript {
 
                             if (documentType == null) {
                                 responseJson.put("error", "File type is not supported");
-                                response.setStatus(500);
-                                response.getWriter().write(responseJson.toString(3));
+                                response.setStatus(Status.STATUS_INTERNAL_SERVER_ERROR);
+                                response.getWriter().write(responseJson.toString());
                                 return null;
                             }
 
@@ -94,7 +101,7 @@ public class PrepareQuickShare extends AbstractWebScript {
                                 responseJson.put("previewEnabled", true);
                             } else {
                                 responseJson.put("previewEnabled", false);
-                                response.getWriter().write(responseJson.toString(3));
+                                response.getWriter().write(responseJson.toString());
                                 return null;
                             }
 
@@ -106,16 +113,18 @@ public class PrepareQuickShare extends AbstractWebScript {
 
                             config.getEditorConfig().getCustomization().setGoback(null);
 
+                            String shardKey = config.getDocument().getKey();
+
                             ObjectMapper mapper = new ObjectMapper();
 
                             responseJson.put("editorConfig", new JSONObject(mapper.writeValueAsString(config)));
-                            responseJson.put("onlyofficeUrl", urlManager.getDocumentServerUrl() + "/");
+                            responseJson.put("documentServerApiUrl", urlManager.getDocumentServerApiUrl(shardKey));
                             responseJson.put("mime", mimetypeService.getMimetype(fileExtension));
 
                             logger.debug("Sending JSON prepare object");
-                            logger.debug(responseJson.toString(3));
+                            logger.debug(responseJson.toString());
 
-                            response.getWriter().write(responseJson.toString(3));
+                            response.getWriter().write(responseJson.toString());
 
                         } catch (JSONException ex) {
                             throw new WebScriptException("Unable to serialize JSON: " + ex.getMessage());
@@ -127,11 +136,11 @@ public class PrepareQuickShare extends AbstractWebScript {
                 }, tenantDomain);
 
             } catch (InvalidSharedIdException ex) {
-                logger.error("Unable to find: "+sharedId);
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: "+sharedId);
+                logger.error("Unable to find: " + sharedId);
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: " + sharedId);
             } catch (InvalidNodeRefException inre) {
-                logger.error("Unable to find: "+sharedId+" ["+inre.getNodeRef()+"]");
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: "+sharedId);
+                logger.error("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find: " + sharedId);
             }
         }
     }

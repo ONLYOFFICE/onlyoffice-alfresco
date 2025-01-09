@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
@@ -17,21 +23,18 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+
 @Component(value = "webscript.onlyoffice.onlyoffice-config.post")
 public class ConfigCallback extends AbstractWebScript {
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
-    ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void execute(WebScriptRequest request, WebScriptResponse response) throws IOException {
+    public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
 
         logger.debug("Received new configuration");
 
@@ -70,7 +73,7 @@ public class ConfigCallback extends AbstractWebScript {
 
         response.setContentType("application/json; charset=utf-8");
         response.setContentEncoding("UTF-8");
-        response.setStatus(200);
+        response.setStatus(Status.STATUS_OK);
     }
 }
 

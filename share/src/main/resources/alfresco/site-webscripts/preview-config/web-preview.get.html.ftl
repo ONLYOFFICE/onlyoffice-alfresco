@@ -1,11 +1,11 @@
 <!--
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
     http://www.onlyoffice.com
 -->
 
-<#if onlyofficeUrl??>
+<#if documentServerApiUrl??>
     <@markup id="onlyoffice-preview" target="js" action="after" scope="global">
-        <script id="scriptApi" type="text/javascript" src="${onlyofficeUrl}web-apps/apps/api/documents/api.js"></script>
+        <script id="scriptApi" type="text/javascript" src="${documentServerApiUrl}"></script>
         <script>
             var docEditor;
             var editorConfig = ${editorConfig};

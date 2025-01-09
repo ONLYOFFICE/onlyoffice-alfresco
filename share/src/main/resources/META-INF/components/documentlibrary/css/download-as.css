@@ -8,6 +8,7 @@
 }
 
 .download-as-file {
+    display: flex;
     text-align: left;
     padding: 4px;
 }
@@ -38,5 +39,6 @@
 .download-as-select {
     display: inline-block;
     vertical-align: middle;
-    width: 60px !important;
+    position: absolute;
+    width: inherit !important;
 }

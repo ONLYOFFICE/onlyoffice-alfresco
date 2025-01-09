@@ -1,3 +1,8 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,16 +20,20 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.http.HttpEntity;
+import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,59 +42,64 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
+
+
 @Service
 public class HistoryManager {
+    public static final QName CONTENT_VERSION_UUID = QName.createQName("onlyoffice:content-version-uuid");
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    NodeService nodeService;
+    private NodeService nodeService;
 
     @Autowired
     @Qualifier("dbNodeService")
-    NodeService dbNodeService;
+    private NodeService dbNodeService;
 
     @Autowired
-    VersionService versionService;
+    private VersionService versionService;
 
     @Autowired
-    MimetypeService mimetypeService;
+    private MimetypeService mimetypeService;
 
     @Autowired
-    ContentService contentService;
+    private ContentService contentService;
 
     @Autowired
-    PersonService personService;
+    private PersonService personService;
 
     @Autowired
-    Util util;
+    private Util util;
 
     @Autowired
-    UrlManager urlManager;
+    private UrlManager urlManager;
 
     @Autowired
-    JwtManager jwtManager;
+    private JwtManager jwtManager;
 
     @Autowired
-    RequestManager requestManager;
+    private RequestManager requestManager;
 
     @Autowired
-    SettingsManager settingsManager;
+    private SettingsManager settingsManager;
 
     @Autowired
-    DocumentManager documentManager;
+    private DocumentManager documentManager;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final QName ContentVersionUUID = QName.createQName("onlyoffice:content-version-uuid");
-
-    public void saveHistory(NodeRef nodeRef, History history, String changesUrl) throws JsonProcessingException {
+    public void saveHistory(final NodeRef nodeRef, final History history, final String changesUrl)
+            throws JsonProcessingException {
         logger.debug("Saving history for node: " + nodeRef.toString());
 
         saveHistoryData(nodeRef, objectMapper.writeValueAsString(history), "changes.json", true);
@@ -94,7 +108,7 @@ public class HistoryManager {
         logger.debug("History saved successfully.");
     }
 
-    public void deleteHistory(NodeRef nodeRef, Version version) {
+    public void deleteHistory(final NodeRef nodeRef, final Version version) {
         NodeRef changesNodeRef = util.getChildNodeByName(nodeRef, "changes.json");
         if (changesNodeRef != null) {
             Version changesVersion = getHistoryNodeVersionForVersion(version, "changes.json");
@@ -112,7 +126,8 @@ public class HistoryManager {
         }
     }
 
-    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name, final boolean fromString) {
+    private void saveHistoryData(final NodeRef nodeRef, final String data, final String name,
+                                 final boolean fromString) {
         if (data == null || data.isEmpty()) {
             logger.error("Error saving history " + name + "History data is null!");
             return;
@@ -127,12 +142,13 @@ public class HistoryManager {
                 if (historyNode == null) {
                     historyNode = createHistoryNode(nodeRef, name);
                     logger.debug("History node was created: " + historyNode.toString());
-
-                    historyVersion = versionService.getCurrentVersion(historyNode);
                 } else {
                     logger.debug("History node already exists: " + historyNode.toString());
-                    historyVersion = versionService.createVersion(historyNode, null);
                 }
+
+                Map<String, Serializable> versionProperties = new HashMap<>();
+                versionProperties.put(CONTENT_VERSION_UUID.getLocalName(), versionNode.getId());
+                historyVersion = versionService.createVersion(historyNode, versionProperties);
 
                 NodeRef versionNodeHistory = new NodeRef(
                         StoreRef.PROTOCOL_WORKSPACE,
@@ -140,20 +156,22 @@ public class HistoryManager {
                         historyVersion.getFrozenStateNodeRef().getId()
                 );
 
-                dbNodeService.setProperty(versionNodeHistory, ContentVersionUUID, versionNode.getId());
-
                 String extension = name.substring(name.lastIndexOf(".") + 1).trim().toLowerCase();
                 final String mimeType = mimetypeService.getMimetype(extension);
-                final ContentWriter writer = contentService.getWriter(versionNodeHistory, ContentModel.PROP_CONTENT, true);
+                final ContentWriter writer = contentService.getWriter(
+                        versionNodeHistory,
+                        ContentModel.PROP_CONTENT,
+                        true
+                );
 
                 if (fromString) {
                     writer.setMimetype(mimeType);
                     writer.putContent(data);
                 } else {
                     requestManager.executeGetRequest(data, new RequestManager.Callback<Void>() {
-                        public Void doWork(Object response) throws IOException {
+                        public Void doWork(final Object response) throws IOException {
                             writer.setMimetype(mimeType);
-                            writer.putContent(((HttpEntity)response).getContent());
+                            writer.putContent(((HttpEntity) response).getContent());
                             return null;
                         }
                     });
@@ -164,7 +182,7 @@ public class HistoryManager {
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private NodeRef createHistoryNode(NodeRef parentNodeRef, String name) {
+    private NodeRef createHistoryNode(final NodeRef parentNodeRef, final String name) {
         Map<QName, Serializable> props = new HashMap<>();
 
         props.put(ContentModel.PROP_NAME, name);
@@ -181,7 +199,7 @@ public class HistoryManager {
         return historyNode;
     }
 
-    private NodeRef getHistoryNodeForVersion(Version version, String name) {
+    private NodeRef getHistoryNodeForVersion(final Version version, final String name) {
         Version historyNodeVersion = getHistoryNodeVersionForVersion(version, name);
 
         if (historyNodeVersion != null) {
@@ -191,13 +209,22 @@ public class HistoryManager {
         return null;
     }
 
-    private Version getHistoryNodeVersionForVersion(Version version, String name) {
+    private Version getHistoryNodeVersionForVersion(final Version version, final String name) {
         NodeRef historyNodeRef = util.getChildNodeByName(version.getVersionedNodeRef(), name);
 
         if (historyNodeRef != null) {
-            List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef).getAllVersions();
+            List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
+                    .getAllVersions();
             for (Version versionHistory : versionsHistory) {
-                String contentVersionUUID = (String) nodeService.getProperty(versionHistory.getFrozenStateNodeRef(), ContentVersionUUID);
+                String contentVersionUUID = (String) Optional.ofNullable(versionHistory.getVersionProperty(
+                        CONTENT_VERSION_UUID.getLocalName())).orElse("");
+
+                if (contentVersionUUID.isEmpty()) {
+                    contentVersionUUID = (String) Optional.ofNullable(nodeService.getProperty(
+                            versionHistory.getFrozenStateNodeRef(),
+                            CONTENT_VERSION_UUID
+                    )).orElse("");
+                }
 
                 if (contentVersionUUID.equals(version.getFrozenStateNodeRef().getId())) {
                     return versionHistory;
@@ -208,25 +235,38 @@ public class HistoryManager {
         return null;
     }
 
-    public NodeRef getHistoryNodeByVersionNode(NodeRef versionNodeRef, String name) {
+    public NodeRef getHistoryNodeByVersionNode(final NodeRef versionNodeRef, final String name) {
         NodeRef historyNodeRef = null;
 
-        versionNodeRef = new NodeRef(
+        NodeRef workspaceVersionNodeRef = new NodeRef(
                 StoreRef.PROTOCOL_WORKSPACE,
                 versionNodeRef.getStoreRef().getIdentifier(),
                 versionNodeRef.getId()
         );
 
-        NodeRef nodeRef = (NodeRef) nodeService.getProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+        NodeRef nodeRef = (NodeRef) nodeService.getProperty(
+                workspaceVersionNodeRef,
+                Version2Model.PROP_QNAME_FROZEN_NODE_REF
+        );
 
         if (nodeRef != null) {
             historyNodeRef = util.getChildNodeByName(nodeRef, name);
             if (historyNodeRef != null) {
-                List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef).getAllVersions();
+                List<Version> versionsHistory = (List<Version>) versionService.getVersionHistory(historyNodeRef)
+                        .getAllVersions();
                 for (Version versionHistory : versionsHistory) {
-                    String contentVersionUUID = (String) nodeService.getProperty(versionHistory.getFrozenStateNodeRef(), ContentVersionUUID);
 
-                    if (contentVersionUUID.equals(versionNodeRef.getId())) {
+                    String contentVersionUUID = (String) Optional.ofNullable(versionHistory.getVersionProperty(
+                            CONTENT_VERSION_UUID.getLocalName())).orElse("");
+
+                    if (contentVersionUUID.isEmpty()) {
+                        contentVersionUUID = (String) Optional.ofNullable(nodeService.getProperty(
+                                versionHistory.getFrozenStateNodeRef(),
+                                CONTENT_VERSION_UUID
+                        )).orElse("");
+                    }
+
+                    if (contentVersionUUID.equals(workspaceVersionNodeRef.getId())) {
                         return versionHistory.getFrozenStateNodeRef();
                     }
                 }
@@ -236,8 +276,7 @@ public class HistoryManager {
         return null;
     }
 
-    public Map<String, Object> getHistoryInfo(NodeRef nodeRef) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    public Map<String, Object> getHistoryInfo(final NodeRef nodeRef) throws IOException {
         List<Version> versions = (List<Version>) versionService.getVersionHistory(nodeRef).getAllVersions();
         List<com.onlyoffice.model.documenteditor.history.Version> history = new ArrayList<>();
         Version latestVersion = versions.get(0);
@@ -245,8 +284,8 @@ public class HistoryManager {
         Collections.reverse(versions);
 
         for (Version internalVersion : versions) {
-            if ((internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
-                    || !(Boolean) internalVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()))
+            if (internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) == null
+                    || !(Boolean) internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())
                     || internalVersion.equals(latestVersion)) {
 
 
@@ -302,7 +341,7 @@ public class HistoryManager {
         return historyInfo;
     }
 
-    public HistoryData getHistoryData(NodeRef nodeRef, String versionLabel) throws IOException {
+    public HistoryData getHistoryData(final NodeRef nodeRef, final String versionLabel) throws IOException {
         HistoryData historyData = null;
         Version previousMajorVersion = null;
 
@@ -325,13 +364,19 @@ public class HistoryManager {
 
                 if (diffZipNodeRef != null) {
                     if (previousMajorVersion != null) {
-                        String previousMajorVersionFileName = documentManager.getDocumentName(previousMajorVersion.getFrozenStateNodeRef().toString());
+                        String previousMajorVersionFileName = documentManager.getDocumentName(
+                                previousMajorVersion.getFrozenStateNodeRef().toString()
+                        );
 
                         historyData.setChangesUrl(urlManager.getHistoryDiffUrl(version.getFrozenStateNodeRef()));
                         historyData.setPrevious(
                                 Previous.builder()
-                                        .key(documentManager.getDocumentKey(previousMajorVersion.getFrozenStateNodeRef().toString(), false))
-                                        .url(urlManager.getFileUrl(previousMajorVersion.getFrozenStateNodeRef().toString()))
+                                        .key(documentManager.getDocumentKey(
+                                                previousMajorVersion.getFrozenStateNodeRef().toString(), false
+                                        ))
+                                        .url(urlManager.getFileUrl(
+                                                previousMajorVersion.getFrozenStateNodeRef().toString()
+                                        ))
                                         .fileType(documentManager.getExtension(previousMajorVersionFileName))
                                         .build()
                         );
@@ -339,8 +384,8 @@ public class HistoryManager {
                 }
             }
 
-            if (version.getVersionProperty(Util.ForcesaveAspect.getLocalName()) == null
-                || !(Boolean) version.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
+            if (version.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) == null
+                || !(Boolean) version.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 previousMajorVersion = version;
             }
         }

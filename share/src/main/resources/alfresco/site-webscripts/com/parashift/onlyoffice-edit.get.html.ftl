@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
     http://www.onlyoffice.com
 -->
 <html>
@@ -17,7 +17,7 @@
     <link href="${url.context}/res/components/onlyoffice/onlyoffice.css" type="text/css" rel="stylesheet">
 
     <!--Change the address on installed ONLYOFFICE™ Online Editors-->
-    <script id="scriptApi" type="text/javascript" src="${onlyofficeUrl!}web-apps/apps/api/documents/api.js"></script>
+    <script id="scriptApi" type="text/javascript" src="${documentServerApiUrl!}"></script>
     <link rel="shortcut icon" href="${url.context}/res/components/images/filetypes/${documentType!}.ico" type="image/vnd.microsoft.icon" />
     <link rel="icon" href="${url.context}/res/components/images/filetypes/${documentType!}.ico" type="image/vnd.microsoft.icon" />
 
@@ -303,19 +303,6 @@
                         Alfresco.util.ComponentManager.get(id).onReady();
 
                         Alfresco.util.ComponentManager.get(id)._navigateForward = function() {
-                            Alfresco.util.Ajax.jsonGet({
-                                url:  Alfresco.constants.PROXY_URI + "parashift/onlyoffice/copy-permissions?nodeRef=${nodeRef}",
-                                failureCallback: {
-                                    fn: function(response) {
-                                        Alfresco.util.PopupManager.displayPrompt({
-                                            title: this.msg("message.failure"),
-                                            text: "Failed to copy permissions from source node to working copy node!"
-                                        });
-                                    },
-                                    scope: this
-                               }
-                            });
-
                             managePermissionsDialog.hide();
                         }
                     }
@@ -433,53 +420,62 @@
             };
         };
 
-        var editorConfig = ${editorConfig!};
-
-        editorConfig.events = {
-            "onAppReady": onAppReady,
-            "onMetaChange": onMetaChange,
-            "onRequestHistoryClose": onRequestHistoryClose,
-            "onRequestHistory": onRequestHistory,
-            "onRequestHistoryData": onRequestHistoryData,
-            "onRequestInsertImage": onRequestInsertImage,
-            "onRequestMailMergeRecipients": onRequestMailMergeRecipients,
-            "onRequestCompareFile": onRequestCompareFile,
-            "onRequestSaveAs": onRequestSaveAs
-        };
-        if (${(canManagePermissions!false)?c}) {
-            editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;
-        }
-
-        if (/android|avantgo|playbook|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\|plucker|pocket|psp|symbian|treo|up\\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i
-            .test(navigator.userAgent)) {
-            editorConfig.type='mobile';
-        }
-
-    if(typeof DocsAPI !== "undefined") {
-        var editorVersion = DocsAPI.DocEditor.version().split(".");
-        if ((editorConfig.document.fileType === "docxf" || editorConfig.document.fileType === "oform")
-            && editorVersion[0] < 7) {
+        if (${(error!false)?c}) {
             Alfresco.util.PopupManager.displayMessage({
-                text : Alfresco.util.message("onlyoffice.editor.old-version-for-docxf-and-oform"),
-                spanClass : "",
-                displayTime : 0
-            });
-        } else if (editorVersion[0] < 6 || (editorVersion[0] == 6 && editorVersion[1] == 0)) {
-            Alfresco.util.PopupManager.displayMessage({
-                text : Alfresco.util.message("onlyoffice.editor.old-version.not-supported"),
-                spanClass : "",
-                displayTime : 0
+                text: Alfresco.util.message("onlyoffice.editor.error.not-found"),
+                spanClass: "",
+                displayTime: 0
             });
         } else {
-            var docEditor = new DocsAPI.DocEditor("placeholder", editorConfig);
+
+            var editorConfig = Object.assign({}, ${editorConfig!});
+
+            editorConfig.events = {
+                "onAppReady": onAppReady,
+                "onMetaChange": onMetaChange,
+                "onRequestHistoryClose": onRequestHistoryClose,
+                "onRequestHistory": onRequestHistory,
+                "onRequestHistoryData": onRequestHistoryData,
+                "onRequestInsertImage": onRequestInsertImage,
+                "onRequestMailMergeRecipients": onRequestMailMergeRecipients,
+                "onRequestCompareFile": onRequestCompareFile,
+                "onRequestSaveAs": onRequestSaveAs
+            };
+            if (${(canManagePermissions!false)?c}) {
+                editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;
+            }
+
+            if (/android|avantgo|playbook|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\|plucker|pocket|psp|symbian|treo|up\\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i
+                .test(navigator.userAgent)) {
+                editorConfig.type='mobile';
+            }
+
+            if(typeof DocsAPI !== "undefined") {
+                var editorVersion = DocsAPI.DocEditor.version().split(".");
+                if ((editorConfig.document.fileType === "docxf" || editorConfig.document.fileType === "oform")
+                    && editorVersion[0] < 7) {
+                    Alfresco.util.PopupManager.displayMessage({
+                        text : Alfresco.util.message("onlyoffice.editor.old-version-for-docxf-and-oform"),
+                        spanClass : "",
+                        displayTime : 0
+                    });
+                } else if (editorVersion[0] < 6 || (editorVersion[0] == 6 && editorVersion[1] == 0)) {
+                    Alfresco.util.PopupManager.displayMessage({
+                        text : Alfresco.util.message("onlyoffice.editor.old-version.not-supported"),
+                        spanClass : "",
+                        displayTime : 0
+                    });
+                } else {
+                    var docEditor = new DocsAPI.DocEditor("placeholder", editorConfig);
+                }
+            } else {
+                Alfresco.util.PopupManager.displayMessage({
+                    text: Alfresco.util.message("onlyoffice.editor.unreachable"),
+                    spanClass: "",
+                    displayTime: 0
+                });
+            }
         }
-    } else {
-        Alfresco.util.PopupManager.displayMessage({
-            text: Alfresco.util.message("onlyoffice.editor.unreachable"),
-            spanClass: "",
-            displayTime: 0
-        });
-    }
     </script>
 </body>
 </html>

@@ -11,15 +11,17 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 ## Supported formats
 
 **For viewing:**
-* **WORD**: DJVU, DOC, DOCM, DOCX, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OFORM, OTT, OXPS, PDF, RTF, STW, SXW, TXT, WPS, WPT, XML, XPS
+* **WORD**: DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, RTF, STW, SXW, TXT, WPS, WPT, XML
 * **CELL**: CSV, ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLSX, XLT, XLTM, XLTX
 * **SLIDE**: DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
+* **PDF**: DJVU, DOCXF, OFORM, OXPS, PDF, XPS
 
 **For editing:**
 
-* **WORD**: DOCM, DOCX, DOCXF, DOTM, DOTX
+* **WORD**: DOCM, DOCX, DOTM, DOTX
 * **CELL**: XLSM, XLSX, XLTM, XLTX
 * **SLIDE**: POTM, POTX, PPSM, PPSX, PPTM, PPTX
+* **PDF**: PDF
 
 **For editing with possible loss of information:**
 
@@ -27,15 +29,12 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 * **CELL**: CSV, ODS, OTS
 * **SLIDE**: ODP, OTP
 
-**For filling:**
-
-* **WORD**: PDF
-
 **For converting to Office Open XML formats:**
 
-* **WORD:** DOC, DOCM, DOCXF, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, OXPS, PDF, RTF, STW, SXW, WPS, WPT, XML, XPS
+* **WORD:** DOC, DOCM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, RTF, STW, SXW, WPS, WPT, XML
 * **CELL:** ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLT, XLTM, XLTX
 * **SLIDE:** DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, SXI
+* **PDF**: DOCXF, OXPS, PDF, XPS
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
 

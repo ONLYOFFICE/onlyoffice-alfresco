@@ -1,5 +1,23 @@
 # Change Log
 
+## 8.0.0
+## Added
+- editing pdf
+- drop users from editor on unlock document
+- shardkey parameter
+- fi, he, no, sl empty file templates
+- the list of image formats available for insertion into the editor has been expanded (tiff)
+
+## Changed
+- lock document without create working copy
+- creating pdf form
+- com.onlyofficce:docs-integration-sdk:1.3.0
+- address of the command service, /command instead /coauthoring/CommandService.ashx
+- address of the convert service, /converter instead /ConvertService.ashx
+- default token lifetime is 5 minutes
+- default empty file templates
+- demo server address changed
+
 ## 7.0.0
 ## Added
 - core of the plugin has been moved to com.onlyoffice.docs-integration-sdk (https://github.com/ONLYOFFICE/docs-integration-sdk-java)

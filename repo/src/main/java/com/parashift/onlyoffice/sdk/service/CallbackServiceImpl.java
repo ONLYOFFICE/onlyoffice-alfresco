@@ -1,246 +1,396 @@
+/*
+    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    http://www.onlyoffice.com
+*/
+
 package com.parashift.onlyoffice.sdk.service;
 
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.model.documenteditor.Callback;
+import com.onlyoffice.model.documenteditor.callback.Action;
 import com.onlyoffice.model.documenteditor.callback.History;
 import com.onlyoffice.service.convert.ConvertService;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
+import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.HistoryManager;
+import com.parashift.onlyoffice.util.NodeManager;
 import com.parashift.onlyoffice.util.Util;
-import org.alfresco.model.ContentModel;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.apache.http.HttpEntity;
+import org.alfresco.service.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.IOException;
 import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-/*
-    Copyright (c) Ascensio System SIA 2024. All rights reserved.
-    http://www.onlyoffice.com
-*/
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.FORCESAVE_ASPECT;
+import static com.parashift.onlyoffice.model.OnlyofficeDocsModel.PROP_DOCUMENT_KEY;
+
 
 public class CallbackServiceImpl extends DefaultCallbackService {
     @Autowired
-    @Qualifier("checkOutCheckInService")
-    CheckOutCheckInService cociService;
+    private HistoryManager historyManager;
     @Autowired
-    ContentService contentService;
+    private Util util;
     @Autowired
-    NodeService nodeService;
+    private ConvertService convertService;
     @Autowired
-    HistoryManager historyManager;
+    private DocumentManager documentManager;
     @Autowired
-    Util util;
+    private VersionService versionService;
     @Autowired
-    RequestManager requestManager;
+    private EditorLockManager editorLockManager;
     @Autowired
-    ConvertService convertService;
+    private NodeManager nodeManager;
     @Autowired
-    DocumentManager documentManager;
+    private LockService lockService;
     @Autowired
-    VersionService versionService;
+    private PermissionService permissionService;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CallbackServiceImpl(JwtManager jwtManager,
-                               SettingsManager settingsManager) {
+    public CallbackServiceImpl(final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(jwtManager, settingsManager);
     }
 
+    @Override
     public void handlerEditing(final Callback callback, final String fileId) throws Exception {
-        logger.debug("User has entered/exited ONLYOFFICE");
+        List<Action> actions = Optional.ofNullable(callback.getActions()).orElse(new ArrayList<>());
+        NodeRef nodeRef = new NodeRef(fileId);
+
+        for (Action action : actions) {
+            String userId = String.valueOf(action.getUserid());
+
+            AuthenticationUtil.clearCurrentSecurityContext();
+            AuthenticationUtil.setFullyAuthenticatedUser(userId);
+
+            switch (action.getType()) {
+                case CONNECTED:
+                    handlerConnecting(callback, nodeRef);
+                    break;
+                case DISCONNECTED:
+                    handlerDisconnecting(callback, nodeRef);
+                    break;
+                default:
+            }
+        }
+    }
+
+    private void handlerConnecting(final Callback callback, final NodeRef nodeRef) throws RuntimeException {
+        String key = callback.getKey();
+
+        if (editorLockManager.isLockedInEditor(nodeRef) && editorLockManager.isValidDocumentKey(nodeRef, key)) {
+            LockState lockState = lockService.getLockState(nodeRef);
+
+            if (lockState.getExpires() != null) {
+                editorLockManager.refreshTimeToExpireLock(nodeRef, EditorLockManager.TIMEOUT_INFINITY);
+            }
+        } else if (editorLockManager.isLockedInEditor(nodeRef) && !editorLockManager.isValidDocumentKey(nodeRef, key)) {
+            throw new RuntimeException(
+                    MessageFormat.format(
+                            "Node with ID ({0}) is locked in ONLYOFFICE Docs Editor, but key ({1}) is not valid",
+                            nodeRef.toString(),
+                            key
+                    )
+            );
+        } else {
+            if (editorLockManager.isLockedNotInEditor(nodeRef)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is locked not in ONLYOFFICE Docs Editor",
+                                nodeRef.toString()
+                        )
+                );
+            }
+
+            if (!lockService.isLocked(nodeRef)) {
+                Map<QName, Serializable> aspectProperties = new HashMap<>();
+                aspectProperties.put(PROP_DOCUMENT_KEY, key);
+
+                editorLockManager.lockInEditor(nodeRef, aspectProperties);
+            }
+        }
+    }
+
+    private void handlerDisconnecting(final Callback callback, final NodeRef nodeRef) {
+        String key = callback.getKey();
+
+        if (!editorLockManager.isLockedInEditor(nodeRef)) {
+            throw new RuntimeException(
+                    MessageFormat.format(
+                            "Node with ID ({0}) is not locked in ONLYOFFICE Docs Editor",
+                            nodeRef.toString()
+                    )
+            );
+        }
+
+        if (editorLockManager.isLockedInEditor(nodeRef) && !editorLockManager.isValidDocumentKey(nodeRef, key)) {
+            throw new RuntimeException(
+                    MessageFormat.format(
+                            "Node with ID ({0}) is locked in ONLYOFFICE Docs Editor, but key ({1}) is not valid",
+                            nodeRef.toString(),
+                            key
+                    )
+            );
+        }
+
+        List<String> users = callback.getUsers();
+
+        LockState lockState = lockService.getLockState(nodeRef);
+        String lockOwner = lockState.getOwner();
+
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        if (users.contains(currentUser) || !lockOwner.equals(currentUser)) {
+            return;
+        }
+
+        boolean lockOwnerIsChanged = false;
+        for (String user : users) {
+            AccessStatus hasWritePermission = AuthenticationUtil.runAs(() -> {
+                return permissionService.hasPermission(nodeRef, PermissionService.WRITE);
+            }, user);
+
+            if (AccessStatus.ALLOWED.equals(hasWritePermission)) {
+                editorLockManager.changeLockOwner(nodeRef, user);
+                lockOwnerIsChanged = true;
+                break;
+            }
+        }
+
+        if (!lockOwnerIsChanged) {
+            throw new RuntimeException(
+                    MessageFormat.format(
+                            "Can not change lock owner for Node with ID ({0}), "
+                                    + "no user has access to the write",
+                            nodeRef.toString()
+                    )
+            );
+        }
     }
 
     @Override
     public void handlerSave(final Callback callback, final String fileId) throws Exception {
+        String key = callback.getKey();
+        List<Action> actions = callback.getActions();
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-        Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        logger.debug("Document Updated, changing content");
-        updateNode(wc, callback.getUrl(), callback.getFiletype());
+        for (Action action : actions) {
+            String userId = String.valueOf(action.getUserid());
 
-        logger.info("removing prop");
-        nodeService.removeProperty(wc, Util.EditingHashAspect);
-        nodeService.removeProperty(wc, Util.EditingKeyAspect);
+            AuthenticationUtil.clearCurrentSecurityContext();
+            AuthenticationUtil.setFullyAuthenticatedUser(userId);
 
-        if (getSettingsManager().getSettingBoolean("minorVersion", false)) {
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-        } else {
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-        }
-
-        cociService.checkin(wc, versionProperties, null);
-
-        History history = callback.getHistory();
-        if (history != null) {
-            try {
-                historyManager.saveHistory(
-                        nodeRef,
-                        history,
-                        callback.getChangesurl()
+            if (!editorLockManager.isLockedInEditor(nodeRef)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is not locked in ONLYOFFICE Docs Editor",
+                                nodeRef.toString()
+                        )
                 );
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
             }
-        }
 
-        // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
-                && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
-            try {
-                historyManager.deleteHistory(nodeRef, oldVersion);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+            if (editorLockManager.isLockedInEditor(nodeRef) && !editorLockManager.isValidDocumentKey(nodeRef, key)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is locked in ONLYOFFICE Docs Editor, but key ({1}) is not valid",
+                                nodeRef.toString(),
+                                key
+                        )
+                );
             }
+
+            String documentName = documentManager.getDocumentName(nodeRef.toString());
+            String currentFileType = documentManager.getExtension(documentName);
+            Version oldVersion = versionService.getCurrentVersion(nodeRef);
+            String fileUrl = callback.getUrl();
+
+            if (!currentFileType.equals(callback.getFiletype())) {
+                fileUrl = convert(callback.getUrl(), currentFileType);
+            }
+
+            editorLockManager.unlockFromEditor(nodeRef);
+            nodeManager.createNewVersion(nodeRef, fileUrl);
+
+            History history = callback.getHistory();
+            if (history != null) {
+                try {
+                    historyManager.saveHistory(
+                            nodeRef,
+                            history,
+                            callback.getChangesurl()
+                    );
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+                    && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
+                try {
+                    historyManager.deleteHistory(nodeRef, oldVersion);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            util.postActivity(nodeRef, false);
         }
-
-        util.postActivity(nodeRef, false);
-
-        logger.debug("Save complete");
     }
 
     @Override
-    public void handlerSaveCorrupted(Callback callback, String fileId) throws Exception {
-        logger.error("ONLYOFFICE has reported that saving the document has failed");
+    public void handlerClosed(final Callback callback, final String fileId) throws Exception {
+        String key = callback.getKey();
+        List<Action> actions = callback.getActions();
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        cociService.cancelCheckout(wc);
+
+        for (Action action : actions) {
+            String userId = String.valueOf(action.getUserid());
+
+            AuthenticationUtil.clearCurrentSecurityContext();
+            AuthenticationUtil.setFullyAuthenticatedUser(userId);
+
+            if (!editorLockManager.isLockedInEditor(nodeRef)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is not locked in ONLYOFFICE Docs Editor",
+                                nodeRef.toString()
+                        )
+                );
+            }
+
+            if (editorLockManager.isLockedInEditor(nodeRef) && !editorLockManager.isValidDocumentKey(nodeRef, key)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is locked in ONLYOFFICE Docs Editor, but key ({1}) is not valid",
+                                nodeRef.toString(),
+                                key
+                        )
+                );
+            }
+
+            editorLockManager.unlockFromEditor(nodeRef);
+        }
     }
 
     @Override
-    public void handlerClosed(Callback callback, String fileId) throws Exception {
-        logger.debug("No document updates, unlocking node");
-        NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
-        cociService.cancelCheckout(wc);
-    }
-
-    @Override
-    public void handlerForcesave(Callback callback, String fileId) throws Exception {
+    public void handlerForcesave(final Callback callback, final String fileId) throws Exception {
         if (!super.getSettingsManager().getSettingBoolean("customization.forcesave", false)) {
             logger.debug("Forcesave is disabled, ignoring forcesave request");
             return;
         }
 
+        String key = callback.getKey();
+        List<Action> actions = callback.getActions();
         NodeRef nodeRef = new NodeRef(fileId);
-        NodeRef wc = cociService.getWorkingCopy(nodeRef);
-        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
-        Version oldVersion = versionService.getCurrentVersion(nodeRef);
 
-        logger.debug("Forcesave request (type: " + callback.getForcesavetype() + ")");
-        updateNode(wc, callback.getUrl(), callback.getFiletype());
+        for (Action action : actions) {
+            String userId = String.valueOf(action.getUserid());
 
-        String hash = (String) nodeService.getProperty(wc, Util.EditingHashAspect);
-        String key = (String) nodeService.getProperty(wc, Util.EditingKeyAspect);
+            AuthenticationUtil.clearCurrentSecurityContext();
+            AuthenticationUtil.setFullyAuthenticatedUser(userId);
 
-        nodeService.removeProperty(wc, Util.EditingHashAspect);
-        nodeService.removeProperty(wc, Util.EditingKeyAspect);
-
-        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-        versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
-        versionProperties.put(Util.ForcesaveAspect.getLocalName(), true);
-        cociService.checkin(wc, versionProperties, null, true);
-
-        nodeService.setProperty(wc, Util.EditingHashAspect, hash);
-        nodeService.setProperty(wc, Util.EditingKeyAspect, key);
-
-        History history = callback.getHistory();
-        if (history != null) {
-            try {
-                historyManager.saveHistory(
-                        nodeRef,
-                        history,
-                        callback.getChangesurl()
+            if (!editorLockManager.isLockedInEditor(nodeRef)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is not locked in ONLYOFFICE Docs Editor",
+                                nodeRef.toString()
+                        )
                 );
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
             }
-        }
 
-        // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-        if (oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName()) != null
-                    && (Boolean) oldVersion.getVersionProperty(Util.ForcesaveAspect.getLocalName())) {
-            try {
-                historyManager.deleteHistory(nodeRef, oldVersion);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+            if (editorLockManager.isLockedInEditor(nodeRef) && !editorLockManager.isValidDocumentKey(nodeRef, key)) {
+                throw new RuntimeException(
+                        MessageFormat.format(
+                                "Node with ID ({0}) is locked in ONLYOFFICE Docs Editor, but key ({1}) is not valid",
+                                nodeRef.toString(),
+                                key
+                        )
+                );
             }
+
+            String documentName = documentManager.getDocumentName(nodeRef.toString());
+            String currentFileType = documentManager.getExtension(documentName);
+            Version oldVersion = versionService.getCurrentVersion(nodeRef);
+            String fileUrl = callback.getUrl();
+
+            if (!currentFileType.equals(callback.getFiletype())) {
+                fileUrl = convert(callback.getUrl(), currentFileType);
+            }
+
+            Map<QName, Serializable> aspectEditingProperties = editorLockManager.getEditorLockProperties(nodeRef);
+
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, "ONLYOFFICE (forcesave)");
+            versionProperties.put(FORCESAVE_ASPECT.getLocalName(), true);
+
+            editorLockManager.unlockFromEditor(nodeRef);
+            nodeManager.createNewVersion(nodeRef, fileUrl, versionProperties);
+            editorLockManager.lockInEditor(nodeRef, aspectEditingProperties);
+
+            History history = callback.getHistory();
+            if (history != null) {
+                try {
+                    historyManager.saveHistory(
+                            nodeRef,
+                            history,
+                            callback.getChangesurl()
+                    );
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
+            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+                    && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
+                try {
+                    historyManager.deleteHistory(nodeRef, oldVersion);
+                } catch (Exception e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
+            util.postActivity(nodeRef, false);
         }
-
-        util.postActivity(nodeRef, false);
-
-        logger.debug("Forcesave complete");
     }
 
-    private void updateNode(final NodeRef nodeRef, String url, String fileType) throws Exception {
-        logger.debug("Retrieving URL:" + url);
+    private String convert(final String fileUrl, final String outputType) {
+        try {
+            ConvertRequest convert = ConvertRequest.builder()
+                    .outputtype(outputType)
+                    .url(fileUrl)
+                    .build();
 
-        String documentName = documentManager.getDocumentName(nodeRef.toString());
-        String currentFileType = documentManager.getExtension(documentName);
-        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            ConvertResponse convertResponse = convertService.processConvert(convert, null);
 
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-            public Void doWork() {
-                NodeRef sourcesNodeRef = cociService.getCheckedOut(nodeRef);
-                nodeService.setProperty(sourcesNodeRef, ContentModel.PROP_LOCK_OWNER, currentUser);
-                nodeService.setProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER, currentUser);
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        if (!currentFileType.equals(fileType)) {
-            try {
-                logger.debug("Should convert back");
-                ConvertRequest convert = ConvertRequest.builder()
-                        .outputtype(currentFileType)
-                        .url(url)
-                        .build();
-
-                ConvertResponse convertResponse = convertService.processConvert(convert, nodeRef.toString());
-
-                if (convertResponse.getError() != null && convertResponse.getError().equals(ConvertResponse.Error.TOKEN)) {
-                    throw new SecurityException();
-                }
-
-                if (convertResponse.getEndConvert() == null || !convertResponse.getEndConvert()
-                        || convertResponse.getFileUrl() == null || convertResponse.getFileUrl().isEmpty()) {
-                    throw new Exception("'endConvert' is false or 'fileUrl' is empty");
-                }
-
-                url = convertResponse.getFileUrl();
-            } catch (Exception e) {
-                throw new Exception("Error while converting document back to original format: " + e.getMessage(), e);
-            }
+            return convertResponse.getFileUrl();
+        } catch (Exception e) {
+            throw new AlfrescoRuntimeException(
+                    "Error while converting document back to original format: " + e.getMessage(),
+                    e
+            );
         }
-
-        requestManager.executeGetRequest(url, new RequestManager.Callback<Void>() {
-            public Void doWork(Object response) throws IOException {
-                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true).putContent(((HttpEntity)response).getContent());
-                return null;
-            }
-        });
     }
 }
