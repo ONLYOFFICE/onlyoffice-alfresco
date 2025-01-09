@@ -420,6 +420,32 @@
             };
         };
 
+        const onRequestReferenceData = (event) => {
+            Alfresco.util.Ajax.jsonPost({
+                url: Alfresco.constants.PROXY_URI + "parashift/onlyoffice/editor-api/reference-data",
+                dataObj: event.data,
+                successCallback: {
+                    fn: function (response) {
+                        docEditor.setReferenceData(response.json);
+                    },
+                    scope: this
+                },
+                failureCallback: {
+                    fn: function (response) {
+                        const status = response.serverResponse.status;
+                        if (status == 403 || status == 404) {
+                            errorMessage = "${msg('onlyoffice.editor.error.not-found')}";
+                        } else {
+                            errorMessage = "${msg('onlyoffice.editor.error.unknown')}";
+                        }
+
+                        docEditor.setReferenceData({error: errorMessage});
+                    },
+                    scope: this
+                }
+            });
+        }
+
         if (${(error!false)?c}) {
             Alfresco.util.PopupManager.displayMessage({
                 text: Alfresco.util.message("onlyoffice.editor.error.not-found"),
@@ -439,7 +465,8 @@
                 "onRequestInsertImage": onRequestInsertImage,
                 "onRequestMailMergeRecipients": onRequestMailMergeRecipients,
                 "onRequestCompareFile": onRequestCompareFile,
-                "onRequestSaveAs": onRequestSaveAs
+                "onRequestSaveAs": onRequestSaveAs,
+                "onRequestReferenceData": onRequestReferenceData
             };
             if (${(canManagePermissions!false)?c}) {
                 editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;
