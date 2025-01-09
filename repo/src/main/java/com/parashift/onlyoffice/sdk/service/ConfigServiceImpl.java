@@ -12,6 +12,7 @@ import com.onlyoffice.model.common.User;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.documenteditor.config.document.Info;
 import com.onlyoffice.model.documenteditor.config.document.Permissions;
+import com.onlyoffice.model.documenteditor.config.document.ReferenceData;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Embedded;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Template;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
@@ -52,6 +53,14 @@ public class ConfigServiceImpl extends DefaultConfigService {
     public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
                              final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(documentManager, urlManager, jwtManager, settingsManager);
+    }
+
+    @Override
+    public ReferenceData getReferenceData(final String fileId) {
+        return ReferenceData.builder()
+                .fileKey(fileId)
+                .instanceId(util.getCurrentInstanceId())
+                .build();
     }
 
     @Override

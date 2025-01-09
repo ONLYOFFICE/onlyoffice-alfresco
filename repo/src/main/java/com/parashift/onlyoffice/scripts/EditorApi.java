@@ -13,24 +13,32 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.model.convertservice.convertrequest.PDF;
+import com.onlyoffice.model.documenteditor.config.document.ReferenceData;
 import com.onlyoffice.service.convert.ConvertService;
+import com.parashift.onlyoffice.model.dto.ReferenceDataRequest;
+import com.parashift.onlyoffice.model.dto.ReferenceDataResponse;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.Util;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,11 +54,14 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Component(value = "webscript.onlyoffice.editor-api.post")
@@ -95,6 +106,15 @@ public class EditorApi extends AbstractWebScript {
     @Autowired
     private DocumentManager documentManager;
 
+    @Autowired
+    private FileFolderService fileFolderService;
+
+    @Autowired
+    private Repository repositoryHelper;
+
+    @Autowired
+    private NamespaceService namespaceService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -114,6 +134,9 @@ public class EditorApi extends AbstractWebScript {
                 break;
             case "from-docx":
                 docxToPdfForm(request, response);
+                break;
+            case "reference-data":
+                referenceData(request, response);
                 break;
             default:
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "API Not Found");
@@ -306,6 +329,117 @@ public class EditorApi extends AbstractWebScript {
         } else {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Required query parameters not found");
         }
+    }
+
+    private void referenceData(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
+        ReferenceDataRequest referenceDataRequest = objectMapper.readValue(
+                request.getContent().getContent(),
+                ReferenceDataRequest.class
+        );
+
+        NodeRef nodeRef = null;
+        ReferenceData referenceData = referenceDataRequest.getReferenceData();
+        if (referenceData != null) {
+            String currentInstanceId = util.getCurrentInstanceId();
+            String instanceId = referenceData.getInstanceId();
+
+            if (instanceId == null || instanceId.isEmpty()) {
+                instanceId = currentInstanceId;
+                referenceData.setInstanceId(instanceId);
+            }
+
+            if (instanceId.equals(currentInstanceId)) {
+                nodeRef = new NodeRef(referenceData.getFileKey());
+            }
+        }
+
+        if (nodeRef == null || !nodeService.exists(nodeRef)) {
+            String path = referenceDataRequest.getPath();
+
+            if (path != null && !path.isEmpty()) {
+                nodeRef = findNodeByPath(path);
+            }
+        }
+
+        if (nodeRef == null || !nodeService.exists(nodeRef)) {
+            String link = referenceDataRequest.getLink();
+            if (link != null && link.startsWith(urlManager.getShareUrl())) {
+                try {
+                    URIBuilder uri = new URIBuilder(link);
+                    NameValuePair nodeRefQueryParam = uri.getFirstQueryParam("nodeRef");
+                    String nodeRefFromQueryParam = Optional.ofNullable(nodeRefQueryParam.getValue()).orElse("");
+
+                    if (!nodeRefFromQueryParam.isEmpty()) {
+                        nodeRef = new NodeRef(nodeRefFromQueryParam);
+                    }
+                } catch (URISyntaxException e) {
+                    //Do nothing if link could not be parsed as a URI reference
+                }
+            }
+        }
+
+        if (nodeRef == null
+                || !nodeService.exists(nodeRef)
+                || permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED) {
+            throw new WebScriptException(
+                    Status.STATUS_NOT_FOUND,
+                    "Node with given parameters not found or you don't have permission to view this node."
+            );
+        }
+
+        if (referenceData == null) {
+            referenceData = ReferenceData.builder()
+                    .fileKey(nodeRef.toString())
+                    .instanceId(util.getCurrentInstanceId())
+                    .build();
+        }
+
+        String documentName = documentManager.getDocumentName(nodeRef.toString());
+        String extension = documentManager.getExtension(documentName);
+        String path = MessageFormat.format("{0}/{1}", getPath(nodeRef), documentName);
+        String documentKey = documentManager.getDocumentKey(nodeRef.toString(), false);
+        String fileUrl = urlManager.getFileUrl(nodeRef.toString());
+        String editorUrl = urlManager.getEditorUrl(nodeRef);
+
+        ReferenceDataResponse referenceDataResponse = ReferenceDataResponse.builder()
+                .fileType(extension)
+                .path(path)
+                .key(documentKey)
+                .url(fileUrl)
+                .link(editorUrl)
+                .referenceData(referenceData)
+                .build();
+
+        if (settingsManager.isSecurityEnabled()) {
+            referenceDataResponse.setToken(jwtManager.createToken(referenceDataResponse));
+        }
+
+        response.setContentType("application/json");
+        response.getWriter().write(objectMapper.writeValueAsString(referenceDataResponse));
+    }
+
+    private String getPath(final NodeRef nodeRef) {
+        Path path = nodeService.getPath(nodeRef);
+
+        path = path.subPath(2, path.size() - 1);
+
+        return path.toDisplayPath(nodeService, permissionService);
+    }
+
+    private NodeRef findNodeByPath(final String path) {
+        NodeRef currentNode = repositoryHelper.getCompanyHome();
+        String[] pathSegments = path.split("/");
+
+        for (String segment : pathSegments) {
+            if (!segment.isEmpty()) {
+                currentNode = fileFolderService.searchSimple(currentNode, segment);
+                if (currentNode == null) {
+                    break;
+                }
+            }
+        }
+
+        return currentNode;
     }
 }
 

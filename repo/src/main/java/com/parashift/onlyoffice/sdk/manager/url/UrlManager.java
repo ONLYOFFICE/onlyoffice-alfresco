@@ -16,4 +16,5 @@ public interface UrlManager extends com.onlyoffice.manager.url.UrlManager {
     String getFavoriteUrl(NodeRef nodeRef);
     String getHistoryInfoUrl(NodeRef nodeRef);
     String getHistoryDataUrl(NodeRef nodeRef);
+    String getEditorUrl(NodeRef nodeRef);
 }
