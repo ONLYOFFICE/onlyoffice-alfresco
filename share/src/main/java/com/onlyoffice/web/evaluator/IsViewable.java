@@ -24,7 +24,6 @@ public class IsViewable extends BaseEvaluator {
 
     @Override
     public boolean evaluate(final JSONObject jsonObject) {
-        logger.error("IsViewable");
         try {
             String fileName = (String) jsonObject.get("fileName");
             if (fileName != null) {
