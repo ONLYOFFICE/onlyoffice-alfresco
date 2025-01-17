@@ -1,4 +1,4 @@
-ONLYOFFICE Alfresco module package uses code from the following 3rd party projects.
+ONLYOFFICE module package for Alfresco uses code from the following 3rd party projects.
 
 org.alfresco.acs-community-packaging                           - Alfresco Content Services Community Packaging. (https://github.com/Alfresco/acs-community-packaging/blob/master/LICENSE)
 License:                                                         Apache License 2.0
