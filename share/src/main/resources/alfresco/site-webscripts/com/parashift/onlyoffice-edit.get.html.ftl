@@ -472,7 +472,15 @@
                         requestReferenceData(
                             data,
                             (response) => {
-                                docEditor.setReferenceSource(response.json);
+                                const data = response.json;
+                                if (data.fileType != "xlsx") {
+                                    Alfresco.util.PopupManager.displayMessage({
+                                        text: "${msg('onlyoffice.editor.error.unsupported-type')}"
+                                    });
+                                    return;
+                                }
+
+                                docEditor.setReferenceSource(data);
                             },
                             (response) => {
                                 const status = response.serverResponse.status;
