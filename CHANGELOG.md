@@ -4,6 +4,9 @@
 ## Added
 - support events in editor: onRequestReferenceData, onRequestReferenceSource, onRequestOpen 
 
+## Changed
+- fixed bug with setting Ignore SSL Certificate
+
 ## 8.0.0
 ## Added
 - editing pdf
