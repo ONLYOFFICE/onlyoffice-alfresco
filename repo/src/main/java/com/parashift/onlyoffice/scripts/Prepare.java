@@ -94,7 +94,6 @@ public class Prepare extends AbstractWebScript {
 
     @Override
     public void execute(final WebScriptRequest request, final WebScriptResponse response) throws IOException {
-        mesService.registerResourceBundle("alfresco/messages/prepare");
         JSONObject responseJson = new JSONObject();
 
         try {
@@ -118,7 +117,7 @@ public class Prepare extends AbstractWebScript {
                 }
 
                 String ext = mimetypeService.getExtension(newFileMime);
-                String baseName = mesService.getMessage("onlyoffice.newdoc-filename-" + ext);
+                String baseName = getResources().getString("onlyoffice.newdoc-filename-" + ext);
 
                 String newName = util.getCorrectName(parentNodeRef, baseName, ext);
 
