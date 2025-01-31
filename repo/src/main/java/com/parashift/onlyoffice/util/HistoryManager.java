@@ -29,6 +29,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -277,12 +278,19 @@ public class HistoryManager {
     }
 
     public Map<String, Object> getHistoryInfo(final NodeRef nodeRef) throws IOException {
-        List<Version> versions = (List<Version>) versionService.getVersionHistory(nodeRef).getAllVersions();
+        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+        List<Version> versions = new ArrayList<>();
+        Version latestVersion = null;
+        String currentVersion = null;
+
+        if (versionHistory != null) {
+            versions = new ArrayList<>(versionHistory.getAllVersions());
+            latestVersion = versions.get(0);
+            Collections.reverse(versions);
+            currentVersion = versionService.getCurrentVersion(nodeRef).getVersionLabel();
+        }
+
         List<com.onlyoffice.model.documenteditor.history.Version> history = new ArrayList<>();
-        Version latestVersion = versions.get(0);
-
-        Collections.reverse(versions);
-
         for (Version internalVersion : versions) {
             if (internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) == null
                     || !(Boolean) internalVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())
@@ -335,7 +343,7 @@ public class HistoryManager {
 
         Map<String, Object> historyInfo = new HashMap<>();
 
-        historyInfo.put("currentVersion", versionService.getCurrentVersion(nodeRef).getVersionLabel());
+        historyInfo.put("currentVersion", currentVersion);
         historyInfo.put("history", history);
 
         return historyInfo;
@@ -344,10 +352,13 @@ public class HistoryManager {
     public HistoryData getHistoryData(final NodeRef nodeRef, final String versionLabel) throws IOException {
         HistoryData historyData = null;
         Version previousMajorVersion = null;
+        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+        List<Version> versions = new ArrayList<>();
 
-        List<Version> versions = (List<Version>) versionService.getVersionHistory(nodeRef).getAllVersions();
-
-        Collections.reverse(versions);
+        if (versionHistory != null) {
+            versions = new ArrayList<>(versionHistory.getAllVersions());
+            Collections.reverse(versions);
+        }
 
         for (Version version : versions) {
             if (version.getVersionLabel().equals(versionLabel)) {

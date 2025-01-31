@@ -249,7 +249,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 }
             }
 
-            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+            if (oldVersion != null && oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
                     && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 try {
                     historyManager.deleteHistory(nodeRef, oldVersion);
@@ -368,7 +368,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             }
 
             // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+            if (oldVersion != null && oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
                     && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 try {
                     historyManager.deleteHistory(nodeRef, oldVersion);
