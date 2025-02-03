@@ -134,32 +134,9 @@
         });
         documentPicker.onComponentsLoaded(); // Need to force the component loaded call to ensure setup gets completed.
 
-        YAHOO.Bubbling.on("onDocumentsSelected", function(eventName, payload) {
-            if (payload && payload[1].items) {
-                var items = [];
-
-                for (var i = 0; i < payload[1].items.length; i++) {
-                    items.push(payload[1].items[i].nodeRef);
-                }
-
-                if (items.length > 0) {
-                    Alfresco.util.Ajax.jsonPost({
-                        url: Alfresco.constants.PROXY_URI + "parashift/onlyoffice/editor-api/insert",
-                        dataObj: {
-                             command: documentPicker.docEditorCommand,
-                             nodes: items
-                        },
-                        successCallback: {
-                            fn: function(response) {
-                                documentPicker.docEditorEvent(response.json[0]);
-                            },
-                            scope: this
-                        }
-                    });
-                }
-            }
+        YAHOO.Bubbling.on("onDocumentsSelected", (eventName, payload) => {
+             documentPicker.onDocumentsSelected(eventName, payload);
         });
-
 
         var onAppReady = function (event) {
             if (${(demo!false)?c}) {
@@ -242,22 +219,57 @@
         var onRequestInsertImage = function (event) {
             documentPicker.singleSelectedItem = null;
             documentPicker.docEditorCommand = event.data.c;
-            documentPicker.docEditorEvent = docEditor.insertImage;
+            documentPicker.onDocumentsSelected = (eventName, payload) => {
+                insertCallback(payload, docEditor.insertImage)
+            };
+
             documentPicker.onShowPicker();
         };
 
         var onRequestMailMergeRecipients = function () {
             documentPicker.singleSelectedItem = null;
             documentPicker.docEditorCommand = null;
-            documentPicker.docEditorEvent = docEditor.setMailMergeRecipients;
+            documentPicker.onDocumentsSelected = (eventName, payload) => {
+                insertCallback(payload, docEditor.setMailMergeRecipients)
+            };
+
             documentPicker.onShowPicker();
         };
 
         var onRequestCompareFile = function () {
             documentPicker.singleSelectedItem = null;
             documentPicker.docEditorCommand = null;
-            documentPicker.docEditorEvent = docEditor.setRevisedFile;
+            documentPicker.onDocumentsSelected = (eventName, payload) => {
+                insertCallback(payload, docEditor.setRevisedFile)
+            };
+
             documentPicker.onShowPicker();
+        };
+
+        const insertCallback = (payload, docEditorMethod) => {
+            if (payload && payload[1].items) {
+                var items = [];
+
+                for (var i = 0; i < payload[1].items.length; i++) {
+                    items.push(payload[1].items[i].nodeRef);
+                }
+
+                if (items.length > 0) {
+                    Alfresco.util.Ajax.jsonPost({
+                        url: Alfresco.constants.PROXY_URI + "parashift/onlyoffice/editor-api/insert",
+                        dataObj: {
+                             command: documentPicker.docEditorCommand,
+                             nodes: items
+                        },
+                        successCallback: {
+                            fn: function(response) {
+                                docEditorMethod(response.json[0]);
+                            },
+                            scope: this
+                        }
+                    });
+                }
+            }
         };
 
         var onRequestSharingSettings = function (event) {
@@ -420,6 +432,117 @@
             };
         };
 
+        const onRequestReferenceData = (event) => {
+            requestReferenceData(
+                event.data,
+                (response) => {
+                    docEditor.setReferenceData(response.json);
+                },
+                (response) => {
+                    const status = response.serverResponse.status;
+                    if (status == 403 || status == 404) {
+                        errorMessage = "${msg('onlyoffice.editor.error.not-found')}";
+                    } else {
+                        errorMessage = "${msg('onlyoffice.editor.error.unknown')}";
+                    }
+
+                    docEditor.setReferenceData({error: errorMessage});
+                }
+            );
+        };
+
+        const onRequestReferenceSource = (event) => {
+            documentPicker.singleSelectedItem = null;
+            documentPicker.docEditorCommand = null;
+            documentPicker.onDocumentsSelected = (eventName, payload) => {
+                if (payload && payload[1].items) {
+                    var items = [];
+
+                    for (var i = 0; i < payload[1].items.length; i++) {
+                        items.push(payload[1].items[i].nodeRef);
+                    }
+
+                    if (items.length > 0) {
+                        const data = {
+                            referenceData: {
+                                fileKey: items[0]
+                            }
+                        };
+
+                        requestReferenceData(
+                            data,
+                            (response) => {
+                                const data = response.json;
+                                if (data.fileType != "xlsx") {
+                                    Alfresco.util.PopupManager.displayMessage({
+                                        text: "${msg('onlyoffice.editor.error.unsupported-type')}"
+                                    });
+                                    return;
+                                }
+
+                                docEditor.setReferenceSource(data);
+                            },
+                            (response) => {
+                                const status = response.serverResponse.status;
+                                if (status == 403 || status == 404) {
+                                    errorMessage = "${msg('onlyoffice.editor.error.not-found')}";
+                                } else {
+                                    errorMessage = "${msg('onlyoffice.editor.error.unknown')}";
+                                }
+
+                                Alfresco.util.PopupManager.displayMessage({
+                                    text: errorMessage
+                                });
+                            }
+                        );
+                    }
+                }
+            };
+
+            documentPicker.onShowPicker();
+        };
+
+        const requestReferenceData = (data, successCallback, failureCallback) => {
+            Alfresco.util.Ajax.jsonPost({
+                url: Alfresco.constants.PROXY_URI + "parashift/onlyoffice/editor-api/reference-data",
+                dataObj: data,
+                successCallback: {
+                    fn: successCallback,
+                    scope: this
+                },
+                failureCallback: {
+                    fn: failureCallback,
+                    scope: this
+                }
+            });
+        };
+
+        const onRequestOpen = (event) => {
+            const data = event.data;
+
+            requestReferenceData(
+                data,
+                (response) => {
+                    window.open(response.json.link, data.windowName);
+                },
+                (response) => {
+                    const requestOpenWindow = window.open("", data.windowName);
+                    requestOpenWindow.close();
+
+                    const status = response.serverResponse.status;
+                    if (status == 403 || status == 404) {
+                        errorMessage = "${msg('onlyoffice.editor.error.not-found')}";
+                    } else {
+                        errorMessage = "${msg('onlyoffice.editor.error.unknown')}";
+                    }
+
+                    Alfresco.util.PopupManager.displayMessage({
+                        text: errorMessage
+                    });
+                }
+            );
+        }
+
         if (${(error!false)?c}) {
             Alfresco.util.PopupManager.displayMessage({
                 text: Alfresco.util.message("onlyoffice.editor.error.not-found"),
@@ -439,7 +562,10 @@
                 "onRequestInsertImage": onRequestInsertImage,
                 "onRequestMailMergeRecipients": onRequestMailMergeRecipients,
                 "onRequestCompareFile": onRequestCompareFile,
-                "onRequestSaveAs": onRequestSaveAs
+                "onRequestSaveAs": onRequestSaveAs,
+                "onRequestReferenceData": onRequestReferenceData,
+                "onRequestReferenceSource": onRequestReferenceSource,
+                "onRequestOpen": onRequestOpen
             };
             if (${(canManagePermissions!false)?c}) {
                 editorConfig.events.onRequestSharingSettings = onRequestSharingSettings;

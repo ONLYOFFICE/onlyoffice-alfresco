@@ -6,6 +6,7 @@
 package com.parashift.onlyoffice.util;
 
 import net.sf.acegisecurity.Authentication;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -13,6 +14,7 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -38,6 +41,8 @@ public class EditorLockManager {
 
     @Autowired
     private NodeService nodeService;
+    @Autowired
+    private VersionService versionService;
     @Autowired
     private LockService lockService;
     @Autowired
@@ -59,6 +64,16 @@ public class EditorLockManager {
                              final int timeToExpire) {
         behaviourFilter.disableBehaviour();
         try {
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+            String version = (String) properties.get(ContentModel.PROP_VERSION_LABEL);
+            if (version == null || version.isEmpty()) {
+                Map<QName, Serializable> versionProps = Collections.singletonMap(
+                        ContentModel.PROP_INITIAL_VERSION,
+                        true
+                );
+                versionService.ensureVersioningEnabled(nodeRef, versionProps);
+            }
+
             nodeService.addAspect(nodeRef, ASPECT_EDITING_IN_ONLYOFFICE_DOCS, aspectProperties);
 
             lockService.lock(nodeRef, LockType.READ_ONLY_LOCK, timeToExpire);

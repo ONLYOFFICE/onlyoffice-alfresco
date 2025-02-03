@@ -8,8 +8,10 @@ package com.parashift.onlyoffice.util;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -21,6 +23,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.UrlUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -29,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +61,9 @@ public class Util {
 
     @Autowired
     private TenantService tenantService;
+
+    @Autowired
+    private SysAdminParams sysAdminParams;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -163,4 +170,26 @@ public class Util {
                 json.toString()
         );
     }
+
+    public String getCurrentInstanceId() {
+        String alfrescoUrl = UrlUtil.getAlfrescoUrl(sysAdminParams);
+
+        if (alfrescoUrl.endsWith("/")) {
+            alfrescoUrl = alfrescoUrl.substring(0, alfrescoUrl.length() - 1);
+        }
+
+        String instanceId = alfrescoUrl;
+
+        String currentTenantDomain = TenantUtil.getCurrentDomain();
+        if (currentTenantDomain != null && !currentTenantDomain.isEmpty()) {
+            instanceId = MessageFormat.format(
+                    "{0}@{1}",
+                    instanceId,
+                    currentTenantDomain
+            );
+        }
+
+        return instanceId;
+    }
+
 }

@@ -1,4 +1,4 @@
-ONLYOFFICE Alfresco module package uses code from the following 3rd party projects.
+ONLYOFFICE module package for Alfresco uses code from the following 3rd party projects.
 
 org.alfresco.acs-community-packaging                           - Alfresco Content Services Community Packaging. (https://github.com/Alfresco/acs-community-packaging/blob/master/LICENSE)
 License:                                                         Apache License 2.0
@@ -31,3 +31,7 @@ License File                                                     com.fasterxml.j
 javax.servlet.javax.servlet-api                                - Java Servlet is the foundation web specification in the Java Enterprise Platform. Developers can build web applications using the Servlet API to interact with the request/response workflow. (https://oss.oracle.com/licenses/CDDL+GPL-1.1)
 License:                                                         CDDL + GPLv2 with classpath exception
 License File                                                     javax.servlet.javax.servlet-api.license
+
+org.projectlombok.lombok - Lombok is a Java library that provides annotations to simplify Java development by automating the generation of boilerplate code. (https://projectlombok.org/LICENSE)
+License:              BSD-2-Clause
+License File:         org.projectlombok.lombok.license

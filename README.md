@@ -1,4 +1,4 @@
-# ONLYOFFICE Alfresco module package
+# ONLYOFFICE module package for Alfresco
 
 This plugin enables users to edit office documents from Alfresco Share using ONLYOFFICE Docs packaged as Document Server - [Community or Enterprise Edition](#onlyoffice-docs-editions).
 
@@ -50,7 +50,7 @@ To install Enterprise Edition, follow instructions [here](https://helpcenter.onl
 
 Community Edition vs Enterprise Edition comparison can be found [here](#onlyoffice-docs-editions).
 
-## Installing ONLYOFFICE Alfresco module package
+## Installing ONLYOFFICE module package for Alfresco
 
 To start using ONLYOFFICE Document Server with Alfresco, the following steps must be performed for Ubuntu 14.04:
 
@@ -105,9 +105,9 @@ Module configuration can be found inside `Alfresco Administration Console` or by
 Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
 Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.security.key* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
 
-## Compiling ONLYOFFICE Alfresco module package
+## Compiling ONLYOFFICE module package for Alfresco
 
-If you plan to compile the ONLYOFFICE Alfresco module package yourself (e.g. edit the source code and compile it afterwards), follow these steps. 
+If you plan to compile the ONLYOFFICE module package for Alfresco yourself (e.g. edit the source code and compile it afterwards), follow these steps. 
 
 1. The latest stable Oracle Java version is necessary for the successful build. If you do not have it installed, use the following commands to install Oracle Java 8:
     ```bash
@@ -118,7 +118,7 @@ If you plan to compile the ONLYOFFICE Alfresco module package yourself (e.g. edi
 2. Install latest Maven:
 Installation process is described [here](https://maven.apache.org/install.html)
 
-3. Download the ONLYOFFICE Alfresco module package source code:
+3. Download the ONLYOFFICE module package for Alfresco source code:
     ```bash
     git clone https://github.com/onlyoffice/onlyoffice-alfresco.git
     ```
@@ -134,7 +134,7 @@ Installation process is described [here](https://maven.apache.org/install.html)
     mvn clean install
     ```
 
-Another way to build ONLYOFFICE Alfresco module package is using docker-compose file.
+Another way to build ONLYOFFICE module package for Alfresco is using docker-compose file.
 
 Use this command from project directory:
 

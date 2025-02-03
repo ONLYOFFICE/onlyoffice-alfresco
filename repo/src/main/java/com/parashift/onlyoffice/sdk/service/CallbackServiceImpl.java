@@ -15,6 +15,7 @@ import com.onlyoffice.model.documenteditor.callback.Action;
 import com.onlyoffice.model.documenteditor.callback.History;
 import com.onlyoffice.service.convert.ConvertService;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
+import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.HistoryManager;
 import com.parashift.onlyoffice.util.NodeManager;
@@ -66,6 +67,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     private LockService lockService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private UrlManager urlManager;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -224,9 +227,10 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String currentFileType = documentManager.getExtension(documentName);
             Version oldVersion = versionService.getCurrentVersion(nodeRef);
             String fileUrl = callback.getUrl();
+            fileUrl = urlManager.replaceToInnerDocumentServerUrl(fileUrl);
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(callback.getUrl(), currentFileType);
+                fileUrl = convert(fileUrl, currentFileType);
             }
 
             editorLockManager.unlockFromEditor(nodeRef);
@@ -245,7 +249,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                 }
             }
 
-            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+            if (oldVersion != null && oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
                     && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 try {
                     historyManager.deleteHistory(nodeRef, oldVersion);
@@ -333,9 +337,10 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String currentFileType = documentManager.getExtension(documentName);
             Version oldVersion = versionService.getCurrentVersion(nodeRef);
             String fileUrl = callback.getUrl();
+            fileUrl = urlManager.replaceToInnerDocumentServerUrl(fileUrl);
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(callback.getUrl(), currentFileType);
+                fileUrl = convert(fileUrl, currentFileType);
             }
 
             Map<QName, Serializable> aspectEditingProperties = editorLockManager.getEditorLockProperties(nodeRef);
@@ -363,7 +368,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             }
 
             // Delete history(changes.json and diff.zip) for previous forcesave version if exists.
-            if (oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
+            if (oldVersion != null && oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName()) != null
                     && (Boolean) oldVersion.getVersionProperty(FORCESAVE_ASPECT.getLocalName())) {
                 try {
                     historyManager.deleteHistory(nodeRef, oldVersion);
