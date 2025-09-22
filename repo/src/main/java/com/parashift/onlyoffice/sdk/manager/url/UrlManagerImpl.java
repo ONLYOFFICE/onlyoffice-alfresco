@@ -104,14 +104,18 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     public String getGobackUrl(final String fileId) {
         NodeRef nodeRef = new NodeRef(fileId);
 
-        String url = imapService.getContentFolderUrl(nodeRef);
+        try {
+            String url = imapService.getContentFolderUrl(nodeRef);
 
-        if (url.contains("?filter=path|")) {
-            List<String> urlParts = Arrays.asList(url.split("\\|"));
-            url = urlParts.get(0) + URLEncoder.encodeUriComponent("|" + urlParts.get(1));
+            if (url.contains("?filter=path|")) {
+                List<String> urlParts = Arrays.asList(url.split("\\|"));
+                url = urlParts.get(0) + URLEncoder.encodeUriComponent("|" + urlParts.get(1));
+            }
+
+            return url;
+        } catch (Exception e) {
+            return null;
         }
-
-        return url;
     }
 
     public String getHistoryDiffUrl(final NodeRef nodeRef) {
