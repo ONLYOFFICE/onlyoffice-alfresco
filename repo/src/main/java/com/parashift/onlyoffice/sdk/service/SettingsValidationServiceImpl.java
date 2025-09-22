@@ -5,13 +5,12 @@
 
 package com.parashift.onlyoffice.sdk.service;
 
-import com.onlyoffice.manager.request.RequestManager;
-import com.onlyoffice.manager.settings.SettingsManager;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.url.UrlManager;
 import com.onlyoffice.model.common.CommonResponse;
 import com.onlyoffice.model.settings.validation.ValidationResult;
 import com.onlyoffice.model.settings.validation.status.Status;
-import com.onlyoffice.service.settings.DefaultSettingsValidationService;
+import com.onlyoffice.service.settings.DefaultSettingsValidationServiceV2;
 import org.alfresco.repo.i18n.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class SettingsValidationServiceImpl extends DefaultSettingsValidationService
+public class SettingsValidationServiceImpl extends DefaultSettingsValidationServiceV2
         implements SettingsValidationService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private MessageService messageService;
 
-    public SettingsValidationServiceImpl(final RequestManager requestManager, final UrlManager urlManager,
-                                         final SettingsManager settingsManager) {
-        super(requestManager, urlManager, settingsManager);
+    public SettingsValidationServiceImpl(final DocumentServerClient documentServerClient, final UrlManager urlManager) {
+        super(documentServerClient, urlManager);
     }
 
     @Override
@@ -74,7 +72,7 @@ public class SettingsValidationServiceImpl extends DefaultSettingsValidationServ
         try {
             result.put(
                     "convertService",
-                    checkConvertService()
+                    checkConvertService(null)
             );
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

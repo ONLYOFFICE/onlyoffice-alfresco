@@ -6,8 +6,8 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONArray;
@@ -95,7 +94,7 @@ public class EditorApi extends AbstractWebScript {
     private UrlManager urlManager;
 
     @Autowired
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
 
     @Autowired
     private ConvertService convertService;
@@ -283,8 +282,7 @@ public class EditorApi extends AbstractWebScript {
         }
     }
 
-    private String createNode(final NodeRef folderNode, final String title, final String ext, final String url)
-            throws IOException {
+    private String createNode(final NodeRef folderNode, final String title, final String ext, final String url) {
         String fileName = util.getCorrectName(folderNode, title, ext);
         String fileUrl = urlManager.replaceToInnerDocumentServerUrl(url);
 
@@ -296,16 +294,10 @@ public class EditorApi extends AbstractWebScript {
                 Collections.<QName, Serializable>singletonMap(ContentModel.PROP_NAME, fileName)).getChildRef();
 
         try {
-            requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
-                public Void doWork(final Object response) throws IOException {
-                    ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                    writer.setMimetype(mimetypeService.getMimetype(ext));
-                    writer.putContent(((HttpEntity) response).getContent());
-                    return null;
-                }
-            });
-        } catch (IOException e) {
-            throw e;
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(mimetypeService.getMimetype(ext));
+
+            documentServerClient.getFile(fileUrl, writer.getContentOutputStream());
         } catch (Exception e) {
             throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
