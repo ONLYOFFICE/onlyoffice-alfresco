@@ -2,6 +2,8 @@
 
 ##
 ## Changed
+- updated icons for creation menu items
+- updated favicons on editor page
 - fixed bug opening files without access to parent node
 
 ## 8.1.0
