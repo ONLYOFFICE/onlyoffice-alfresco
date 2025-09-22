@@ -2,6 +2,10 @@
 
 ##
 ## Changed
+- updated version of com.onlyoffice:docs-integration-sdk
+    - extended supported formats
+    - added type documents DIAGRAM
+    - extended empty file templates
 - fixed bug opening files without access to parent node
 
 ## 8.1.0
