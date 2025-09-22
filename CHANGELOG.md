@@ -1,5 +1,9 @@
 # Change Log
 
+##
+## Changed
+- fixed bug opening files without access to parent node
+
 ## 8.1.0
 ## Added
 - support events in editor: onRequestReferenceData, onRequestReferenceSource, onRequestOpen 
