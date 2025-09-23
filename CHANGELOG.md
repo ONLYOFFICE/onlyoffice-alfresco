@@ -1,6 +1,10 @@
 # Change Log
 
 ##
+
+## Added
+- welcome section on settings page
+
 ## Changed
 - updated icons for creation menu items
 - updated favicons on editor page
