@@ -1,11 +1,17 @@
 # Change Log
 
 ##
+
+## Added
+- welcome section on settings page
+
 ## Changed
 - updated version of com.onlyoffice:docs-integration-sdk
     - extended supported formats
     - added type documents DIAGRAM
     - extended empty file templates
+- updated icons for creation menu items
+- updated favicons on editor page
 - fixed bug opening files without access to parent node
 
 ## 8.1.0

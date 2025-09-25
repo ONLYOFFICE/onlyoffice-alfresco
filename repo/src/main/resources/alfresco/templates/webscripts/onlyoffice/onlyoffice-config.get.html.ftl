@@ -75,10 +75,57 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
+        .onlyoffice-welcome-container {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-top: 12px;
+        }
+
+        .onlyoffice-welcome-container-header {
+            font-size: 108%;
+            font-family: Open Sans Bold, Arial, sans-serif;
+        }
+
+        .onlyoffice-welcome-container-description {
+            color: #555;
+            font-size: 93%;
+        }
+
+        .onlyoffice-welcome-container-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .onlyoffice-welcome-container-link {
+            display: flex;
+            color: unset !important;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .onlyoffice-welcome-container-link img {
+            content:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTMiIHZpZXdCb3g9IjAgMCAxMiAxMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIgMTAuNUwxMCAyLjVNMTAgMi41VjlNMTAgMi41SDMiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMS41Ii8+Cjwvc3ZnPgo=");
+        }
     </style>
 </head>
 
 </form>
+
+<div class="onlyoffice-welcome-container">
+    <div class="onlyoffice-welcome-container-header">
+        ${msg("onlyoffice-config.welcome.title")}
+    </div>
+    <div class="onlyoffice-welcome-container-description">
+        ${msg("onlyoffice-config.welcome.description")}
+    </div>
+    <div class="onlyoffice-welcome-container-links">
+        <a class="onlyoffice-welcome-container-link" target="_blank" href="https://helpcenter.onlyoffice.com/integration/alfresco.aspx">${msg("onlyoffice-config.welcome.links.learn-more")} <img></a>
+        <a class="onlyoffice-welcome-container-link" target="_blank" href="https://feedback.onlyoffice.com/forums/966080-your-voice-matters?category_id=519288">${msg("onlyoffice-config.welcome.links.suggest-feature")} <img></a>
+    </div>
+</div>
 
 <span data-settings-saved="${msg('onlyoffice-config.message.settings.saved')}" data-settings-saving-error="${msg('onlyoffice-config.message.settings.saving-error')}" data-mixedcontent="${msg('onlyoffice.server.common.error.mixed-content')}" data-apijs-unreachable="${msg('onlyoffice.server.common.error.api-js')}" data-onlyoffice-convert-service-prefix="${msg('onlyoffice.service.convert.check.error-prefix')}" data-onlyoffice-command-service-prefix="${msg('onlyoffice.service.command.check.error-prefix')}" id="onlyresponse" class="hidden"></span>
 
