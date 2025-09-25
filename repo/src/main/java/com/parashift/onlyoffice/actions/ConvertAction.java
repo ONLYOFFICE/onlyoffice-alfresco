@@ -5,8 +5,8 @@
 
 package com.parashift.onlyoffice.actions;
 
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
@@ -29,12 +29,10 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +74,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
     private MessageService mesService;
 
     @Autowired
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
 
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef) {
@@ -165,15 +163,7 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                             throw new Exception("'endConvert' is false or 'fileUrl' is empty");
                         }
 
-                        final ContentWriter finalWriter = writer;
-                        requestManager.executeGetRequest(
-                                convertResponse.getFileUrl(),
-                                new RequestManager.Callback<Void>() {
-                                    public Void doWork(final Object response) throws IOException {
-                                        finalWriter.putContent(((HttpEntity) response).getContent());
-                                        return null;
-                                    }
-                                });
+                        documentServerClient.getFile(convertResponse.getFileUrl(), writer.getContentOutputStream());
 
                         if (checkoutNode) {
                             logger.debug("Checking in node");

@@ -6,10 +6,10 @@
 package com.parashift.onlyoffice.scripts;
 
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.model.convertservice.ConvertRequest;
 import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.service.convert.ConvertService;
+import com.parashift.onlyoffice.sdk.client.DocumentServerClient;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.download.DownloadStatusUpdateService;
@@ -30,8 +30,6 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +40,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -86,7 +83,7 @@ public class DownloadAs extends AbstractWebScript {
     private MessageService mesService;
 
     @Autowired
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
 
     @Autowired
     private ConvertService convertService;
@@ -121,22 +118,22 @@ public class DownloadAs extends AbstractWebScript {
                     ConvertResponse convertResponse = convertNodeToOutputType(node, outputType, region);
                     final String newTitle = documentManager.getBaseName(docTitle) + "." + convertResponse.getFileType();
 
-                    contentURL = requestManager.executeGetRequest(
-                            convertResponse.getFileUrl(),
-                            new RequestManager.Callback<String>() {
-                                public String doWork(final Object response) throws IOException {
-                                    byte[] bytes = EntityUtils.toByteArray((HttpEntity) response);
-                                    InputStream inputStream = new ByteArrayInputStream(bytes);
+                    NodeRef downloadNode = createDownloadNode(newTitle);
 
-                                    return createDownloadNode(
-                                            newTitle,
-                                            mimetypeService.getMimetype(convertResponse.getFileType()),
-                                            inputStream,
-                                            bytes.length,
-                                            1
-                                    );
-                                }
-                            });
+                    ContentWriter writer = contentService.getWriter(downloadNode, ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(mimetypeService.getMimetype(convertResponse.getFileType()));
+
+                    int totalSize = documentServerClient.getFile(
+                            convertResponse.getFileUrl(),
+                            writer.getContentOutputStream()
+                    );
+
+                    contentURL = createDownloadRegistry(
+                            downloadNode,
+                            newTitle,
+                            totalSize,
+                            1
+                    );
                 }
             } else {
                 File zip = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ZIP_EXTENSION);
@@ -179,24 +176,26 @@ public class DownloadAs extends AbstractWebScript {
 
                             out.putArchiveEntry(new ZipArchiveEntry(newTitle));
 
-                            totalSize += requestManager.executeGetRequest(
+                            totalSize += documentServerClient.getFileWithoutCloseOutputStream(
                                     convertResponse.getFileUrl(),
-                                    new RequestManager.Callback<Long>() {
-                                        public Long doWork(final Object response) throws IOException {
-                                            return IOUtils.copyLarge(((HttpEntity) response).getContent(), out);
-                                        }
-                                    });
+                                    out
+                            );
                         }
 
                         out.closeArchiveEntry();
                     }
                 }
 
+                NodeRef downloadNode = createDownloadNode("Archive.zip");
+
                 try (FileInputStream inputStream = new FileInputStream(zip)) {
-                    contentURL = createDownloadNode(
+                    ContentWriter writer = contentService.getWriter(downloadNode, ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(mimetypeService.getMimetype(MIMETYPE_ZIP));
+                    writer.putContent(inputStream);
+
+                    contentURL = createDownloadRegistry(
+                            downloadNode,
                             "Archive.zip",
-                            MIMETYPE_ZIP,
-                            inputStream,
                             totalSize,
                             requestDataJson.length()
                     );
@@ -240,8 +239,7 @@ public class DownloadAs extends AbstractWebScript {
         return convertResponse;
     }
 
-    private String createDownloadNode(final String title, final String mimeType, final InputStream inputStream,
-                                       final long totalSize, final long totalFiles) {
+    private NodeRef createDownloadNode(final String title) {
         NodeRef downloadNode = nodeService.createNode(
                 downloadStorage.getOrCreateDowloadContainer(),
                 ContentModel.ASSOC_CHILDREN,
@@ -254,10 +252,11 @@ public class DownloadAs extends AbstractWebScript {
         aspectProperties.put(ContentModel.PROP_IS_CONTENT_INDEXED, Boolean.FALSE);
         nodeService.addAspect(downloadNode, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
 
-        ContentWriter writer = contentService.getWriter(downloadNode, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(mimeType);
-        writer.putContent(inputStream);
+        return downloadNode;
+    }
 
+    private String createDownloadRegistry(final NodeRef downloadNode, final String title, final long totalSize,
+                                          final long totalFiles) {
         DownloadStatus status = new DownloadStatus(
                 DownloadStatus.Status.DONE,
                 totalSize,
@@ -265,6 +264,7 @@ public class DownloadAs extends AbstractWebScript {
                 totalFiles,
                 totalFiles
         );
+
         int sequenceNumber = downloadStorage.getSequenceNumber(downloadNode) + 1;
         updateService.update(downloadNode, status, sequenceNumber);
 
