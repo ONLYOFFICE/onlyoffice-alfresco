@@ -1,7 +1,6 @@
 # Change Log
 
-##
-
+## 8.2.0
 ## Added
 - welcome section on settings page
 
