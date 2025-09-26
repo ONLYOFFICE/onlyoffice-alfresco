@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [master]
+    tags:
+      - 'v*'
   
 jobs:
   artifact:
@@ -32,10 +33,6 @@ jobs:
       - name: Generate Changelog
         run: |
           awk '/## [0-9]/{p++} p; /## [0-9]/{if (p > 1) exit}' CHANGELOG.md | awk 'NR>2 {print last} {last=$0}' > RELEASE.md
-      - name: Create Release Tag
-        uses: rickstaa/action-create-tag@v1
-        with:
-          tag: "v${{ steps.info.outputs.version }}"
       - name: Upload Release
         uses: ncipollo/release-action@v1
         id: create_release
