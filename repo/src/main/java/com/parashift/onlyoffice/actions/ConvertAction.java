@@ -19,7 +19,6 @@ import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -93,14 +92,8 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         return;
                     }
 
-                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
-                    if (parentAssoc == null || parentAssoc.getParentRef() == null) {
-                        logger.debug("Couldn't find parent folder");
-                        return;
-                    }
-
-                    NodeRef nodeFolder = parentAssoc.getParentRef();
-                    String newName = util.getCorrectName(nodeFolder, title, targetExt);
+                    NodeRef parentNodeRef = util.getParentNodeRef(actionedUponNodeRef);
+                    String newName = util.getCorrectName(parentNodeRef, title, targetExt);
 
                     NodeRef writeNode = null;
                     Boolean deleteNode = false;
@@ -120,13 +113,12 @@ public class ConvertAction extends ActionExecuterAbstractBase {
                         }
                     } else {
                         logger.debug("Creating new node");
-                        if (permissionService.hasPermission(nodeFolder, PermissionService.CREATE_CHILDREN)
-                                == AccessStatus.ALLOWED) {
+                        if (util.canCreateChildren(parentNodeRef)) {
                             Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                             props.put(ContentModel.PROP_NAME, newName);
                             deleteNode = true;
                             writeNode = this.nodeService.createNode(
-                                    nodeFolder,
+                                    parentNodeRef,
                                     ContentModel.ASSOC_CONTAINS,
                                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, newName),
                                     ContentModel.TYPE_CONTENT,
