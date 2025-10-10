@@ -58,7 +58,7 @@ public class ConfigServiceImpl extends DefaultConfigService {
     }
 
     @Override
-    public Customization getCustomization(String fileId) {
+    public Customization getCustomization(final String fileId) {
         Customization customization = super.getCustomization(fileId);
 
         customization.setAnonymous(
