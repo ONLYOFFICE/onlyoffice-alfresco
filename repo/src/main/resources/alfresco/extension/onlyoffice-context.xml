@@ -39,13 +39,6 @@
         <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
     </bean>
 
-    <bean id="onlyoffice-sdk-request-manager"
-          class="com.parashift.onlyoffice.sdk.manager.request.RequestManagerImpl">
-        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
-        <constructor-arg name="jwtManager" ref="onlyoffice-sdk-jwt-manager"/>
-        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
-    </bean>
-
     <bean id="onlyoffice-sdk-config-service"
           class="com.parashift.onlyoffice.sdk.service.ConfigServiceImpl">
         <constructor-arg name="documentManager" ref="onlyoffice-sdk-document-manager"/>
