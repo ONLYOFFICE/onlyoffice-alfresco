@@ -138,7 +138,13 @@ public class ConfigServiceImpl extends DefaultConfigService {
 
     @Override
     public List<Template> getTemplates(final String fileId) {
-        //Todo: check if user have access create new document in current folder
+        NodeRef nodeRef = new NodeRef(fileId);
+        NodeRef parentNodeRef = util.getParentNodeRef(nodeRef);
+
+        if (!util.canCreateChildren(parentNodeRef)) {
+            return null;
+        }
+
         List<Template> templates = new ArrayList<>();
         NodeRef templatesNodeRef = util.getNodeByPath("/app:company_home/app:dictionary/app:node_templates");
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(templatesNodeRef);

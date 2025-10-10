@@ -10,10 +10,10 @@ import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.manager.url.DefaultUrlManager;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.settings.SettingsConstants;
+import com.parashift.onlyoffice.util.Util;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.UrlUtil;
@@ -29,8 +29,6 @@ import java.util.List;
 public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
     @Autowired
-    private NodeService nodeService;
-    @Autowired
     private AuthenticationService authenticationService;
     @Autowired
     private SysAdminParams sysAdminParams;
@@ -38,6 +36,8 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
     private DocumentManager documentManager;
     @Autowired
     private ImapService imapService;
+    @Autowired
+    private Util util;
 
     public UrlManagerImpl(final SettingsManager settingsManager) {
         super(settingsManager);
@@ -65,12 +65,14 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
 
     @Override
     public String getCreateUrl(final String fileId) {
-        //Todo: check if user have access create new document in current folder
         NodeRef nodeRef = new NodeRef(fileId);
+        NodeRef parentNodeRef = util.getParentNodeRef(nodeRef);
+
+        if (!util.canCreateChildren(parentNodeRef)) {
+            return null;
+        }
 
         String fileName = documentManager.getDocumentName(fileId);
-        String folderNodeRef = this.nodeService.getPrimaryParent(nodeRef).getParentRef().toString();
-
         DocumentType documentType = documentManager.getDocumentType(fileName);
 
         String docMime;
@@ -84,7 +86,7 @@ public class UrlManagerImpl extends DefaultUrlManager implements UrlManager {
             default:
                 docMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         }
-        return getShareUrl() + "page/onlyoffice-edit?parentNodeRef=" + folderNodeRef + "&new=" + docMime;
+        return getShareUrl() + "page/onlyoffice-edit?parentNodeRef=" + parentNodeRef + "&new=" + docMime;
     }
 
     @Override
