@@ -19,6 +19,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.onlyoffice</groupId>
+            <artifactId>docs-integration-sdk</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
         </dependency>
@@ -36,10 +40,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.onlyoffice</groupId>
-            <artifactId>docs-integration-sdk</artifactId>
         </dependency>
     </dependencies>
 
