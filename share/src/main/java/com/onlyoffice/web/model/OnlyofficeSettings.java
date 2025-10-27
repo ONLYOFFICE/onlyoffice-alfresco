@@ -16,14 +16,17 @@ public class OnlyofficeSettings {
     private Boolean convertOriginal;
     private List<Format> supportedFormats;
 
+    private Boolean previewEnabled;
+
     public OnlyofficeSettings() {
     }
 
     public OnlyofficeSettings(final Map<String, Boolean> editableFormats, final Boolean convertOriginal,
-                              final List<Format> supportedFormats) {
+                              final List<Format> supportedFormats, final Boolean previewEnabled) {
         this.editableFormats = editableFormats;
         this.convertOriginal = convertOriginal;
         this.supportedFormats = supportedFormats;
+        this.previewEnabled = previewEnabled;
     }
 
     public Map<String, Boolean> getEditableFormats() {
@@ -48,5 +51,13 @@ public class OnlyofficeSettings {
 
     public void setSupportedFormats(final List<Format> supportedFormats) {
         this.supportedFormats = supportedFormats;
+    }
+
+    public Boolean getPreviewEnabled() {
+        return previewEnabled;
+    }
+
+    public void setPreviewEnabled(final Boolean previewEnabled) {
+        this.previewEnabled = previewEnabled;
     }
 }

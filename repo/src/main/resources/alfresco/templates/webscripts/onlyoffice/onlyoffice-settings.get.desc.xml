@@ -2,5 +2,5 @@
     <shortname>ONLYOFFICE Format URL</shortname>
     <description>Sends information to Share about editable formats</description>
     <url>/parashift/onlyoffice/onlyoffice-settings</url>
-    <authentication>user</authentication>
+    <authentication>none</authentication>
 </webscript>
