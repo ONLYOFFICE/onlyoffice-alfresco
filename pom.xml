@@ -5,7 +5,7 @@
     <artifactId>onlyoffice-integration</artifactId>
     <version>8.2.0</version>
     <name>ONLYOFFICE Alfresco Integration</name>
-    <description>This Module integrates Alfresco Share with ONLYOFFICE</description>
+    <description>This plugin enables users to edit office documents from Alfresco Share using ONLYOFFICE Docs packaged as Document Server</description>
     <packaging>pom</packaging>
 
     <properties>
