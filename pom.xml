@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.onlyoffice.alfresco</groupId>
     <artifactId>onlyoffice-integration</artifactId>
-    <version>8.1.0</version>
+    <version>8.2.0</version>
     <name>ONLYOFFICE Alfresco Integration</name>
-    <description>This Module integrates Alfresco Share with ONLYOFFICE</description>
+    <description>This plugin enables users to edit office documents from Alfresco Share using ONLYOFFICE Docs packaged as Document Server</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -21,8 +21,8 @@
         <!-- Alfresco Platform and Share webapp versions, these are the original Alfresco webapps that will be
              customized and then deployed and run by the tomcat maven plugin when
              executing for example $ mvn clean install alfresco:run -->
-        <alfresco.platform.version>7.1.0</alfresco.platform.version>
-        <alfresco.share.version>11.77</alfresco.share.version>
+        <alfresco.platform.version>7.4.0.1</alfresco.platform.version>
+        <alfresco.share.version>20.166</alfresco.share.version>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -82,14 +82,32 @@
             </dependency>
 
             <dependency>
+                <groupId>com.onlyoffice</groupId>
+                <artifactId>docs-integration-sdk</artifactId>
+                <version>1.6.0</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.json</groupId>
+                        <artifactId>json</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>com.auth0</groupId>
                 <artifactId>java-jwt</artifactId>
                 <version>4.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.onlyoffice</groupId>
-                <artifactId>docs-integration-sdk</artifactId>
-                <version>1.3.0</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -99,7 +117,8 @@
             <dependency>
                 <groupId>org.apache.httpcomponents.client5</groupId>
                 <artifactId>httpclient5</artifactId>
-                <version>5.2.1</version>
+                <version>5.4.4</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>

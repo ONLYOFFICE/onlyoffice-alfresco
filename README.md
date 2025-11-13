@@ -11,15 +11,16 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 ## Supported formats
 
 **For viewing:**
-* **WORD**: DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, RTF, STW, SXW, TXT, WPS, WPT, XML
-* **CELL**: CSV, ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLSX, XLT, XLTM, XLTX
-* **SLIDE**: DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
+* **WORD**: DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, HWP, HWPX, MD, MHT, MHTML, ODT, OTT, PAGES, RTF, STW, SXW, TXT, WPS, WPT, XML
+* **CELL**: CSV, ET, ETT, FODS, NUMBERS, ODS, OTS, SXC, XLS, XLSM, XLSX, XLT, XLTM, XLTX
+* **SLIDE**: DPS, DPT, FODP, KEY, ODG, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
 * **PDF**: DJVU, DOCXF, OFORM, OXPS, PDF, XPS
+* **DIAGRAM**: VSDM, VSDX, VSSM, VSSX, VSTM, VSTX
 
 **For editing:**
 
 * **WORD**: DOCM, DOCX, DOTM, DOTX
-* **CELL**: XLSM, XLSX, XLTM, XLTX
+* **CELL**: XLSB, XLSM, XLSX, XLTM, XLTX
 * **SLIDE**: POTM, POTX, PPSM, PPSX, PPTM, PPTX
 * **PDF**: PDF
 
@@ -31,9 +32,9 @@ This plugin enables users to edit office documents from Alfresco Share using ONL
 
 **For converting to Office Open XML formats:**
 
-* **WORD:** DOC, DOCM, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, MHT, MHTML, ODT, OTT, RTF, STW, SXW, WPS, WPT, XML
-* **CELL:** ET, ETT, FODS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLT, XLTM, XLTX
-* **SLIDE:** DPS, DPT, FODP, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, SXI
+* **WORD**: DOC, DOCM, DOCX, DOT, DOTM, DOTX, EPUB, FB2, FODT, HTM, HTML, HWP, HWPX, MD, MHT, MHT, MHTML, ODT, OTT, PAGES, RTF, STW, SXW, TXT, WPS, WPT, XML
+* **CELL**: CSV, ET, ETT, FODS, NUMBERS, ODS, OTS, SXC, XLS, XLSB, XLSM, XLSX, XLT, XLTM, XLTX
+* **SLIDE**: DPS, DPT, FODP, KEY, ODG, ODP, OTP, POT, POTM, POTX, PPS, PPSM, PPSX, PPT, PPTM, PPTX, SXI
 * **PDF**: DOCXF, OXPS, PDF, XPS
 
 To convert a specific file, select `Convert using ONLYOFFICE` action. Resulting file will be placed in the same folder. You can also configure rules for a folder, that will automatically convert files on upload or on change. Details [here](https://docs.alfresco.com/5.1/tasks/library-folder-rules-define-create.html).
@@ -103,7 +104,7 @@ Module configuration can be found inside `Alfresco Administration Console` or by
 > You can also add `onlyoffice.url` in `alfresco-global.properties`. Configuration made via settings page will override `alfresco-global.properties`.
 
 Starting from version 7.2, JWT is enabled by default and the secret key is generated automatically to restrict the access to ONLYOFFICE Docs and for security reasons and data integrity. 
-Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.security.key* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/editors/signature/), specify the same secret key and enable the validation.
+Specify your own **Secret key** on the Alfresco configuration page or by adding *onlyoffice.security.key* to `alfresco-global.properties`. In the ONLYOFFICE Docs [config file](https://api.onlyoffice.com/docs/docs-api/additional-api/signature/, specify the same secret key and enable the validation.
 
 ## Compiling ONLYOFFICE module package for Alfresco
 
@@ -144,7 +145,7 @@ docker-compose up
 
 ## How it works
 
-The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/editors/basic):
+The ONLYOFFICE integration follows the API documented [here](https://api.onlyoffice.com/docs/docs-api/get-started/basic-concepts/):
 
 * User navigates to a document within Alfresco Share and selects the `Edit in ONLYOFFICE` action.
 * Alfresco Share makes a request to the repo end (URL of the form: `/parashift/onlyoffice/prepare?nodeRef={nodeRef}`).

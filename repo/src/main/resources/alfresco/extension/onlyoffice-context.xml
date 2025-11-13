@@ -33,11 +33,10 @@
         <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
     </bean>
 
-    <bean id="onlyoffice-sdk-request-manager"
-          class="com.parashift.onlyoffice.sdk.manager.request.RequestManagerImpl">
-        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
-        <constructor-arg name="jwtManager" ref="onlyoffice-sdk-jwt-manager"/>
+    <bean id="onlyoffice-sdk-document-server-client"
+          class="com.parashift.onlyoffice.sdk.client.ApacheHttpclientDocumentServerClientImpl">
         <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
+        <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
     </bean>
 
     <bean id="onlyoffice-sdk-config-service"
@@ -49,10 +48,10 @@
     </bean>
 
     <bean id="onlyoffice-sdk-convert-service"
-          class="com.onlyoffice.service.convert.DefaultConvertService">
+          class="com.onlyoffice.service.convert.DefaultConvertServiceV2">
         <constructor-arg name="documentManager" ref="onlyoffice-sdk-document-manager"/>
         <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
-        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
+        <constructor-arg name="documentServerClient" ref="onlyoffice-sdk-document-server-client"/>
     </bean>
 
     <bean id="onlyoffice-sdk-callback-service"
@@ -61,16 +60,10 @@
         <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
     </bean>
 
-    <bean id="onlyoffice-sdk-command-service"
-          class="com.onlyoffice.service.command.DefaultCommandService">
-        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
-    </bean>
-
     <bean id="onlyoffice-sdk-settings-validation-service"
           class="com.parashift.onlyoffice.sdk.service.SettingsValidationServiceImpl">
-        <constructor-arg name="requestManager" ref="onlyoffice-sdk-request-manager"/>
+        <constructor-arg name="documentServerClient" ref="onlyoffice-sdk-document-server-client"/>
         <constructor-arg name="urlManager" ref="onlyoffice-sdk-url-manager"/>
-        <constructor-arg name="settingsManager" ref="onlyoffice-sdk-settings-manager"/>
     </bean>
 
     <bean id="webscripts.resources" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

@@ -13,8 +13,10 @@ import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.documenteditor.config.document.Info;
 import com.onlyoffice.model.documenteditor.config.document.Permissions;
 import com.onlyoffice.model.documenteditor.config.document.ReferenceData;
+import com.onlyoffice.model.documenteditor.config.editorconfig.Customization;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Embedded;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Template;
+import com.onlyoffice.model.documenteditor.config.editorconfig.customization.Anonymous;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
 import com.parashift.onlyoffice.sdk.manager.url.UrlManager;
 import com.parashift.onlyoffice.util.EditorLockManager;
@@ -53,6 +55,19 @@ public class ConfigServiceImpl extends DefaultConfigService {
     public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
                              final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(documentManager, urlManager, jwtManager, settingsManager);
+    }
+
+    @Override
+    public Customization getCustomization(final String fileId) {
+        Customization customization = super.getCustomization(fileId);
+
+        customization.setAnonymous(
+                Anonymous.builder()
+                        .request(false)
+                        .build()
+        );
+
+        return customization;
     }
 
     @Override
@@ -123,7 +138,13 @@ public class ConfigServiceImpl extends DefaultConfigService {
 
     @Override
     public List<Template> getTemplates(final String fileId) {
-        //Todo: check if user have access create new document in current folder
+        NodeRef nodeRef = new NodeRef(fileId);
+        NodeRef parentNodeRef = util.getParentNodeRef(nodeRef);
+
+        if (!util.canCreateChildren(parentNodeRef)) {
+            return null;
+        }
+
         List<Template> templates = new ArrayList<>();
         NodeRef templatesNodeRef = util.getNodeByPath("/app:company_home/app:dictionary/app:node_templates");
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(templatesNodeRef);

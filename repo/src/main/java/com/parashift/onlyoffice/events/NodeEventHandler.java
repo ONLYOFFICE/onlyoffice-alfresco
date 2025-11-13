@@ -8,7 +8,7 @@ package com.parashift.onlyoffice.events;
 import com.onlyoffice.model.commandservice.CommandRequest;
 import com.onlyoffice.model.commandservice.CommandResponse;
 import com.onlyoffice.model.commandservice.commandrequest.Command;
-import com.onlyoffice.service.command.CommandService;
+import com.parashift.onlyoffice.sdk.client.DocumentServerClient;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -33,7 +33,7 @@ public class NodeEventHandler  implements NodeServicePolicies.OnRemoveAspectPoli
     @Autowired
     private NodeService nodeService;
     @Autowired
-    private CommandService commandService;
+    private DocumentServerClient documentServerClient;
 
     private PolicyComponent policyComponent;
 
@@ -79,7 +79,7 @@ public class NodeEventHandler  implements NodeServicePolicies.OnRemoveAspectPoli
                     .key(key)
                     .build();
 
-            infoResponse = commandService.processCommand(infoRequest, nodeRef.toString());
+            infoResponse = documentServerClient.command(infoRequest);
             users = infoResponse.getUsers();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -92,7 +92,7 @@ public class NodeEventHandler  implements NodeServicePolicies.OnRemoveAspectPoli
                     .users(users)
                     .build();
 
-            commandService.processCommand(dropRequest, nodeRef.toString());
+            documentServerClient.command(dropRequest);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

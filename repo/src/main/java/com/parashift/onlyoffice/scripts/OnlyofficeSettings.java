@@ -33,6 +33,7 @@ public class OnlyofficeSettings extends AbstractWebScript {
         try {
             responseJson.put("editableFormats", documentManager.getLossyEditableMap());
             responseJson.put("convertOriginal", settingsManager.getSettingBoolean("convertOriginal", false));
+            responseJson.put("previewEnabled", settingsManager.getSettingBoolean("webpreview", false));
             responseJson.put("supportedFormats", documentManager.getFormats());
 
             response.setContentType("application/json; charset=utf-8");

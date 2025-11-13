@@ -18,6 +18,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.version.VersionService;
@@ -65,6 +67,9 @@ public class Util {
     @Autowired
     private SysAdminParams sysAdminParams;
 
+    @Autowired
+    private PermissionService permissionService;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public void ensureVersioningEnabled(final NodeRef nodeRef) {
@@ -102,6 +107,14 @@ public class Util {
         } else {
             return parentAssoc.getParentRef();
         }
+    }
+
+    public boolean canCreateChildren(final NodeRef node) {
+        if (node == null) {
+            return false;
+        }
+
+        return permissionService.hasPermission(node, PermissionService.CREATE_CHILDREN) == AccessStatus.ALLOWED;
     }
 
     public NodeRef getChildNodeByName(final NodeRef nodeRef, final String name) {

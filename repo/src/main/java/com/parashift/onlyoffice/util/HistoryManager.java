@@ -7,8 +7,8 @@ package com.parashift.onlyoffice.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
-import com.onlyoffice.manager.request.RequestManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.common.User;
@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.hc.core5.http.HttpEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +88,7 @@ public class HistoryManager {
     private JwtManager jwtManager;
 
     @Autowired
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
 
     @Autowired
     private SettingsManager settingsManager;
@@ -169,13 +168,9 @@ public class HistoryManager {
                     writer.setMimetype(mimeType);
                     writer.putContent(data);
                 } else {
-                    requestManager.executeGetRequest(data, new RequestManager.Callback<Void>() {
-                        public Void doWork(final Object response) throws IOException {
-                            writer.setMimetype(mimeType);
-                            writer.putContent(((HttpEntity) response).getContent());
-                            return null;
-                        }
-                    });
+                    writer.setMimetype(mimeType);
+
+                    documentServerClient.getFile(data, writer.getContentOutputStream());
                 }
 
                 return null;

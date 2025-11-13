@@ -5,19 +5,18 @@
 
 package com.parashift.onlyoffice.util;
 
-import com.onlyoffice.manager.request.RequestManager;
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.settings.SettingsManager;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.apache.hc.core5.http.HttpEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class NodeManager {
     @Autowired
     private SettingsManager settingsManager;
     @Autowired
-    private RequestManager requestManager;
+    private DocumentServerClient documentServerClient;
 
     public void createNewVersion(final NodeRef nodeRef, final String fileUrl) throws Exception {
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
@@ -47,13 +46,9 @@ public class NodeManager {
 
     public void createNewVersion(final NodeRef nodeRef, final String fileUrl,
                                  final Map<String, Serializable> versionProperties) throws Exception {
-        requestManager.executeGetRequest(fileUrl, new RequestManager.Callback<Void>() {
-            public Void doWork(final Object response) throws IOException {
-                contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)
-                        .putContent(((HttpEntity) response).getContent());
-                return null;
-            }
-        });
+        ContentWriter contentWriter = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+
+        documentServerClient.getFile(fileUrl, contentWriter.getContentOutputStream());
 
         versionService.createVersion(nodeRef, versionProperties);
     }
