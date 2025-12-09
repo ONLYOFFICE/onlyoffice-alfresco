@@ -228,6 +228,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             Version oldVersion = versionService.getCurrentVersion(nodeRef);
             String fileUrl = callback.getUrl();
             fileUrl = urlManager.replaceToInnerDocumentServerUrl(fileUrl);
+            String changesUrl = callback.getChangesurl();
+            changesUrl = urlManager.replaceToInnerDocumentServerUrl(changesUrl);
 
             if (!currentFileType.equals(callback.getFiletype())) {
                 fileUrl = convert(fileUrl, currentFileType);
@@ -242,7 +244,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                     historyManager.saveHistory(
                             nodeRef,
                             history,
-                            callback.getChangesurl()
+                            changesUrl
                     );
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -338,6 +340,8 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             Version oldVersion = versionService.getCurrentVersion(nodeRef);
             String fileUrl = callback.getUrl();
             fileUrl = urlManager.replaceToInnerDocumentServerUrl(fileUrl);
+            String changesUrl = callback.getChangesurl();
+            changesUrl = urlManager.replaceToInnerDocumentServerUrl(changesUrl);
 
             if (!currentFileType.equals(callback.getFiletype())) {
                 fileUrl = convert(fileUrl, currentFileType);
@@ -360,7 +364,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                     historyManager.saveHistory(
                             nodeRef,
                             history,
-                            callback.getChangesurl()
+                            changesUrl
                     );
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
