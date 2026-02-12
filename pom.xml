@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.onlyoffice.alfresco</groupId>
     <artifactId>onlyoffice-integration</artifactId>
-    <version>8.2.0</version>
+    <version>8.3.0</version>
     <name>ONLYOFFICE Alfresco Integration</name>
     <description>This plugin enables users to edit office documents from Alfresco Share using ONLYOFFICE Docs packaged as Document Server</description>
     <packaging>pom</packaging>
@@ -84,7 +84,7 @@
             <dependency>
                 <groupId>com.onlyoffice</groupId>
                 <artifactId>docs-integration-sdk</artifactId>
-                <version>1.6.0</version>
+                <version>1.7.1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.fasterxml.jackson.core</groupId>

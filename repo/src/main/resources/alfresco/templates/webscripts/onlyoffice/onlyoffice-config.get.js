@@ -1,7 +1,7 @@
 <import resource="classpath:alfresco/templates/webscripts/org/alfresco/repository/admin/admin-common.lib.js">
 
 /*
-    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    Copyright (c) Ascensio System SIA 2026. All rights reserved.
     http://www.onlyoffice.com
 */
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) Ascensio System SIA 2025. All rights reserved.
+    Copyright (c) Ascensio System SIA 2026. All rights reserved.
     http://www.onlyoffice.com
 */
 
@@ -284,7 +284,6 @@ public class EditorApi extends AbstractWebScript {
 
     private String createNode(final NodeRef folderNode, final String title, final String ext, final String url) {
         String fileName = util.getCorrectName(folderNode, title, ext);
-        String fileUrl = urlManager.replaceToInnerDocumentServerUrl(url);
 
         final NodeRef nodeRef = nodeService.createNode(
                 folderNode,
@@ -297,7 +296,7 @@ public class EditorApi extends AbstractWebScript {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
             writer.setMimetype(mimetypeService.getMimetype(ext));
 
-            documentServerClient.getFile(fileUrl, writer.getContentOutputStream());
+            documentServerClient.getFile(url, writer.getContentOutputStream());
         } catch (Exception e) {
             throw new AlfrescoRuntimeException(e.getMessage(), e);
         }
