@@ -226,7 +226,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String fileUrl = callback.getUrl();
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(fileUrl, currentFileType);
+                fileUrl = convert(fileUrl, currentFileType, fileId);
             }
 
             editorLockManager.unlockFromEditor(nodeRef);
@@ -335,7 +335,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String fileUrl = callback.getUrl();
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(fileUrl, currentFileType);
+                fileUrl = convert(fileUrl, currentFileType, fileId);
             }
 
             Map<QName, Serializable> aspectEditingProperties = editorLockManager.getEditorLockProperties(nodeRef);
@@ -376,14 +376,14 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
     }
 
-    private String convert(final String fileUrl, final String outputType) {
+    private String convert(final String fileUrl, final String outputType, final String fileId) {
         try {
             ConvertRequest convert = ConvertRequest.builder()
                     .outputtype(outputType)
                     .url(fileUrl)
                     .build();
 
-            ConvertResponse convertResponse = convertService.processConvert(convert, null);
+            ConvertResponse convertResponse = convertService.processConvert(convert, fileId);
 
             return convertResponse.getFileUrl();
         } catch (Exception e) {
