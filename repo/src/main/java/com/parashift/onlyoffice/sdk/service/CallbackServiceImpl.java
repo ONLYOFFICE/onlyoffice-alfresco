@@ -5,6 +5,7 @@
 
 package com.parashift.onlyoffice.sdk.service;
 
+import com.onlyoffice.client.DocumentServerClient;
 import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
@@ -13,7 +14,6 @@ import com.onlyoffice.model.convertservice.ConvertResponse;
 import com.onlyoffice.model.documenteditor.Callback;
 import com.onlyoffice.model.documenteditor.callback.Action;
 import com.onlyoffice.model.documenteditor.callback.History;
-import com.onlyoffice.service.convert.ConvertService;
 import com.onlyoffice.service.documenteditor.callback.DefaultCallbackService;
 import com.parashift.onlyoffice.util.EditorLockManager;
 import com.parashift.onlyoffice.util.HistoryManager;
@@ -36,6 +36,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +56,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
     @Autowired
     private Util util;
     @Autowired
-    private ConvertService convertService;
+    private DocumentServerClient documentServerClient;
     @Autowired
     private DocumentManager documentManager;
     @Autowired
@@ -226,7 +229,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String fileUrl = callback.getUrl();
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(fileUrl, currentFileType, fileId);
+                fileUrl = convert(fileUrl, currentFileType);
             }
 
             editorLockManager.unlockFromEditor(nodeRef);
@@ -335,7 +338,7 @@ public class CallbackServiceImpl extends DefaultCallbackService {
             String fileUrl = callback.getUrl();
 
             if (!currentFileType.equals(callback.getFiletype())) {
-                fileUrl = convert(fileUrl, currentFileType, fileId);
+                fileUrl = convert(fileUrl, currentFileType);
             }
 
             Map<QName, Serializable> aspectEditingProperties = editorLockManager.getEditorLockProperties(nodeRef);
@@ -376,14 +379,15 @@ public class CallbackServiceImpl extends DefaultCallbackService {
         }
     }
 
-    private String convert(final String fileUrl, final String outputType, final String fileId) {
+    private String convert(final String fileUrl, final String outputType) {
         try {
             ConvertRequest convert = ConvertRequest.builder()
                     .outputtype(outputType)
                     .url(fileUrl)
+                    .key(generateKey(fileUrl))
                     .build();
 
-            ConvertResponse convertResponse = convertService.processConvert(convert, fileId);
+            ConvertResponse convertResponse = documentServerClient.convert(convert);
 
             return convertResponse.getFileUrl();
         } catch (Exception e) {
@@ -391,6 +395,22 @@ public class CallbackServiceImpl extends DefaultCallbackService {
                     "Error while converting document back to original format: " + e.getMessage(),
                     e
             );
+        }
+    }
+
+    private String generateKey(final String fileUrl) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(fileUrl.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder key = new StringBuilder();
+            for (byte b : hash) {
+                key.append(String.format("%02x", b));
+            }
+
+            return key.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new AlfrescoRuntimeException("Error while generating document key: " + e.getMessage(), e);
         }
     }
 }
