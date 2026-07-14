@@ -209,11 +209,11 @@ public class ApacheHttpclientDocumentServerClientImpl extends AbstractDocumentSe
         return executeRequest(request, DocBuilderResponse.class);
     }
 
-    protected URI createUri(final String baseUrl, final String path, final List<NameValuePair> parameters) {
+    protected URI createUri(final String url, final String path, final List<NameValuePair> parameters) {
         try {
             URIBuilder pathUri = new URIBuilder(path);
 
-            return new URIBuilder(baseUrl)
+            return new URIBuilder(url)
                     .appendPath(pathUri.getPath())
                     .addParameters(pathUri.getQueryParams())
                     .addParameters(parameters)
