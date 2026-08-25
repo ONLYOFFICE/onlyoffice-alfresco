@@ -5,6 +5,11 @@ on:
   pull_request:
     types: [opened, reopened]
     branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
 jobs:
   artifact:
     runs-on: ubuntu-latest
