@@ -1,0 +1,84 @@
+name: E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      alfresco_version:
+        description: 'alfresco-content-repository-community / alfresco-share image tag'
+        default: '26.1.0'
+      documentserver_image:
+        description: 'Document Server image'
+        default: 'onlyoffice/documentserver:latest'
+  push:
+    branches: [master]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+  pull_request:
+    branches: [master, develop]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.github/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v7
+
+      - name: Get Info
+        id: info
+        run: |
+          echo "artifact=$(awk '/<artifactId>/,/<\/artifactId>/' pom.xml | head -n 1 | sed 's/^[[:space:]]*//g' | sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p')" >> $GITHUB_OUTPUT
+
+      - name: Install Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build Artifact
+        run: |
+          cd ${{ github.workspace }}
+          mvn -version
+          mvn clean install
+
+      - name: Collect AMPs
+        env:
+          ARTIFACT: ${{ steps.info.outputs.artifact }}
+        run: |
+          mkdir -p dist
+          mv ./repo/target/$ARTIFACT-repo.amp ./dist/
+          mv ./share/target/$ARTIFACT-share.amp ./dist/
+          ls -l ./dist
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin
+          path: dist/*.amp
+          retention-days: 1
+          if-no-files-found: error
+
+  e2e:
+    needs: build
+    uses: ONLYOFFICE/integration-tests/.github/workflows/e2e.yml@develop
+    with:
+      system: alfresco
+      artifact_name: plugin
+      documentserver_image: ${{ inputs.documentserver_image || 'onlyoffice/documentserver:latest' }}
+      env_overrides: ${{ format('ALFRESCO_VERSION={0}', inputs.alfresco_version || '26.1.0') }}
