@@ -9,12 +9,15 @@ import com.onlyoffice.manager.document.DocumentManager;
 import com.onlyoffice.manager.security.JwtManager;
 import com.onlyoffice.manager.settings.SettingsManager;
 import com.onlyoffice.model.common.User;
+import com.onlyoffice.model.documenteditor.config.EditorConfig;
 import com.onlyoffice.model.documenteditor.config.document.DocumentType;
 import com.onlyoffice.model.documenteditor.config.document.Info;
 import com.onlyoffice.model.documenteditor.config.document.Permissions;
 import com.onlyoffice.model.documenteditor.config.document.ReferenceData;
+import com.onlyoffice.model.documenteditor.config.document.Type;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Customization;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Embedded;
+import com.onlyoffice.model.documenteditor.config.editorconfig.Mode;
 import com.onlyoffice.model.documenteditor.config.editorconfig.Template;
 import com.onlyoffice.model.documenteditor.config.editorconfig.customization.Anonymous;
 import com.onlyoffice.service.documenteditor.config.DefaultConfigService;
@@ -55,6 +58,17 @@ public class ConfigServiceImpl extends DefaultConfigService {
     public ConfigServiceImpl(final DocumentManager documentManager, final UrlManager urlManager,
                              final JwtManager jwtManager, final SettingsManager settingsManager) {
         super(documentManager, urlManager, jwtManager, settingsManager);
+    }
+
+    @Override
+    public EditorConfig getEditorConfig(final String fileId, final Mode mode, final Type type) {
+        EditorConfig editorConfig = super.getEditorConfig(fileId, mode, type);
+
+        if (editorConfig.getCallbackUrl() != null) {
+            editorConfig.getCustomization().setReview(null);
+        }
+
+        return editorConfig;
     }
 
     @Override
