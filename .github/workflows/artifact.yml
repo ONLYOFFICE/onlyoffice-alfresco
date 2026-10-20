@@ -35,12 +35,28 @@ jobs:
           mv ./repo/target/${{ steps.info.outputs.artifact }}-repo.amp $cwd
           mv ./share/target/${{ steps.info.outputs.artifact }}-share.amp $cwd
       - name: Upload Repo Artifact
+        if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.info.outputs.artifact }}-repo
           path: ${{ steps.info.outputs.artifact }}-repo.amp
       - name: Upload Share Artifact
+        if: ${{ github.server_url == 'https://github.com' }}
         uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.info.outputs.artifact }}-share
+          path: ${{ steps.info.outputs.artifact }}-share.amp
+      # actions/upload-artifact@v4+ takes Gitea for GHES and refuses to run; this
+      # fork is the same action without that check.
+      - name: Upload Repo Artifact (Gitea)
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: christopherHX/gitea-upload-artifact@v4
+        with:
+          name: ${{ steps.info.outputs.artifact }}-repo
+          path: ${{ steps.info.outputs.artifact }}-repo.amp
+      - name: Upload Share Artifact (Gitea)
+        if: ${{ github.server_url != 'https://github.com' }}
+        uses: christopherHX/gitea-upload-artifact@v4
         with:
           name: ${{ steps.info.outputs.artifact }}-share
           path: ${{ steps.info.outputs.artifact }}-share.amp
