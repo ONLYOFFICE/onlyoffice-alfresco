@@ -1,6 +1,6 @@
 # Change Log
 
-##
+## 8.4.0
 ## Added
 - compatible with Alfresco v26.*
 
