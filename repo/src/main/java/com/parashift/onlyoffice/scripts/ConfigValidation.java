@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@Component(value = "webscript.onlyoffice.onlyoffice-config-validation.get")
+@Component(value = "webscript.onlyoffice.config.onlyoffice-config-validation.get")
 public class ConfigValidation extends AbstractWebScript {
     @Autowired
     private SettingsValidationService settingsValidationService;
@@ -41,4 +41,3 @@ public class ConfigValidation extends AbstractWebScript {
         response.getWriter().write(objectMapper.writeValueAsString(responseMap));
     }
 }
-

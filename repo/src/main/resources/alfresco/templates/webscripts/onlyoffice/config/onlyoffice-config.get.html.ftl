@@ -123,7 +123,7 @@
     </div>
     <div class="onlyoffice-welcome-container-links">
         <a class="onlyoffice-welcome-container-link" target="_blank" href="https://helpcenter.onlyoffice.com/integration/alfresco.aspx">${msg("onlyoffice-config.welcome.links.learn-more")} <img></a>
-        <a class="onlyoffice-welcome-container-link" target="_blank" href="https://feedback.onlyoffice.com/forums/966080-your-voice-matters?category_id=519288">${msg("onlyoffice-config.welcome.links.suggest-feature")} <img></a>
+        <a class="onlyoffice-welcome-container-link" target="_blank" href="https://community.onlyoffice.com/c/suggestions/integrations/56">${msg("onlyoffice-config.welcome.links.suggest-feature")} <img></a>
     </div>
 </div>
 
@@ -221,10 +221,6 @@
           <input class="value" id="help" name="help" type="checkbox" <#if (settings['customization.help'])! == 'true'>checked</#if> />
           <label class="label" for="help">${msg("onlyoffice-config.help")}</label>
       </div>
-      <div class="control field">
-          <input class="value" id="toolbarNoTabs" name="toolbarNoTabs" type="checkbox" <#if (settings['customization.toolbarNoTabs'])! == 'true'>checked</#if> />
-          <label class="label" for="toolbarNoTabs">${msg("onlyoffice-config.toolbar-no-tabs")}</label>
-      </div>
       <div class="control field section">
           <p class="label">${msg("onlyoffice-config.review-mode-label")}</p>
           <div style="padding-top: 4px">
@@ -296,7 +292,6 @@
       var chat = document.getElementById("chat");
       var help = document.getElementById("help");
       var compactHeader = document.getElementById("compactHeader");
-      var toolbarNoTabs = document.getElementById("toolbarNoTabs");
       var feedback = document.getElementById("feedback");
       var lossyEdit = document.querySelectorAll(".lossy-edit");
       var reviewDisplay = document.getElementsByName("reviewDisplay");
@@ -393,7 +388,6 @@
             chat: chat.checked.toString(),
             help: help.checked.toString(),
             compactHeader: compactHeader.checked.toString(),
-            toolbarNoTabs: toolbarNoTabs.checked.toString(),
             review: {
                 reviewDisplay: document.querySelector("input[name='reviewDisplay']:checked").id.replace("reviewDisplay", "").toLowerCase()
             }

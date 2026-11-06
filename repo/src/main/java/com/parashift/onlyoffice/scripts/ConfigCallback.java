@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 
-@Component(value = "webscript.onlyoffice.onlyoffice-config.post")
+@Component(value = "webscript.onlyoffice.config.onlyoffice-config.post")
 public class ConfigCallback extends AbstractWebScript {
     @Autowired
     private SettingsManager settingsManager;
@@ -76,4 +76,3 @@ public class ConfigCallback extends AbstractWebScript {
         response.setStatus(Status.STATUS_OK);
     }
 }
-

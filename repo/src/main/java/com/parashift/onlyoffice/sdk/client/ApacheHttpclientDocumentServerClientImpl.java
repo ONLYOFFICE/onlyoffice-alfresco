@@ -75,15 +75,11 @@ public class ApacheHttpclientDocumentServerClientImpl extends AbstractDocumentSe
 
     public ApacheHttpclientDocumentServerClientImpl(final DocumentServerClientSettings documentServerClientSettings) {
         super(documentServerClientSettings);
-
-        init();
     }
 
     public ApacheHttpclientDocumentServerClientImpl(final SettingsManager settingsManager,
                                                     final UrlManager urlManager) {
         super(settingsManager, urlManager);
-
-        init();
     }
 
     @Override
@@ -213,11 +209,11 @@ public class ApacheHttpclientDocumentServerClientImpl extends AbstractDocumentSe
         return executeRequest(request, DocBuilderResponse.class);
     }
 
-    protected URI createUri(final String baseUrl, final String path, final List<NameValuePair> parameters) {
+    protected URI createUri(final String url, final String path, final List<NameValuePair> parameters) {
         try {
             URIBuilder pathUri = new URIBuilder(path);
 
-            return new URIBuilder(baseUrl)
+            return new URIBuilder(url)
                     .appendPath(pathUri.getPath())
                     .addParameters(pathUri.getQueryParams())
                     .addParameters(parameters)
@@ -325,22 +321,29 @@ public class ApacheHttpclientDocumentServerClientImpl extends AbstractDocumentSe
         );
     }
 
-    protected void prepareHttpClient() {
+    protected synchronized void prepareHttpClient() {
         if (shouldReinit()) {
             init();
         }
     }
 
     protected boolean shouldReinit() {
-        HttpClientProperties httpClientProperties = getHttpClientProperties();
+        if (this.httpClient == null || this.httpClientForSyncConvertRequest == null) {
+            return true;
+        }
 
-        return this.isIgnoreSSLCertificate != httpClientProperties.getIgnoreSslCertificate()
+        HttpClientProperties httpClientProperties = getHttpClientProperties();
+        boolean ignoreSslCertificate = Optional.ofNullable(httpClientProperties.getIgnoreSslCertificate())
+                .orElse(false);
+
+        return this.isIgnoreSSLCertificate != ignoreSslCertificate
                 || !Optional.ofNullable(this.baseUrl).orElse("").equals(getBaseUrl());
     }
 
     protected void init() {
         HttpClientProperties httpClientProperties = getHttpClientProperties();
-        this.isIgnoreSSLCertificate = httpClientProperties.getIgnoreSslCertificate();
+        this.isIgnoreSSLCertificate = Optional.ofNullable(httpClientProperties.getIgnoreSslCertificate())
+                .orElse(false);
         this.baseUrl = getBaseUrl();
 
         this.httpClient = createHttpClient(httpClientProperties);

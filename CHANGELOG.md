@@ -1,5 +1,15 @@
 # Change Log
 
+## 8.4.0
+## Added
+- compatible with Alfresco v26.*
+
+## Changed
+- delete setting toolbarNoTabs
+- updated com.onlyoffice:docs-integration-sdk to v1.10.0, see [ONLYOFFICE/docs-integration-sdk-java v1.8.0](https://github.com/ONLYOFFICE/docs-integration-sdk-java/releases/tag/v1.8.0),
+[ONLYOFFICE/docs-integration-sdk-java v1.9.0](https://github.com/ONLYOFFICE/docs-integration-sdk-java/releases/tag/v1.9.0),
+[ONLYOFFICE/docs-integration-sdk-java v1.10.0](https://github.com/ONLYOFFICE/docs-integration-sdk-java/releases/tag/v1.10.0)
+
 ## 8.3.0
 ## Changed
 - updated list supported formats, see [ONLYOFFICE/document-formats v3.1.0](https://github.com/ONLYOFFICE/document-formats/releases/tag/v3.1.0)

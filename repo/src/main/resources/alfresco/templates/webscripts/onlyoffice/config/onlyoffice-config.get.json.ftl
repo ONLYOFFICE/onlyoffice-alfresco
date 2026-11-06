@@ -12,7 +12,6 @@
 		"chat": ${settings['customization.chat']},
 		"help": ${settings['customization.help']},
 		"compactHeader": ${(settings['customization.compactHeader']!false)?json_string},
-		"toolbarNoTabs": ${(settings['customization.toolbarNoTabs']!false)?json_string},
 		"feedback": ${(settings['customization.feedback']!false)?json_string},
 		"reviewDisplay": ${settings['customization.review.reviewDisplay']}
 	}

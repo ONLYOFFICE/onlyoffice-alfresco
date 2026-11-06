@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@Component(value = "webscript.onlyoffice.onlyoffice-config.get")
+@Component(value = "webscript.onlyoffice.config.onlyoffice-config.get")
 public class Config extends DeclarativeWebScript {
     @Autowired
     private SettingsManager settingsManager;
@@ -78,4 +78,3 @@ public class Config extends DeclarativeWebScript {
         return model;
     }
 }
-
